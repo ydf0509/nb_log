@@ -309,7 +309,7 @@ class LogManager(object):
             self.__add_a_hanlder(MongoHandler(self._mongo_url))
 
         if not self._judge_logger_has_handler_type(self.logger,
-                                                   ElasticHandler) and nb_log_config_default.RUN_ENV == 'test':  # 使用kafka。不直接es。
+                                                   ElasticHandler) and self._is_add_elastic_handler and nb_log_config_default.RUN_ENV == 'test':  # 使用kafka。不直接es。
             """
             生产环境使用阿里云 oss日志，不使用这个。
             """

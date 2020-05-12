@@ -8,7 +8,7 @@ other handlers includeing dintalk ,email,kafka,elastic and so on
 使用的是python的内置logging封装的，返回的logger对象的类型是py官方内置日志的Logger类型，兼容性强，
 保证了第三方各种handlers扩展数量多和方便，和一键切换现有项目的日志。
 
-比如logru和logbook这种上方库，完全重新写的日志，
+比如logru和logbook这种三方库，完全重新写的日志，
 它里面主要被用户使用的logger变量类型不是python内置Logger类型，
 造成logger说拥有的属性和方法有的不存在或者不一致，这样的日志和python内置的经典日志兼容性差，
 只能兼容（一键替换logger类型）一些简单的debug info warning errror等方法，。
@@ -46,7 +46,7 @@ getLogger('hi').addHandler(StreamHandler())
 logger.warning('啦啦啦')
 
 明明只warning了一次，但实际会造成 啦啦啦 在控制台打印3次。
-使用nb_log，对同一明明空间的日志，可以无惧反复添加同类型handler，不会重复记录。
+使用nb_log，对同一命名空间的日志，可以无惧反复添加同类型handler，不会重复记录。
 
 
 5）支持日志自定义，运行此包后，会自动在你的python项目根目录中生成nb_log_config.py文件，按说明修改。

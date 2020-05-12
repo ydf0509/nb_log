@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: nb-log
-Version: 2.4
+Version: 2.5
 Summary: very sharp color display,monkey patch bulitin print  and high-performance multiprocess safe roating file handler,other handlers includeing dintalk ,email,kafka,elastic and so on 
 Home-page: UNKNOWN
 Author: bfzs
@@ -39,7 +39,8 @@ Description: ## 1. pip install nb_log
         将会同时记录到控制台和文件aa.log中，只要debug及debug以上级别都会记录。
         
         logger_bb.warning('嘿嘿嘿')   
-        将只会发送到钉钉群消息，并且logger_bb的info debug级别日志不会被记录，非常方便测试调试然后稳定了调高界别到生产。
+        将只会发送到钉钉群消息，并且logger_bb的info debug级别日志不会被记录，
+        非常方便测试调试然后稳定了调高界别到生产。
         
         logger_cc的日志会写在cc.log中，和logger_aa的日志是不同的文件。
         
@@ -209,6 +210,7 @@ Description: ## 1. pip install nb_log
         ![Image text](https://i.niupic.com/images/2020/05/12/7OSI.png)
         
         elastic日志
+        
         ![Image text](https://i.niupic.com/images/2020/05/12/7OSK.png)
         
         mongo日志

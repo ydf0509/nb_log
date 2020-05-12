@@ -1,5 +1,6 @@
 # noinspection PyMissingOrEmptyDocstring
 import atexit
+import copy
 import sys
 import os
 import traceback
@@ -388,6 +389,19 @@ class ElasticHandler(logging.Handler):
             self.handleError(record)
 
 
+def formatMessage(self, record: logging.LogRecord):
+    # print(record.__dict__)
+    if hasattr(record, 'for_segmentation_color'):
+        # del record.for_segmentation_color
+        # del record.msg
+        record.message = ''
+    # print(record.__dict__)
+    return self._style.format(record)
+
+
+logging.Formatter.formatMessage = formatMessage
+
+
 class ColorHandler(logging.Handler):
     """
     根据日志严重级别，显示成五彩控制台日志。
@@ -481,9 +495,13 @@ class ColorHandler(logging.Handler):
         # noinspection PyBroadException
         try:
             # very_nb_print(record)
-            effective_information_msg = record.msg
-            record.msg = ''
-            assist_msg = self.format(record)
+            # record.message = record.getMessage()
+            effective_information_msg = record.getMessage()  # 不能用msg字段，例如有的包的日志格式化还有其他字段
+            record_copy = copy.copy(record)
+            record_copy.for_segmentation_color = '彩色分段标志属性而已'
+            # del record_copy.msg
+            assist_msg = self.format(record_copy)
+            # print(f'**  {assist_msg}  ** ')
             stream = self.stream
             if nb_log_config_default.DISPLAY_BACKGROUD_COLOR_IN_CONSOLE:
                 msg_color = self.__build_color_msg_with_backgroud_color(record.levelno, assist_msg,
@@ -491,7 +509,6 @@ class ColorHandler(logging.Handler):
             else:
                 msg_color = self.__build_color_msg_with_no_backgroud_color(record.levelno, assist_msg,
                                                                            effective_information_msg)
-            record.msg = effective_information_msg
             stream.write(msg_color)
             stream.write(self.terminator)
             self.flush()
