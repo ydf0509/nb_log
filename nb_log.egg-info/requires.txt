@@ -1,0 +1,7 @@
+pymongo==3.5.1
+tomorrow3==1.1.0
+concurrent-log-handler==0.9.9
+elasticsearch
+kafka-python==1.4.6
+requests
+pika

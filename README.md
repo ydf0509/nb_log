@@ -4,7 +4,7 @@ very sharp color display,monkey patch bulitin print
 and high-performance multiprocess safe roating file handler,
 other handlers includeing dintalk ,email,kafka,elastic and so on 
   
-
+1） 兼容性
 使用的是python的内置logging封装的，返回的logger对象的类型是py官方内置日志的Logger类型，兼容性强，
 保证了第三方各种handlers扩展数量多和方便，和一键切换现有项目的日志。
 
@@ -13,13 +13,49 @@ other handlers includeing dintalk ,email,kafka,elastic and so on
 造成logger说拥有的属性和方法有的不存在或者不一致，这样的日志和python内置的经典日志兼容性差，
 只能兼容（一键替换logger类型）一些简单的debug info warning errror等方法，。
 
-内置了一键入参，可以把日志记录到8个常用的地方，包括控制台 文件 钉钉 邮件 mongo kafka es 等等。
+2） 日志记录到多个地方
+内置了一键入参，每个参数是独立开关，可以把日志同时记录到8个常用的地方的任意几种，
+包括 控制台 文件 钉钉 邮件 mongo kafka es 等等 。
+
+3） 日志命名空间独立，采用了多实例logger，按日志命名空间区分。
+命名空间独立意味着每个logger单独的日志界别过滤，单独的控制要记录到哪些地方。
+
+logger_aa = LogManager('aa').get_logger_and_add_handlers(10，log_filename='aa.log')
+logger_bb = LogManager('bb').get_logger_and_add_handlers(30，is_add_stream_handler=False,
+ding_talk_token='your_dingding_token')
+logger_cc = LogManager('cc').get_logger_and_add_handlers(10，log_filename='cc.log')
+
+那么logger_aa.debug('哈哈哈')  
+将会同时记录到控制台和文件aa.log中，只要debug及debug以上级别都会记录。
+
+logger_bb.warning('嘿嘿嘿')   
+将只会发送到钉钉群消息，并且logger_bb的info debug级别日志不会被记录，
+非常方便测试调试然后稳定了调高界别到生产。
+
+logger_cc的日志会写在cc.log中，和logger_aa的日志是不同的文件。
+
+4） 对内置looging包打了猴子补丁，使日志永远不会使用同种handler重复记录
+
+例如，原生的  
+
+from logging import getLogger,StreamHandler
+logger = getLogger('hi')
+getLogger('hi').addHandler(StreamHandler())
+getLogger('hi').addHandler(StreamHandler())
+getLogger('hi').addHandler(StreamHandler())
+logger.warning('啦啦啦')
+
+明明只warning了一次，但实际会造成 啦啦啦 在控制台打印3次。
+使用nb_log，对同一明明空间的日志，可以无惧反复添加同类型handler，不会重复记录。
+
+
+5）支持日志自定义，运行此包后，会自动在你的python项目根目录中生成nb_log_config.py文件，按说明修改。
 ```
 
 ## 2. 最简单的使用方式,这只是演示控制台日志
-###### 2.0）自动拦截改变项目中所有地方的print效果。
-###### 2.1）控制台日志变成可点击，精确跳转。
-###### 2.2）控制台日志根据日志级别自动变色。
+###### 2.0）自动拦截改变项目中所有地方的print效果。（支持配置文件自定义关闭转化print）
+###### 2.1）控制台日志变成可点击，精确跳转。（支持配置文件自定义修改或增加模板，内置了7种模板，部分模板生成的日志可以在pycharm控制台点击跳转）
+###### 2.2）控制台日志根据日志级别自动变色。（支持配置文件关闭彩色或者关闭背景色块）
 
 ```python
 from nb_log import LogManager
@@ -63,13 +99,9 @@ log_filename='ha.log')
 
 def f():
     for i in range(1000000000):
-        logger.debug(f'绿色{i}')
-        logger.info(f'蓝色{i}')
-        logger.warn(f'黄色{i}')
-        logger.error(f'紫红色{i}')
-        logger.critical(f'血红色{i}')
-
-
+        logger.debug('测试文件写入性能，在满足 1.多进程运行 2.按大小自动切割备份 3切割备份瞬间不出错'
+                    '这3个条件的前提下，验证这是不是python史上文件写入速度遥遥领先 性能最强的python logging handler')
+       
 if __name__ == '__main__':
     [Process(target=f).start() for _ in range(10)]
 ```
@@ -144,3 +176,34 @@ FORMATTER_DICT = {
 
 FORMATTER_KIND = 5  # 如果get_logger_and_add_handlers不指定日志模板，则默认选择第几个模板
 ```
+
+## 7. 各種日志截圖
+
+钉钉
+
+![Image text](https://i.niupic.com/images/2020/05/12/7OSE.png)
+
+控制台日志模板之一
+
+![Image text](https://i.niupic.com/images/2020/05/12/7OSF.png)
+
+控制台日子模板之二
+
+![Image text](https://i.niupic.com/images/2020/05/12/7OSG.png)
+
+邮件日志
+
+![Image text](https://i.niupic.com/images/2020/05/12/7OSH.png)
+
+文件日志
+
+![Image text](https://i.niupic.com/images/2020/05/12/7OSI.png)
+
+elastic日志
+
+![Image text](https://i.niupic.com/images/2020/05/12/7OSK.png)
+
+mongo日志
+
+![Image text](https://i.niupic.com/images/2020/05/12/7OSL.png)
+ 

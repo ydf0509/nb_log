@@ -11,7 +11,7 @@ print(filepath)
 
 setup(
     name='nb_log',  #
-    version="2.2",
+    version="2.4",
     description=(
         'very sharp color display,monkey patch bulitin print  and high-performance multiprocess safe roating file handler,other handlers includeing dintalk ,email,kafka,elastic and so on '
     ),
@@ -47,7 +47,6 @@ setup(
         'kafka-python==1.4.6',
         'requests',
         'pika'
-
     ]
 )
 """
@@ -56,7 +55,7 @@ python setup.py sdist upload -r pypi
 
 
 python setup.py sdist
-twine upload dist/nb_log-2.2.tar.gz
+twine upload dist/nb_log-2.4.tar.gz
 twine upload dist/*
 
 

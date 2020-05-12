@@ -138,8 +138,8 @@ def auto_creat_config_file_to_project_root_path():
     # print((Path(__file__).parent.parent).absolute().as_posix())
     if Path(sys.path[1]).as_posix() in Path(__file__).parent.parent.absolute().as_posix():
         pass
-        # nb_print('不希望在本项目里面创建')
-        # return
+        nb_print('不希望在本项目里面创建')
+        return
     with (Path(sys.path[1]) / Path('nb_log_config.py')).open(mode='w', encoding='utf8') as f:
         f.write(config_file_content)
 

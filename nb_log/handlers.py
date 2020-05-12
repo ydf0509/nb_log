@@ -491,6 +491,7 @@ class ColorHandler(logging.Handler):
             else:
                 msg_color = self.__build_color_msg_with_no_backgroud_color(record.levelno, assist_msg,
                                                                            effective_information_msg)
+            record.msg = effective_information_msg
             stream.write(msg_color)
             stream.write(self.terminator)
             self.flush()
@@ -738,8 +739,10 @@ class DingTalkHandler(logging.Handler):
 
     def __emit(self, record):
         message = self.format(record)
+        very_nb_print(message)
         data = {"msgtype": "text", "text": {"content": message, "title": '这里的标题能起作用吗？？'}}
         try:
+            # very_nb_print(self._ding_talk_url)
             resp = requests.post(self._ding_talk_url, json=data, timeout=(30, 40))
             very_nb_print(f'钉钉返回 ： {resp.text}')
         except requests.RequestException as e:
