@@ -58,7 +58,7 @@ def print_exception(etype, value, tb, limit=None, file=None, chain=True):
         if file != sys.stderr:
             sys.stderr.write(f'{line} \n')
         else:
-            sys.stdout.write(line, file=file, end="")
+            sys.stdout.write(f'{line} \n')
 
 
 # print = nb_print

@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: nb-log
-Version: 2.5
+Version: 2.6
 Summary: very sharp color display,monkey patch bulitin print  and high-performance multiprocess safe roating file handler,other handlers includeing dintalk ,email,kafka,elastic and so on 
 Home-page: UNKNOWN
 Author: bfzs
@@ -18,7 +18,7 @@ Description: ## 1. pip install nb_log
         使用的是python的内置logging封装的，返回的logger对象的类型是py官方内置日志的Logger类型，兼容性强，
         保证了第三方各种handlers扩展数量多和方便，和一键切换现有项目的日志。
         
-        比如logru和logbook这种上方库，完全重新写的日志，
+        比如logru和logbook这种三方库，完全重新写的日志，
         它里面主要被用户使用的logger变量类型不是python内置Logger类型，
         造成logger说拥有的属性和方法有的不存在或者不一致，这样的日志和python内置的经典日志兼容性差，
         只能兼容（一键替换logger类型）一些简单的debug info warning errror等方法，。
@@ -56,7 +56,7 @@ Description: ## 1. pip install nb_log
         logger.warning('啦啦啦')
         
         明明只warning了一次，但实际会造成 啦啦啦 在控制台打印3次。
-        使用nb_log，对同一明明空间的日志，可以无惧反复添加同类型handler，不会重复记录。
+        使用nb_log，对同一命名空间的日志，可以无惧反复添加同类型handler，不会重复记录。
         
         
         5）支持日志自定义，运行此包后，会自动在你的python项目根目录中生成nb_log_config.py文件，按说明修改。
@@ -82,6 +82,11 @@ Description: ## 1. pip install nb_log
         
         ## 3 文件日志
         ###### 3.1）这个文件日志的自定义filehandler是python史上性能最强大的 支持多进程下日志文件按大小自动切割。
+        
+        在各种filehandler实现难度上 
+        单进程永不切割 < 单进程按大小切割 < 多进程按时间切割 < 多进程按大小切割
+        
+        因为每天日志大小很难确定，如果每天所有日志文件以及备份加起来超过40g了，硬盘就会满挂了，所以nb_log的文件日志filehandler采用的是按大小切割，不使用按时间切割。
         
         文件日志自动使用的是多进程安全切割的自定义filehandler，
         logging包的RotatingFileHandler多进程运行代码时候，如果要实现向文件写入到规定大小时候并自动备份切割，win和linux都100%报错。

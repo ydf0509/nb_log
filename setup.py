@@ -11,7 +11,7 @@ print(filepath)
 
 setup(
     name='nb_log',  #
-    version="2.5",
+    version="2.6",
     description=(
         'very sharp color display,monkey patch bulitin print  and high-performance multiprocess safe roating file handler,other handlers includeing dintalk ,email,kafka,elastic and so on '
     ),
@@ -54,8 +54,7 @@ setup(
 python setup.py sdist upload -r pypi
 
 
-python setup.py sdist
-twine upload dist/nb_log-2.5.tar.gz
+python setup.py sdist & twine upload dist/nb_log-2.6.tar.gz
 twine upload dist/*
 
 
