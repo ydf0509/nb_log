@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: nb-log
-Version: 2.6
+Version: 2.7
 Summary: very sharp color display,monkey patch bulitin print  and high-performance multiprocess safe roating file handler,other handlers includeing dintalk ,email,kafka,elastic and so on 
 Home-page: UNKNOWN
 Author: bfzs
@@ -84,7 +84,7 @@ Description: ## 1. pip install nb_log
         ###### 3.1）这个文件日志的自定义filehandler是python史上性能最强大的 支持多进程下日志文件按大小自动切割。
         
         在各种filehandler实现难度上 
-        单进程永不切割 < 单进程按大小切割 < 多进程按时间切割 < 多进程按大小切割
+        单进程永不切割 <  多进程按时间切割 < 单进程按大小切割  << 多进程按大小切割
         
         因为每天日志大小很难确定，如果每天所有日志文件以及备份加起来超过40g了，硬盘就会满挂了，所以nb_log的文件日志filehandler采用的是按大小切割，不使用按时间切割。
         

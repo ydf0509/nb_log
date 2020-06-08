@@ -104,7 +104,7 @@ import logging
 #         "%Y-%m-%d %H:%M:%S"),  # 我认为的最好的模板,推荐
 #     6: logging.Formatter('%(name)s - %(asctime)-15s - %(filename)s - %(lineno)d - %(levelname)s: %(message)s',
 #                          "%Y-%m-%d %H:%M:%S"),
-#     7: logging.Formatter('%(levelname)s - %(filename)s - %(lineno)d - %(message)s'),  # 一个只显示简短文件名和所处行数的日志模板
+#     7: logging.Formatter('%(asctime)s - %(name)s - "%(filename)s:%(lineno)d" - %(levelname)s - %(message)s',"%Y-%m-%d %H:%M:%S"),  # 一个只显示简短文件名和所处行数的日志模板
 # }
 # 
 # FORMATTER_KIND = 5  # 默认选择第几个模板
