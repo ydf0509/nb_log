@@ -736,8 +736,11 @@ class CompatibleSMTPSSLHandler(handlers.SMTPHandler):
 
 
 class DingTalkHandler(logging.Handler):
+    _lock_for_remove_handlers = Lock()
+
     def __init__(self, ding_talk_token=None, time_interval=60):
         super().__init__()
+        self.ding_talk_token =ding_talk_token
         self._ding_talk_url = f'https://oapi.dingtalk.com/robot/send?access_token={ding_talk_token}'
         self._current_time = 0
         self._time_interval = time_interval  # 最好别频繁发。
@@ -759,8 +762,24 @@ class DingTalkHandler(logging.Handler):
         very_nb_print(message)
         data = {"msgtype": "text", "text": {"content": message, "title": '这里的标题能起作用吗？？'}}
         try:
-            # very_nb_print(self._ding_talk_url)
-            resp = requests.post(self._ding_talk_url, json=data, timeout=(30, 40))
+            self._remove_urllib_hanlder()  # 因为钉钉发送也是使用requests实现的，如果requests调用的urllib3命名空间也加上了钉钉日志，将会造成循环，程序卡住。一般情况是在根日志加了钉钉handler。
+            resp = requests.post(self._ding_talk_url, json=data, timeout=(5, 5))
             very_nb_print(f'钉钉返回 ： {resp.text}')
         except requests.RequestException as e:
             very_nb_print(f"发送消息给钉钉机器人失败 {e}")
+
+    def __repr__(self):
+        level = logging.getLevelName(self.level)
+        return '<%s (%s)>' % (self.__class__.__name__, level) + ' dingtalk token is ' + self.ding_talk_token
+
+    @classmethod
+    def _remove_urllib_hanlder(cls):
+        for name in ['root','urllib3','requests']:
+            cls.__remove_urllib_hanlder_by_name(name)
+
+    @classmethod
+    def __remove_urllib_hanlder_by_name(cls,logger_name):
+        with cls._lock_for_remove_handlers:
+            for index,hdlr in enumerate(logging.getLogger(logger_name).handlers):
+                if 'DingTalkHandler' in str(hdlr):
+                    logging.getLogger(logger_name).handlers.pop(index)
