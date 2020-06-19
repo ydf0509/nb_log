@@ -3,7 +3,10 @@
 very sharp color display,monkey patch bulitin print  
 and high-performance multiprocess safe roating file handler,
 other handlers includeing dintalk ,email,kafka,elastic and so on 
-  
+
+0) 自动转换print效果，再也不怕有人在项目中随意print，导致很难找到是从哪里冒出来的print。
+只要import nb_log，项目所有地方的print自动现型并在控制台可点击几精确跳转到print的地方。
+
 1） 兼容性
 使用的是python的内置logging封装的，返回的logger对象的类型是py官方内置日志的Logger类型，兼容性强，
 保证了第三方各种handlers扩展数量多和方便，和一键切换现有项目的日志。
