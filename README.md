@@ -265,16 +265,16 @@ def 记录到控制台和文件和钉钉(msg):
 菜鸟教程的观察者模式demo连接
 [观察者模式demo](https://www.runoob.com/design-pattern/observer-pattern.html)
 
-这个uml图上分为subject 和 基类strategy，以及各种继承或者实现Strategy的Observers类，
-其中每个不同的observer需要实现doOperation方法。
+这个uml图上分为Subject 和 基类Observer，以及各种继承或者实现Observer的XxObserver类，
+其中每个不同的Observer需要实现doOperation方法。
 
 如果对应到python内置的logging日志包的实现，那么关系就是：
 
 Logger是uml图的Subject
 
-loging.Handler类是uml图的Strategy类
+loging.Handler类是uml图的Observer类
 
-StreamHandler FileHandler DingTalkHandler 是uml图的各种Observers类。
+StreamHandler FileHandler DingTalkHandler 是uml图的各种XxObservers类。
 
 StreamHandler FileHandler DingTalkHandler类的 emit方法是uml图的doOperation方法
 
