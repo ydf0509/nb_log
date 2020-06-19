@@ -258,3 +258,32 @@ def 记录到控制台和文件和钉钉(msg):
 
 """
 ```
+
+##### 观察者模式图片
+![Image text](https://www.runoob.com/wp-content/uploads/2014/08/observer_pattern_uml_diagram.jpg)
+
+菜鸟教程的观察者模式demo连接 ![观察者模式demo](https://www.runoob.com/design-pattern/observer-pattern.html)
+
+这个uml图上分为subject 和 基类strategy，以及各种继承或者实现strategy的observers类，
+其中每个不同的observer需要实现doOperation方法。
+
+如果对应到python内置的logging日志包的实现，那么关系就是：
+
+logger是uml图的subject
+
+loging.Handler类是uml图的Strategy类
+
+StreamHandler FileHandler DingTalkHandler 是uml图的各种observers类。
+
+StreamHandler FileHandler DingTalkHandler类的 emit方法是uml图的doOperation方法
+
+只有先学设计模式，才能知道经典固定套路达到快速看代码，能够达到秒懂源码是怎么规划设计实现的。
+
+如果不先学习经典设计模式，每次看包的源码，需要多浪费很多时间看他怎么设计实现的，不懂设计模式，会觉得太难了看着就放弃了。
+
+在python日志的使用和理解上，能够和我打成平手的，国内没有几人。
+
+
+
+
+
