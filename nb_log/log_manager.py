@@ -127,7 +127,7 @@ class LogManager(object):
 
     # 此处可以使用*args ,**kwargs减少很多参数，但为了pycharm更好的自动智能补全提示放弃这么做
     @classmethod
-    def bulid_a_logger_with_mail_handler(cls, logger_name, log_level_int=10, *, is_add_stream_handler=True,
+    def bulid_a_logger_with_mail_handler(cls, logger_name='nb_log_default_namespace', log_level_int=10, *, is_add_stream_handler=True,
                                          do_not_use_color_handler=False, log_path='/pythonlogs',
                                          log_filename=None,
                                          log_file_size=100, mongo_url=None, is_add_elastic_handler=False,

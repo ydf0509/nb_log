@@ -4,9 +4,9 @@ Version: 2.8
 Summary: very sharp color display,monkey patch bulitin print  and high-performance multiprocess safe roating file handler,other handlers includeing dintalk ,email,kafka,elastic and so on 
 Home-page: UNKNOWN
 Author: bfzs
-Author-email: m13148804508@163.com
+Author-email: ydf0509@sohu.com
 Maintainer: ydf
-Maintainer-email: m13148804508@163.com
+Maintainer-email: ydf0509@sohu.com
 License: BSD License
 Description: ## 1. pip install nb_log
         ```
