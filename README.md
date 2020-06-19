@@ -263,7 +263,7 @@ def 记录到控制台和文件和钉钉(msg):
 ![Image text](https://www.runoob.com/wp-content/uploads/2014/08/observer_pattern_uml_diagram.jpg)
 
 菜鸟教程的观察者模式demo连接
- [观察者模式demo](https://www.runoob.com/design-pattern/observer-pattern.html)
+[观察者模式demo](https://www.runoob.com/design-pattern/observer-pattern.html)
 
 这个uml图上分为subject 和 基类strategy，以及各种继承或者实现strategy的observers类，
 其中每个不同的observer需要实现doOperation方法。
