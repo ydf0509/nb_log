@@ -6,8 +6,6 @@
 使用方式为  logger = LogManager('logger_name').get_and_add_handlers(log_level_int=1, is_add_stream_handler=True,
  log_path=None, log_filename=None, log_file_size=10,mongo_url=None,formatter_template=2)
 
-创建一个邮件日志的用法为 logger = LogManager.bulid_a_logger_with_mail_handler('mail_logger_name', mail_time_interval=10,
-toaddrs=('909686xxx@qq.com', 'yangxx4508@dingtalk.com',subject='你的主题)),使用了独立的创建方式
 
 concurrent_log_handler的ConcurrentRotatingFileHandler解决了logging模块自带的RotatingFileHandler多进程切片错误，
 此ConcurrentRotatingFileHandler在win和linux多进程场景下log文件切片都ok.
