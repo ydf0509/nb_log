@@ -1,7 +1,7 @@
 from nb_log import nb_log_config_default
+from nb_log.set_nb_log_config import use_config_form_nb_log_config_module
 from nb_log.monkey_print import nb_print, patch_print, reverse_patch_print
-from nb_log.log_manager import LogManager, LoggerLevelSetterMixin, LoggerMixin, LoggerMixinDefaultWithFileHandler
-from nb_log.set_nb_log_config import use_config_form_distributed_frame_config_module
+from nb_log.log_manager import LogManager, LoggerLevelSetterMixin, LoggerMixin, LoggerMixinDefaultWithFileHandler, get_logger, get_logger_with_filehanlder
 
 if nb_log_config_default.WARNING_PYCHARM_COLOR_SETINGS:
     nb_print(
@@ -16,7 +16,8 @@ if nb_log_config_default.WARNING_PYCHARM_COLOR_SETINGS:
         """)
 
 simple_logger = LogManager('simple').get_logger_and_add_handlers()
-defaul_logger = LogManager('hotel').get_logger_and_add_handlers(do_not_use_color_handler=True, formatter_template=7)
+defaul_logger = LogManager('defaul').get_logger_and_add_handlers(do_not_use_color_handler=True, formatter_template=7)
+default_file_logger = LogManager('default_file_logger').get_logger_and_add_handlers(log_filename='default_file_logger.log')
 
 logger_dingtalk_common = LogManager('钉钉通用报警提示').get_logger_and_add_handlers(
     ding_talk_token=nb_log_config_default.DING_TALK_TOKEN,

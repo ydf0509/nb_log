@@ -751,9 +751,10 @@ class DingTalkHandler(logging.Handler):
         with self._lock:
             if time.time() - self._current_time > self._time_interval:
                 # very_nb_print(self._current_time)
+                self._current_time = time.time()
                 self.__emit(record)
                 # Thread(target=self.__emit, args=(record,)).start()
-                self._current_time = time.time()
+
             else:
                 very_nb_print(f' 此次离上次发送钉钉消息时间间隔不足 {self._time_interval} 秒，此次不发送这个钉钉内容： {record.msg}    ')
 

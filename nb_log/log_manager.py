@@ -21,6 +21,7 @@ concurrent_log_handler的ConcurrentRotatingFileHandler解决了logging模块自�
 
 """
 import unittest
+from functools import lru_cache
 
 from nb_log.handlers import *
 from nb_log import nb_log_config_default
@@ -108,6 +109,53 @@ logging.Logger.addHandler = revision_add_handler  # 打猴子补丁。
 # noinspection PyShadowingBuiltins
 # print = very_nb_print
 
+
+class DataClassBase:
+    """
+    使用类实现的
+    相比与字典，数据类在ide下补全犀利。
+    """
+
+    def __new__(cls, **kwargs):
+        self = super().__new__(cls)
+        self.__dict__ = copy.deepcopy({k: v for k, v in cls.__dict__.items() if not k.startswith('__')})
+        return self
+
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+    def __call__(self, ) -> dict:
+        return self.get_dict()
+
+    def get_dict(self):
+        return {k: v.get_dict() if isinstance(v, DataClassBase) else v for k, v in self.__dict__.items()}
+
+    def get_json(self):
+        return json.dumps(self.get_dict(), ensure_ascii=False, indent=4)
+
+    def __str__(self):
+        return f"{self.__class__}    {self.get_json()}"
+
+    def __getitem__(self, item):
+        return getattr(self, item)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+
+
+class MailHandlerConfig(DataClassBase):
+    mailhost: tuple = nb_log_config_default.EMAIL_HOST
+    fromaddr: str = nb_log_config_default.EMAIL_FROMADDR
+    toaddrs: tuple = nb_log_config_default.EMAIL_TOADDRS
+    subject: str = 'xx项目邮件日志报警'
+    credentials: tuple = nb_log_config_default.EMAIL_CREDENTIALS
+    secure = None
+    timeout = 5.0
+    is_use_ssl = True
+    mail_time_interval = 60
+
+
 # noinspection PyMissingOrEmptyDocstring,PyPep8
 class LogManager(object):
     """
@@ -120,55 +168,10 @@ class LogManager(object):
         """
         :param logger_name: 日志名称，当为None时候创建root命名空间的日志，一般情况下千万不要传None，除非你确定需要这么做和是在做什么.这个命名空间是双刃剑
         """
-        if logger_name in (None,'','root'):
+        if logger_name in (None, '', 'root'):
             very_nb_print('logger_name 设置为None和root和空字符串都是一个意义，在操作根日志命名空间，任何其他日志的行为将会发生变化，一定要弄清楚原生logging包的日志name的意思。这个命名空间是双刃剑')
         self._logger_name = logger_name
         self.logger = logging.getLogger(logger_name)
-
-    # 此处可以使用*args ,**kwargs减少很多参数，但为了pycharm更好的自动智能补全提示放弃这么做
-    @classmethod
-    def bulid_a_logger_with_mail_handler(cls, logger_name='nb_log_default_namespace', log_level_int=10, *, is_add_stream_handler=True,
-                                         do_not_use_color_handler=False, log_path='/pythonlogs',
-                                         log_filename=None,
-                                         log_file_size=100, mongo_url=None, is_add_elastic_handler=False,
-                                         is_add_kafka_handler=False,
-                                         ding_talk_token=nb_log_config_default.DING_TALK_TOKEN,
-                                         ding_talk_time_interval=60,
-                                         formatter_template=5, mailhost: tuple = nb_log_config_default.EMAIL_HOST,
-                                         fromaddr: str = nb_log_config_default.EMAIL_FROMADDR,
-                                         toaddrs: tuple = nb_log_config_default.EMAIL_TOADDRS,
-                                         subject: str = '钉钉日志报警测试',
-                                         credentials: tuple = nb_log_config_default.EMAIL_CREDENTIALS,
-                                         secure=None, timeout=5.0, is_use_ssl=True, mail_time_interval=60):
-
-        if log_filename is None:
-            log_filename = f'{logger_name}.log'
-        logger = cls(logger_name).get_logger_and_add_handlers(log_level_int=log_level_int,
-                                                              is_add_stream_handler=is_add_stream_handler,
-                                                              do_not_use_color_handler=do_not_use_color_handler,
-                                                              log_path=log_path, log_filename=log_filename,
-                                                              log_file_size=log_file_size, mongo_url=mongo_url,
-                                                              is_add_elastic_handler=is_add_elastic_handler,
-                                                              is_add_kafka_handler=is_add_kafka_handler,
-                                                              ding_talk_token=ding_talk_token,
-                                                              ding_talk_time_interval=ding_talk_time_interval,
-                                                              formatter_template=formatter_template, )
-        if cls._judge_logger_has_handler_type(logger, CompatibleSMTPSSLHandler):
-            return logger
-        smtp_handler = CompatibleSMTPSSLHandler(mailhost, fromaddr,
-                                                toaddrs,
-                                                subject,
-                                                credentials,
-                                                secure,
-                                                timeout,
-                                                is_use_ssl,
-                                                mail_time_interval,
-                                                )
-        log_level_int = log_level_int * 10 if log_level_int < 10 else log_level_int
-        smtp_handler.setLevel(log_level_int)
-        smtp_handler.setFormatter(nb_log_config_default.FORMATTER_DICT[formatter_template])
-        logger.addHandler(smtp_handler)
-        return logger
 
     # 加*是为了强制在调用此方法时候使用关键字传参，如果以位置传参强制报错，因为此方法后面的参数中间可能以后随时会增加更多参数，造成之前的使用位置传参的代码参数意义不匹配。
     # noinspection PyAttributeOutsideInit
@@ -176,7 +179,9 @@ class LogManager(object):
                                     do_not_use_color_handler=None, log_path='/pythonlogs',
                                     log_filename=None, log_file_size: int = None,
                                     mongo_url=None, is_add_elastic_handler=False, is_add_kafka_handler=False,
-                                    ding_talk_token=None, ding_talk_time_interval=60, formatter_template: int = None):
+                                    ding_talk_token=None, ding_talk_time_interval=60,
+                                    mail_handler_config: MailHandlerConfig = MailHandlerConfig(), is_add_mail_handler=False,
+                                    formatter_template: int = None):
         """
        :param log_level_int: 日志输出级别，设置为 1 2 3 4 5，分别对应原生logging.DEBUG(10)，logging.INFO(20)，logging.WARNING(30)，logging.ERROR(40),logging.CRITICAL(50)级别，现在可以直接用10 20 30 40 50了，兼容了。
        :param is_add_stream_handler: 是否打印日志到控制台
@@ -189,6 +194,8 @@ class LogManager(object):
        :param is_add_kafka_handler: 日志是否发布到kafka。
        :param ding_talk_token:钉钉机器人token
        :param ding_talk_time_interval : 时间间隔，少于这个时间不发送钉钉消息
+       :param mail_handler_config : 邮件配置
+       :param is_add_mail_handler :是否发邮件
        :param formatter_template :日志模板，1为formatter_dict的详细模板，2为简要模板,5为最好模板
        :type log_level_int :int
        :type is_add_stream_handler :bool
@@ -219,6 +226,9 @@ class LogManager(object):
         self._is_add_kafka_handler = is_add_kafka_handler
         self._ding_talk_token = ding_talk_token
         self._ding_talk_time_interval = ding_talk_time_interval
+        self._mail_handler_config = mail_handler_config
+        self._is_add_mail_handler = is_add_mail_handler
+
         self._formatter = nb_log_config_default.FORMATTER_DICT[formatter_template]
 
         self.logger.setLevel(self._logger_level)
@@ -251,16 +261,15 @@ class LogManager(object):
             raise TypeError('设置的handler类型不正确')
         for handler in self.logger.handlers:
             if isinstance(handler, handler_class):
-                self.logger.removeHandler(handler)
+                self.logger.removeHandler(handler)  # noqa
 
     def __add_a_hanlder(self, handlerx: logging.Handler):
         handlerx.setLevel(10)
         handlerx.setFormatter(self._formatter)
         self.logger.addHandler(handlerx)
 
-    @staticmethod
-    def _judge_logger_has_handler_type(logger, handler_type: type):
-        for hr in logger.handlers:
+    def _judge_logger_has_handler_type(self, handler_type: type):
+        for hr in self.logger.handlers:
             if isinstance(hr, handler_type):
                 return True
 
@@ -268,14 +277,14 @@ class LogManager(object):
         pass
 
         # REMIND 添加控制台日志
-        if not (self._judge_logger_has_handler_type(self.logger, ColorHandler) or self._judge_logger_has_handler_type(
-                self.logger, logging.StreamHandler)) and self._is_add_stream_handler:
+        if not (self._judge_logger_has_handler_type(ColorHandler) or self._judge_logger_has_handler_type(
+                logging.StreamHandler)) and self._is_add_stream_handler:
             handler = ColorHandler() if not self._do_not_use_color_handler else logging.StreamHandler()  # 不使用streamhandler，使用自定义的彩色日志
             # handler = logging.StreamHandler()
             self.__add_a_hanlder(handler)
 
         # REMIND 添加多进程安全切片的文件日志
-        if not self._judge_logger_has_handler_type(self.logger, ConcurrentRotatingFileHandler) and all(
+        if not self._judge_logger_has_handler_type(ConcurrentRotatingFileHandler) and all(
                 [self._log_path, self._log_filename]):
             if not os.path.exists(self._log_path):
                 os.makedirs(self._log_path)
@@ -288,15 +297,6 @@ class LogManager(object):
                                                                                                maxBytes=self._log_file_size * 1024 * 1024,
                                                                                                backupCount=nb_log_config_default.LOG_FILE_BACKUP_COUNT,
                                                                                                encoding="utf-8")
-
-                # windows下用这个，多进程安全，但不能切片，自己手动删除，要确保每天剩余磁盘空间很大。
-                # rotate_file_handler = logging.FileHandler(log_file,encoding="utf-8")
-
-                # windows下用这个，多进程不安全，多进程写入同一个文件切片瞬间时候100%会出错，导致程序出错。
-                # rotate_file_handler = logging.handlers.RotatingFileHandler(log_file, maxBytes=self._log_file_size * 1024 * 1024,
-                #                                                            backupCount=3,
-                #                                                            encoding="utf-8")
-
             elif os_name == 'posix':
                 # linux下可以使用ConcurrentRotatingFileHandler，进程安全的日志方式。
                 # 10进程各自写入10万条记录到同一个文件消耗100秒，还是比不切片写入速度降低10倍。因为每次检查切片大小和文件锁的原因。
@@ -307,11 +307,11 @@ class LogManager(object):
             self.__add_a_hanlder(rotate_file_handler)
 
         # REMIND 添加mongo日志。
-        if not self._judge_logger_has_handler_type(self.logger, MongoHandler) and self._mongo_url:
+        if not self._judge_logger_has_handler_type(MongoHandler) and self._mongo_url:
             self.__add_a_hanlder(MongoHandler(self._mongo_url))
 
-        if not self._judge_logger_has_handler_type(self.logger,
-                                                   ElasticHandler) and self._is_add_elastic_handler and nb_log_config_default.RUN_ENV == 'test':  # 使用kafka。不直接es。
+        if not self._judge_logger_has_handler_type(
+                ElasticHandler) and self._is_add_elastic_handler and nb_log_config_default.RUN_ENV == 'test':  # 使用kafka。不直接es。
             """
             生产环境使用阿里云 oss日志，不使用这个。
             """
@@ -320,23 +320,68 @@ class LogManager(object):
 
         # REMIND 添加kafka日志。
         # if self._is_add_kafka_handler:
-        if not self._judge_logger_has_handler_type(self.logger,
-                                                   KafkaHandler) and nb_log_config_default.RUN_ENV == 'test' \
+        if not self._judge_logger_has_handler_type(
+                KafkaHandler) and nb_log_config_default.RUN_ENV == 'test' \
                 and nb_log_config_default.ALWAYS_ADD_KAFKA_HANDLER_IN_TEST_ENVIRONENT:
             self.__add_a_hanlder(KafkaHandler(nb_log_config_default.KAFKA_BOOTSTRAP_SERVERS, ))
 
         # REMIND 添加钉钉日志。
-        if not self._judge_logger_has_handler_type(self.logger, DingTalkHandler) and self._ding_talk_token:
+        if not self._judge_logger_has_handler_type(DingTalkHandler) and self._ding_talk_token:
             self.__add_a_hanlder(DingTalkHandler(self._ding_talk_token, self._ding_talk_time_interval))
 
+        if not self._judge_logger_has_handler_type(CompatibleSMTPSSLHandler) and self._is_add_mail_handler:
+            self.__add_a_hanlder(CompatibleSMTPSSLHandler(**self._mail_handler_config.get_dict()))
 
-def get_logger(log_name):
+
+@lru_cache()
+def get_logger(name: str, *, log_level_int: int = None, is_add_stream_handler=True,
+               do_not_use_color_handler=None, log_path='/pythonlogs',
+               log_filename=None, log_file_size: int = None,
+               mongo_url=None, is_add_elastic_handler=False, is_add_kafka_handler=False,
+               ding_talk_token=None, ding_talk_time_interval=60,
+               mail_handler_config: MailHandlerConfig = MailHandlerConfig(), is_add_mail_handler=False,
+               formatter_template: int = None) -> logging.Logger:
     """
-    有的人排斥调用类和传很多参数。来个简单的，添加控制台和文件日志的。
-    :param log_name:
+    重写一遍，是为了更好的pycharm自动补全，所以不用**kwargs的写法。
+    如果太喜欢函数调用了，可以使用这种
+       :param name: 日志命名空间，重要。
+       :param log_level_int: 日志输出级别，设置为 1 2 3 4 5，分别对应原生logging.DEBUG(10)，logging.INFO(20)，
+       logging.WARNING(30)，logging.ERROR(40),logging.CRITICAL(50)级别，现在可以直接用10 20 30 40 50了，兼容了。
+
+       :param is_add_stream_handler: 是否打印日志到控制台
+       :param do_not_use_color_handler :是否禁止使用color彩色日志
+       :param log_path: 设置存放日志的文件夹路径
+       :param log_filename: 日志的名字，仅当log_path和log_filename都不为None时候才写入到日志文件。
+       :param log_file_size :日志大小，单位M，默认100M
+       :param mongo_url : mongodb的连接，为None时候不添加mongohandler
+       :param is_add_elastic_handler: 是否记录到es中。
+       :param is_add_kafka_handler: 日志是否发布到kafka。
+       :param ding_talk_token:钉钉机器人token
+       :param ding_talk_time_interval : 时间间隔，少于这个时间不发送钉钉消息
+       :param mail_handler_config : 邮件配置
+       :param is_add_mail_handler :是否发邮件
+       :param formatter_template :日志模板，1为formatter_dict的详细模板，2为简要模板,5为最好模板
+       :type log_level_int :int
+       :type is_add_stream_handler :bool
+       :type log_path :str
+       :type log_filename :str
+       :type mongo_url :str
+       :type log_file_size :int
+    """
+    locals_copy = copy.copy(locals())
+    locals_copy.pop('name')
+    # print(locals_copy)
+    return LogManager(name).get_logger_and_add_handlers(**locals_copy)
+
+
+@lru_cache()
+def get_logger_with_filehanlder(name: str) -> logging.Logger:
+    """
+    默认添加color handler  和 文件日志。
+    :param name:
     :return:
     """
-    return LogManager(log_name).get_logger_and_add_handlers(log_filename=f'{log_name}.log')
+    return LogManager(name).get_logger_and_add_handlers(log_filename=name + '.log')
 
 
 class LoggerMixin(object):
@@ -476,18 +521,6 @@ class _Test(unittest.TestCase):
         logger2.debug('测试日志模板2')
         logger5 = LogManager('test_formater5').get_logger_and_add_handlers(formatter_template=5)
         logger5.error('测试日志模板5')
-
-    @unittest.skip
-    def test_bulid_a_logger_with_mail_handler(self):
-        """
-        测试日志发送到邮箱中
-        :return:
-        """
-        logger = LogManager.bulid_a_logger_with_mail_handler('mail_logger_name', mail_time_interval=60, toaddrs=(
-            '909686719@qq.com', 'yangdefeng4508@dingtalk.com', 'defeng.yang@silknets.com'))
-        for _ in range(100):
-            logger.warning('测试邮件日志的内容。。。。')
-            time.sleep(10)
 
     @unittest.skip
     def test_ding_talk(self):
