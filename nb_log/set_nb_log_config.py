@@ -112,7 +112,7 @@ import logging
 '''
 
 
-def use_config_form_distributed_frame_config_module():
+def use_config_form_nb_log_config_module():
     """
     自动读取配置。会优先读取启动脚本的目录的distributed_frame_config.py文件。没有则读取项目根目录下的distributed_frame_config.py
     :return:

@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: nb-log
-Version: 2.8
+Version: 3.1
 Summary: very sharp color display,monkey patch bulitin print  and high-performance multiprocess safe roating file handler,other handlers includeing dintalk ,email,kafka,elastic and so on 
 Home-page: UNKNOWN
 Author: bfzs
@@ -13,7 +13,10 @@ Description: ## 1. pip install nb_log
         very sharp color display,monkey patch bulitin print  
         and high-performance multiprocess safe roating file handler,
         other handlers includeing dintalk ,email,kafka,elastic and so on 
-          
+        
+        0) 自动转换print效果，再也不怕有人在项目中随意print，导致很难找到是从哪里冒出来的print。
+        只要import nb_log，项目所有地方的print自动现型并在控制台可点击几精确跳转到print的地方。
+        
         1） 兼容性
         使用的是python的内置logging封装的，返回的logger对象的类型是py官方内置日志的Logger类型，兼容性强，
         保证了第三方各种handlers扩展数量多和方便，和一键切换现有项目的日志。
@@ -24,8 +27,8 @@ Description: ## 1. pip install nb_log
         只能兼容（一键替换logger类型）一些简单的debug info warning errror等方法，。
         
         2） 日志记录到多个地方
-        内置了一键入参，每个参数是独立开关，可以把日志同时记录到8个常用的地方的任意几种，
-        包括 控制台 文件 钉钉 邮件 mongo kafka es 等等 。
+        内置了一键入参，每个参数是独立开关，可以把日志同时记录到8个常用的地方的任意几种组合，
+        包括 控制台 文件 钉钉 邮件 mongo kafka es 等等 。在第8章介绍实现这种效果的观察者模式。
         
         3） 日志命名空间独立，采用了多实例logger，按日志命名空间区分。
         命名空间独立意味着每个logger单独的日志界别过滤，单独的控制要记录到哪些地方。
@@ -222,6 +225,80 @@ Description: ## 1. pip install nb_log
         
         ![Image text](https://i.niupic.com/images/2020/05/12/7OSL.png)
          
+         
+        ## 8 关于日志的观察者模式
+        不会扩展日志记录到什么地方，主要是不懂什么叫观察者模式
+        
+        ```python
+        # 例如 日志想实现记录到 控制台、文件、钉钉群、redis、mongo、es、kafka、发邮件其中的几种的任意组合。
+        # low的人，会这么写，以下是伪代码，实现记录到控制台、文件、钉钉群这三种的任意几种组合。
+        
+        def 记录到控制台(msg):
+            """实现把msg记录到控制台"""
+        
+        def 记录到文件(msg):
+            """实现把msg记录到文件"""
+        
+        def 记录到钉钉(msg):
+            """实现把msg记录到钉钉"""
+        
+        def 记录到控制台和文件(msg):
+            """实现把msg记录到控制台和文件"""
+        
+        def 记录到控制台和钉钉(msg):
+            """实现把msg记录到控制台和钉钉"""
+        
+        def 记录到文件和钉钉(msg):
+            """实现把msg记录到文件和钉钉"""
+        
+        def 记录到控制台和文件和钉钉(msg):
+            """实现把msg记录到控制台和文件和钉钉"""
+        
+        #当需要把msg记录到文件时候，调用函数 记录到文件(msg)
+        #当需要把msg记录到控制台时候，调用函数 记录到控制台(msg)
+        #当需要把msg记录到钉钉时候，调用函数 记录到钉钉(msg)
+        #当需要把msg记录到控制台和文件，调用函数 记录到控制台和文件(msg)
+        #当需要把msg记录到控制台和钉钉，调用函数 记录到控制台和钉钉(msg)
+        #当需要把msg记录到控制台和文件和钉钉，调用函数 记录到控制台和文件和钉钉(msg)
+        
+        """
+        这样会造成，仅记录到控制台 文件 钉钉这三种的任意几个，需要写6个函数，调用时候需要调用不同的函数名。
+        但是现在日志可以记录到8种地方，如果还这么low的写法，需要写8的阶乘个函数，调用时候根据场景需要会调用8的阶乘个函数名。
+        8的阶乘结果是 40320 ，如果很low不学设计模式做到灵活组合，需要多写 4万多个函数，不学设计模式会多么吓人。
+        
+        """
+        ```
+        
+        ##### 观察者模式图片
+        ![Image text](https://www.runoob.com/wp-content/uploads/2014/08/observer_pattern_uml_diagram.jpg)
+        
+        菜鸟教程的观察者模式demo连接
+        [观察者模式demo](https://www.runoob.com/design-pattern/observer-pattern.html)
+        
+        这个uml图上分为Subject 和 基类Observer，以及各种继承或者实现Observer的XxObserver类，
+        其中每个不同的Observer需要实现doOperation方法。
+        
+        如果对应到python内置的logging日志包的实现，那么关系就是：
+        
+        Logger是uml图的Subject
+        
+        loging.Handler类是uml图的Observer类
+        
+        StreamHandler FileHandler DingTalkHandler 是uml图的各种XxObservers类。
+        
+        StreamHandler FileHandler DingTalkHandler类的 emit方法是uml图的doOperation方法
+        
+        只有先学设计模式，才能知道经典固定套路达到快速看代码，能够达到秒懂源码是怎么规划设计实现的。
+        
+        如果不先学习经典设计模式，每次看包的源码，需要多浪费很多时间看他怎么设计实现的，不懂设计模式，会觉得太难了看着就放弃了。
+        
+        在python日志的使用和理解上，能够和我打成平手的，国内没有几人。 
+        
+        
+        
+        
+        
+        
 Keywords: logging,logger,multiprocess file handler,color handler
 Platform: all
 Classifier: Development Status :: 4 - Beta
