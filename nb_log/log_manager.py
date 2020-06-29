@@ -331,7 +331,7 @@ class LogManager(object):
             self.__add_a_hanlder(CompatibleSMTPSSLHandler(**self._mail_handler_config.get_dict()))
 
 
-@lru_cache()
+@lru_cache() # LogManager 本身也支持无限实例化
 def get_logger(name: str, *, log_level_int: int = None, is_add_stream_handler=True,
                do_not_use_color_handler=None, log_path='/pythonlogs',
                log_filename=None, log_file_size: int = None,
