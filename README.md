@@ -282,7 +282,7 @@ StreamHandler FileHandler DingTalkHandler类的 emit方法是uml图的doOperatio
 
 如果不先学习经典设计模式，每次看包的源码，需要多浪费很多时间看他怎么设计实现的，不懂设计模式，会觉得太难了看着就放弃了。
 
-在python日志的使用和理解上，能够和我打成平手的，国内没有几人。 
+
 
 
 
