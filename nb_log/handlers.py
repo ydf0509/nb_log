@@ -509,6 +509,7 @@ class ColorHandler(logging.Handler):
             else:
                 msg_color = self.__build_color_msg_with_no_backgroud_color(record.levelno, assist_msg,
                                                                            effective_information_msg)
+
             stream.write(msg_color)
             stream.write(self.terminator)
             self.flush()
