@@ -409,7 +409,7 @@ class ColorHandler(logging.Handler):
     设置方式为 打开pycharm的settings -> Editor -> Color Scheme -> Console Font 选择monokai
     """
 
-    terminator = '\n'
+    terminator = '\r\n' if os_name == 'nt' else '\n'
     bule = 96 if os_name == 'nt' else 36
     yellow = 93 if os_name == 'nt' else 33
 
@@ -509,10 +509,10 @@ class ColorHandler(logging.Handler):
             else:
                 msg_color = self.__build_color_msg_with_no_backgroud_color(record.levelno, assist_msg,
                                                                            effective_information_msg)
-
-            stream.write(msg_color)
-            stream.write(self.terminator)
-            self.flush()
+            # stream.write(msg_color)
+            # stream.write(self.terminator)
+            # self.flush()
+            stream.write(msg_color + self.terminator)
         except Exception as e:
             very_nb_print(e)
             very_nb_print(traceback.format_exc())
@@ -741,7 +741,7 @@ class DingTalkHandler(logging.Handler):
 
     def __init__(self, ding_talk_token=None, time_interval=60):
         super().__init__()
-        self.ding_talk_token =ding_talk_token
+        self.ding_talk_token = ding_talk_token
         self._ding_talk_url = f'https://oapi.dingtalk.com/robot/send?access_token={ding_talk_token}'
         self._current_time = 0
         self._time_interval = time_interval  # 最好别频繁发。
@@ -776,12 +776,12 @@ class DingTalkHandler(logging.Handler):
 
     @classmethod
     def _remove_urllib_hanlder(cls):
-        for name in ['root','urllib3','requests']:
+        for name in ['root', 'urllib3', 'requests']:
             cls.__remove_urllib_hanlder_by_name(name)
 
     @classmethod
-    def __remove_urllib_hanlder_by_name(cls,logger_name):
+    def __remove_urllib_hanlder_by_name(cls, logger_name):
         with cls._lock_for_remove_handlers:
-            for index,hdlr in enumerate(logging.getLogger(logger_name).handlers):
+            for index, hdlr in enumerate(logging.getLogger(logger_name).handlers):
                 if 'DingTalkHandler' in str(hdlr):
                     logging.getLogger(logger_name).handlers.pop(index)
