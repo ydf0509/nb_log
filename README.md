@@ -282,9 +282,66 @@ StreamHandler FileHandler DingTalkHandler类的 emit方法是uml图的doOperatio
 
 如果不先学习经典设计模式，每次看包的源码，需要多浪费很多时间看他怎么设计实现的，不懂设计模式，会觉得太难了看着就放弃了。
 
+在python日志的理解和使用上，国内能和我打成平手的没有几人。
 
 
+##9 演示一个由于不好好理解观察者模式，封装的日志类在调用时候十分惨烈的例子，惨烈程度达到10级。
+
+这个是真实发生的例子。
+
+这个例子是为了记录10万次日志到控制台和文件，就算python性能很差，就这个例子而言，预期耗时肯定是需要10秒以内才算合格。
+
+看起来10秒内可以运行完成，实际上1周内能运行结束这个代码，我愿意吃10斤翔。
+
+```python
+"""
+演示重复，由于封装错误的类造成的。模拟一个封装严重失误错误的封装例子。
+
+看起来10秒内可以运行完成，实际上1周内能运行结束这个代码，我愿意吃10斤翔。
+
+这个代码惨烈程度达到10级。明明是想记录10000次日志，结果却记录了 10000 * 10001 /2 次。如果把f函数调用100万次，那么控制台和文件将会各记录5000亿次，日志会把代码拖累死。
+不好好理解观察者模式有多惨烈。因为反复添加观察者（handler）,导致第1次调用记录1次，第二次调用时候记录2次，第10次调用时候记录10次，这成了高斯求和算法了。
+
+"""
+import logging
+import time
 
 
+class LogUtil:
+    def __init__(self):
+        self.logger = logging.getLogger('a')
+        self.logger.setLevel(logging.DEBUG)
+        self._add_stream_handler()
+        self._add_file_handler()
+
+    def _add_stream_handler(self):
+        sh = logging.StreamHandler()
+        sh.setFormatter(logging.Formatter(fmt="%(asctime)s-%(name)s-%(levelname)s-%(message)s"))
+        self.logger.addHandler(sh)
+
+    def _add_file_handler(self):
+        fh = logging.FileHandler('a.log')
+        fh.setFormatter(logging.Formatter(fmt="%(asctime)s-%(name)s-%(levelname)s-%(message)s"))
+        self.logger.addHandler(fh)
+
+    def debug(self, msg):
+        self.logger.debug(msg)
+
+    def info(self, msg):
+        self.logger.info(msg)
+
+
+def f(x):
+    log = LogUtil()  # 重点是这行，写在了函数内部。既没有做日志命名空间的handlers判断控制，封装的类本身也没写单利或者享元模式。
+    log.debug(x)
+
+
+t1 = time.time()
+for i in range(100000):
+    f(i)
+
+print(time.time() - t1)
+
+```
 
 
