@@ -1,6 +1,7 @@
 ## 1. pip install nb_log
 
 ### 解释一下什么叫pycharm下的点击自动跳转功能
+
 ![Image text](https://i.niupic.com/images/2020/07/30/8tjN.png)
 
 
