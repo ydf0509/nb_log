@@ -13,6 +13,21 @@ other handlers includeing dintalk ,email,kafka,elastic and so on
 0) 自动转换print效果，再也不怕有人在项目中随意print，导致很难找到是从哪里冒出来的print。
 只要import nb_log，项目所有地方的print自动现型并在控制台可点击几精确跳转到print的地方。
 
+在项目里面的几百个文件中疯狂print真的让人很生气，一个run.py运行起来几百个py文件，
+每个文件print 七八次，到底自己想看想关心的print是在控制台的哪一行呢，找到老眼昏花都找不到。
+比如打印x变量的值，有人是为了省代码直接 print(x)，而没有多打几个字母使用print("x的值是：",x)，
+这样打印出来的x变量，根本无法通过全局查找找到打印x变量是在什么py文件的哪一行。
+
+有人说把之前的print全部用#注释不就好了，那这要全局找找print，一个一个的修改，一个10万行项目，
+就算平均100行有一个print关键字，那起码也得有1000个print关键字吧，一个个的修改那要改到猴年马月呢。
+
+只有使用nb_log，才能让一切print妖魔鬼怪自动现形。
+
+另外，在正式项目或工具类甚至做得包里面，疯狂print真的很low，可以参考大神的三方包，从来都没直接print的不存在的，
+他们都是用的日志。
+日志比print灵活多了，对命名空间的控制、级别过滤控制、模板自定义、能记录到的地方扩展性很强远强过print的只有控制台。
+
+
 1） 兼容性
 使用的是python的内置logging封装的，返回的logger对象的类型是py官方内置日志的Logger类型，兼容性强，
 保证了第三方各种handlers扩展数量多和方便，和一键切换现有项目的日志。
@@ -56,6 +71,8 @@ logger.warning('啦啦啦')
 
 明明只warning了一次，但实际会造成 啦啦啦 在控制台打印3次。
 使用nb_log，对同一命名空间的日志，可以无惧反复添加同类型handler，不会重复记录。
+
+关于重复记录的例子，更惨的例子在第9章的，直接把机器cpu性能耗尽，磁盘弄爆炸。
 
 
 5）支持日志自定义，运行此包后，会自动在你的python项目根目录中生成nb_log_config.py文件，按说明修改。
@@ -157,7 +174,7 @@ MONGO_URL = 'mongodb://myUserAdmin:mima@127.0.0.1:27016/admin'
 
 DEFAULUT_USE_COLOR_HANDLER = True  # 是否默认使用有彩的日志。
 DISPLAY_BACKGROUD_COLOR_IN_CONSOLE = True  # 在控制台是否显示彩色块状的日志。为False则不使用大块的背景颜色。
-AUTO_PATCH_PRINT = True  # 是否自动打print的猴子补丁，如果打了后指不定，print自动变色和可点击跳转。
+AUTO_PATCH_PRINT = True  # 是否自动打print的猴子补丁，如果打了猴子补丁，print自动变色和可点击跳转。
 WARNING_PYCHARM_COLOR_SETINGS = True
 
 DEFAULT_ADD_MULTIPROCESSING_SAFE_ROATING_FILE_HANDLER = False  # 是否默认同时将日志记录到记log文件记事本中。
