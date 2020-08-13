@@ -137,6 +137,42 @@ if __name__ == '__main__':
     [Process(target=f).start() for _ in range(10)]
 ```
 
+## 3.3 演示文件大小切割在多进程下的错误例子,
+
+```
+注意说的是多进程，任何handlers在多线程下都没有问题，加了线程锁了，完全不用考虑多线程。说的是多进程，不是多线程。
+
+下面这段代码会疯狂报错。因为每达到100kb就想切割，多个文件句柄引用了同一个文件，某个进程想备份改文件名，别的进程不知情。
+
+解决这种问题，有人会说用进程锁，那是不行的，如果把xx.py分别启动两次，没有共同的父子进程，属于跨解释器的，进程锁是不行的。
+
+nb_log是采用的文件锁，文件锁在linux性能比较好，在win很差劲，导致日志拖累真个代码的性能，所以nb_log是采用把每1秒内的日志
+聚合起来，写入一次文件，从而大幅减少了加锁解锁次数，在win上疯狂快速写日志的性能提高了100倍，在linux上也提高了10倍左右的性能。
+```
+
+
+```python
+
+from logging.handlers import  RotatingFileHandler
+import logging
+from multiprocessing import Process
+
+logger = logging.getLogger('test_raotating_filehandler')
+
+logger.addHandler(RotatingFileHandler(filename='testratationg.log',maxBytes=1000 *100,backupCount=10))
+
+def f():
+    while 1:
+        logger.warning('测试多进程切片出错不'*20)
+
+if __name__ == '__main__':
+    for _ in range(10):
+        Process(target=f).start()
+```
+
+![Image text](http://i2.tiimg.com/699839/d8167f426045b872.png)
+
+
 ## 4 钉钉日志
 ```python
 from nb_log import LogManager
@@ -370,4 +406,4 @@ print(time.time() - t1)
 
 ```
 
-
+![Total visitor](https://visitor-count-badge.herokuapp.com/total.svg?repo_id=xxxxxsadsadwqeasds)
