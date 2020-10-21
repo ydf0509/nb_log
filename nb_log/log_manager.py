@@ -108,6 +108,13 @@ logging.Logger.addHandler = revision_add_handler  # 打猴子补丁。
 # print = very_nb_print
 
 
+class _Undefind:
+    pass
+
+
+undefind = _Undefind()
+
+
 class DataClassBase:
     """
     使用类实现的
@@ -174,8 +181,9 @@ class LogManager(object):
     # 加*是为了强制在调用此方法时候使用关键字传参，如果以位置传参强制报错，因为此方法后面的参数中间可能以后随时会增加更多参数，造成之前的使用位置传参的代码参数意义不匹配。
     # noinspection PyAttributeOutsideInit
     def get_logger_and_add_handlers(self, log_level_int: int = None, *, is_add_stream_handler=True,
-                                    do_not_use_color_handler=None, log_path='/pythonlogs',
+                                    do_not_use_color_handler=None, log_path=None,
                                     log_filename=None, log_file_size: int = None,
+                                    is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler=undefind,
                                     mongo_url=None, is_add_elastic_handler=False, is_add_kafka_handler=False,
                                     ding_talk_token=None, ding_talk_time_interval=60,
                                     mail_handler_config: MailHandlerConfig = MailHandlerConfig(), is_add_mail_handler=False,
@@ -187,6 +195,8 @@ class LogManager(object):
        :param log_path: 设置存放日志的文件夹路径
        :param log_filename: 日志的名字，仅当log_path和log_filename都不为None时候才写入到日志文件。
        :param log_file_size :日志大小，单位M，默认100M
+       :param is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler :是否使用watched_file_handler作为文件日志，
+              这个需要在linux配合lograte才能切割日志，win下不行，不推荐使用此方式来写文件日志切割。
        :param mongo_url : mongodb的连接，为None时候不添加mongohandler
        :param is_add_elastic_handler: 是否记录到es中。
        :param is_add_kafka_handler: 日志是否发布到kafka。
@@ -210,6 +220,8 @@ class LogManager(object):
             log_filename = f'{self._logger_name}.log'
         if log_file_size is None:
             log_file_size = nb_log_config_default.LOG_FILE_SIZE
+        if log_path is None:
+            log_path = nb_log_config_default.LOG_PATH or '/pythonlogs'
         if formatter_template is None:
             formatter_template = nb_log_config_default.FORMATTER_KIND
 
@@ -219,6 +231,8 @@ class LogManager(object):
         self._log_path = log_path
         self._log_filename = log_filename
         self._log_file_size = log_file_size
+        self._is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler = (nb_log_config_default.IS_USE_WATCHED_FILE_HANDLER_INSTEAD_OF_CUSTOM_CONCURRENT_ROTATING_FILE_HANDLER if is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler is undefind
+                                                                                                else is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler)
         self._mongo_url = mongo_url
         self._is_add_elastic_handler = is_add_elastic_handler
         self._is_add_kafka_handler = is_add_kafka_handler
@@ -288,20 +302,23 @@ class LogManager(object):
                 os.makedirs(self._log_path)
             log_file = os.path.join(self._log_path, self._log_filename)
             rotate_file_handler = None
-            if os_name == 'nt':
-                # 在win下使用这个ConcurrentRotatingFileHandler可以解决多进程安全切片，但性能损失惨重。
-                # 10进程各自写入10万条记录到同一个文件消耗15分钟。比不切片写入速度降低100倍。
-                rotate_file_handler = ConcurrentRotatingFileHandlerWithBufferInitiativeWindwos(log_file,
-                                                                                               maxBytes=self._log_file_size * 1024 * 1024,
-                                                                                               backupCount=nb_log_config_default.LOG_FILE_BACKUP_COUNT,
-                                                                                               encoding="utf-8")
-            elif os_name == 'posix':
-                # linux下可以使用ConcurrentRotatingFileHandler，进程安全的日志方式。
-                # 10进程各自写入10万条记录到同一个文件消耗100秒，还是比不切片写入速度降低10倍。因为每次检查切片大小和文件锁的原因。
-                rotate_file_handler = ConcurrentRotatingFileHandlerWithBufferInitiativeLinux(log_file,
-                                                                                             maxBytes=self._log_file_size * 1024 * 1024,
-                                                                                             backupCount=nb_log_config_default.LOG_FILE_BACKUP_COUNT,
-                                                                                             encoding="utf-8")
+            if self._is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler:
+                rotate_file_handler = WatchedFileHandler(log_file)
+            else:
+                if os_name == 'nt':
+                    # 在win下使用这个ConcurrentRotatingFileHandler可以解决多进程安全切片，但性能损失惨重。
+                    # 10进程各自写入10万条记录到同一个文件消耗15分钟。比不切片写入速度降低100倍。
+                    rotate_file_handler = ConcurrentRotatingFileHandlerWithBufferInitiativeWindwos(log_file,
+                                                                                                   maxBytes=self._log_file_size * 1024 * 1024,
+                                                                                                   backupCount=nb_log_config_default.LOG_FILE_BACKUP_COUNT,
+                                                                                                   encoding="utf-8")
+                elif os_name == 'posix':
+                    # linux下可以使用ConcurrentRotatingFileHandler，进程安全的日志方式。
+                    # 10进程各自写入10万条记录到同一个文件消耗100秒，还是比不切片写入速度降低10倍。因为每次检查切片大小和文件锁的原因。
+                    rotate_file_handler = ConcurrentRotatingFileHandlerWithBufferInitiativeLinux(log_file,
+                                                                                                 maxBytes=self._log_file_size * 1024 * 1024,
+                                                                                                 backupCount=nb_log_config_default.LOG_FILE_BACKUP_COUNT,
+                                                                                                 encoding="utf-8")
             self.__add_a_hanlder(rotate_file_handler)
 
         # REMIND 添加mongo日志。
@@ -331,17 +348,20 @@ class LogManager(object):
             self.__add_a_hanlder(CompatibleSMTPSSLHandler(**self._mail_handler_config.get_dict()))
 
 
-@lru_cache() # LogManager 本身也支持无限实例化
+@lru_cache()  # LogManager 本身也支持无限实例化
 def get_logger(name: str, *, log_level_int: int = None, is_add_stream_handler=True,
-               do_not_use_color_handler=None, log_path='/pythonlogs',
+               do_not_use_color_handler=None, log_path=None,
                log_filename=None, log_file_size: int = None,
+               is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler=undefind,
                mongo_url=None, is_add_elastic_handler=False, is_add_kafka_handler=False,
                ding_talk_token=None, ding_talk_time_interval=60,
                mail_handler_config: MailHandlerConfig = MailHandlerConfig(), is_add_mail_handler=False,
                formatter_template: int = None) -> logging.Logger:
     """
     重写一遍，是为了更好的pycharm自动补全，所以不用**kwargs的写法。
-    如果太喜欢函数调用了，可以使用这种
+    如果太喜欢函数调用了，可以使用这种.
+    get_logger_and_add_handlers是LogManager类最常用的公有方法，其他方法使用场景的频率比较低，
+    但如果要使用那些低频率功能，还是要亲自调用LogManger类，而不是仅仅只了解此函数的用法。
        :param name: 日志命名空间，重要。
        :param log_level_int: 日志输出级别，设置为 1 2 3 4 5，分别对应原生logging.DEBUG(10)，logging.INFO(20)，
        logging.WARNING(30)，logging.ERROR(40),logging.CRITICAL(50)级别，现在可以直接用10 20 30 40 50了，兼容了。
@@ -351,6 +371,8 @@ def get_logger(name: str, *, log_level_int: int = None, is_add_stream_handler=Tr
        :param log_path: 设置存放日志的文件夹路径
        :param log_filename: 日志的名字，仅当log_path和log_filename都不为None时候才写入到日志文件。
        :param log_file_size :日志大小，单位M，默认100M
+       :param is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler :是否使用watched_file_handler作为文件日志，
+              这个需要在linux配合lograte才能切割日志，win下不行，不推荐使用此方式来写文件日志切割。
        :param mongo_url : mongodb的连接，为None时候不添加mongohandler
        :param is_add_elastic_handler: 是否记录到es中。
        :param is_add_kafka_handler: 日志是否发布到kafka。
@@ -449,5 +471,3 @@ class LoggerLevelSetterMixin:
             very_nb_print(e)
 
         return self
-
-

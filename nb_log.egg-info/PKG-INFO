@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: nb-log
-Version: 3.4
+Version: 3.7
 Summary: very sharp color display,monkey patch bulitin print  and high-performance multiprocess safe roating file handler,other handlers includeing dintalk ,email,kafka,elastic and so on 
 Home-page: UNKNOWN
 Author: bfzs
@@ -9,6 +9,12 @@ Maintainer: ydf
 Maintainer-email: ydf0509@sohu.com
 License: BSD License
 Description: ## 1. pip install nb_log
+        
+        ### 解释一下什么叫pycharm下的点击自动跳转功能
+        
+        ![Image text](https://i.niupic.com/images/2020/07/30/8tka.png)
+        
+        
         ```
         very sharp color display,monkey patch bulitin print  
         and high-performance multiprocess safe roating file handler,
@@ -16,6 +22,21 @@ Description: ## 1. pip install nb_log
         
         0) 自动转换print效果，再也不怕有人在项目中随意print，导致很难找到是从哪里冒出来的print。
         只要import nb_log，项目所有地方的print自动现型并在控制台可点击几精确跳转到print的地方。
+        
+        在项目里面的几百个文件中疯狂print真的让人很生气，一个run.py运行起来几百个py文件，
+        每个文件print 七八次，到底自己想看想关心的print是在控制台的哪一行呢，找到老眼昏花都找不到。
+        比如打印x变量的值，有人是为了省代码直接 print(x)，而没有多打几个字母使用print("x的值是：",x)，
+        这样打印出来的x变量，根本无法通过全局查找找到打印x变量是在什么py文件的哪一行。
+        
+        有人说把之前的print全部用#注释不就好了，那这要全局找找print，一个一个的修改，一个10万行项目，
+        就算平均100行有一个print关键字，那起码也得有1000个print关键字吧，一个个的修改那要改到猴年马月呢。
+        
+        只有使用nb_log，才能让一切print妖魔鬼怪自动现形。
+        
+        另外，在正式项目或工具类甚至做得包里面，疯狂print真的很low，可以参考大神的三方包，从来都没直接print的不存在的，
+        他们都是用的日志。
+        日志比print灵活多了，对命名空间的控制、级别过滤控制、模板自定义、能记录到的地方扩展性很强远强过print的只有控制台。
+        
         
         1） 兼容性
         使用的是python的内置logging封装的，返回的logger对象的类型是py官方内置日志的Logger类型，兼容性强，
@@ -60,6 +81,8 @@ Description: ## 1. pip install nb_log
         
         明明只warning了一次，但实际会造成 啦啦啦 在控制台打印3次。
         使用nb_log，对同一命名空间的日志，可以无惧反复添加同类型handler，不会重复记录。
+        
+        关于重复记录的例子，更惨的例子在第9章的，直接把机器cpu性能耗尽，磁盘弄爆炸。
         
         
         5）支持日志自定义，运行此包后，会自动在你的python项目根目录中生成nb_log_config.py文件，按说明修改。
@@ -124,6 +147,44 @@ Description: ## 1. pip install nb_log
             [Process(target=f).start() for _ in range(10)]
         ```
         
+        ## 3.3 演示文件大小切割在多进程下的错误例子,
+        
+        ```
+        注意说的是多进程，任何handlers在多线程下都没有问题，任何handlers在记录时候都加了线程锁了，完全不用考虑多线程。
+        线程锁不能跨进程特别是跨不同批次启动的脚本运行的解释器。
+        所以说的是多进程，不是多线程。
+        
+        下面这段代码会疯狂报错。因为每达到100kb就想切割，多个文件句柄引用了同一个文件，某个进程想备份改文件名，别的进程不知情。
+        
+        解决这种问题，有人会说用进程锁，那是不行的，如果把xx.py分别启动两次，没有共同的父子进程，属于跨解释器的，进程锁是不行的。
+        
+        nb_log是采用的文件锁，文件锁在linux性能比较好，在win很差劲，导致日志拖累真个代码的性能，所以nb_log是采用把每1秒内的日志
+        聚合起来，写入一次文件，从而大幅减少了加锁解锁次数，在win上疯狂快速写日志的性能提高了100倍，在linux上也提高了10倍左右的性能。
+        ```
+        
+        
+        ```python
+        
+        from logging.handlers import  RotatingFileHandler
+        import logging
+        from multiprocessing import Process
+        
+        logger = logging.getLogger('test_raotating_filehandler')
+        
+        logger.addHandler(RotatingFileHandler(filename='testratationg.log',maxBytes=1000 *100,backupCount=10))
+        
+        def f():
+            while 1:
+                logger.warning('测试多进程切片出错不'*20)
+        
+        if __name__ == '__main__':
+            for _ in range(10):
+                Process(target=f).start()
+        ```
+        
+        ![Image text](http://i2.tiimg.com/699839/d8167f426045b872.png)
+        
+        
         ## 4 钉钉日志
         ```python
         from nb_log import LogManager
@@ -161,7 +222,7 @@ Description: ## 1. pip install nb_log
         
         DEFAULUT_USE_COLOR_HANDLER = True  # 是否默认使用有彩的日志。
         DISPLAY_BACKGROUD_COLOR_IN_CONSOLE = True  # 在控制台是否显示彩色块状的日志。为False则不使用大块的背景颜色。
-        AUTO_PATCH_PRINT = True  # 是否自动打print的猴子补丁，如果打了后指不定，print自动变色和可点击跳转。
+        AUTO_PATCH_PRINT = True  # 是否自动打print的猴子补丁，如果打了猴子补丁，print自动变色和可点击跳转。
         WARNING_PYCHARM_COLOR_SETINGS = True
         
         DEFAULT_ADD_MULTIPROCESSING_SAFE_ROATING_FILE_HANDLER = False  # 是否默认同时将日志记录到记log文件记事本中。
@@ -292,12 +353,72 @@ Description: ## 1. pip install nb_log
         
         如果不先学习经典设计模式，每次看包的源码，需要多浪费很多时间看他怎么设计实现的，不懂设计模式，会觉得太难了看着就放弃了。
         
-        在python日志的使用和理解上，能够和我打成平手的，国内没有几人。 
+        在python日志的理解和使用上，国内能和我打成平手的没有几人。
         
         
+        ## 9.演示一个由于不好好理解观察者模式，封装的日志类在调用时候十分惨烈的例子，惨烈程度达到10级。
+        
+        这个是真实发生的例子。
+        
+        这个例子是为了记录10万次日志到控制台和文件，就算python性能很差，就这个例子而言，预期耗时肯定是需要10秒以内才算合格。
+        
+        看起来10秒内可以运行完成，实际上1周内能运行结束这个代码，我愿意吃10斤翔。
+        
+        ```python
+        """
+        演示重复，由于封装错误的类造成的。模拟一个封装严重失误错误的封装例子。
+        
+        看起来10秒内可以运行完成，实际上1周内能运行结束这个代码，我愿意吃10斤翔。
+        
+        这个代码惨烈程度达到10级。明明是想记录10000次日志，结果却记录了 10000 * 10001 /2 次。
+        如果把f函数调用100万次，那么控制台和文件将会各记录5000亿次，日志会把代码拖累死。
+        不好好理解观察者模式有多惨烈。因为反复添加观察者（handler）,
+        导致第1次调用记录1次，第二次调用时候记录2次，第10次调用时候记录10次，这成了高斯求和算法了。
+        
+        这种类似的封装造成的后果可想而知，长期部署运行后，不仅项目代码性能几乎被日志占了99%，还造成磁盘被弄爆炸。
+        """
+        import logging
+        import time
         
         
+        class LogUtil:
+            def __init__(self):
+                self.logger = logging.getLogger('a')
+                self.logger.setLevel(logging.DEBUG)
+                self._add_stream_handler()
+                self._add_file_handler()
         
+            def _add_stream_handler(self):
+                sh = logging.StreamHandler()
+                sh.setFormatter(logging.Formatter(fmt="%(asctime)s-%(name)s-%(levelname)s-%(message)s"))
+                self.logger.addHandler(sh)
+        
+            def _add_file_handler(self):
+                fh = logging.FileHandler('a.log')
+                fh.setFormatter(logging.Formatter(fmt="%(asctime)s-%(name)s-%(levelname)s-%(message)s"))
+                self.logger.addHandler(fh)
+        
+            def debug(self, msg):
+                self.logger.debug(msg)
+        
+            def info(self, msg):
+                self.logger.info(msg)
+        
+        
+        def f(x):
+            log = LogUtil()  # 重点是这行，写在了函数内部。既没有做日志命名空间的handlers判断控制，封装的类本身也没写单利或者享元模式。
+            log.debug(x)
+        
+        
+        t1 = time.time()
+        for i in range(100000):
+            f(i)
+        
+        print(time.time() - t1)
+        
+        ```
+        
+        ![Total visitor](https://visitor-count-badge.herokuapp.com/total.svg?repo_id=xxxxxsadsadwqeasds)
         
 Keywords: logging,logger,multiprocess file handler,color handler
 Platform: all
