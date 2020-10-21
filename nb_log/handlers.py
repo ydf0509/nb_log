@@ -442,7 +442,7 @@ class ColorHandler(logging.Handler):
         finally:
             self.release()
 
-    def __build_color_msg_with_backgroud_color0(self, record_level, assist_msg, effective_information_msg):
+    def __build_color_msg_with_backgroud_color000(self, record_level, assist_msg, effective_information_msg):
 
         if record_level == 10:
             # msg_color = ('\033[0;32m%s\033[0m' % msg)  # 绿色
@@ -465,7 +465,7 @@ class ColorHandler(logging.Handler):
         return msg_color
 
     @staticmethod
-    def __build_color_msg_with_no_backgroud_color0(record_level, assist_msg, effective_information_msg):
+    def __build_color_msg_with_no_backgroud_color000(record_level, assist_msg, effective_information_msg):
 
         if record_level == 10:
             # msg_color = ('\033[0;32m%s\033[0m' % msg)  # 绿色
@@ -508,7 +508,7 @@ class ColorHandler(logging.Handler):
         record_copy.msg = f'\033{background_color}{record_copy.msg}\033[0m'
         msg_color_without = self.format(record_copy)
         # print(repr(msg_color))
-        if isinstance(self.formatter, JsonFormatter) and background_color:  # json会把/033 转义成\u001b
+        if isinstance(self.formatter, JsonFormatter) and background_color:  # json会把/033 转义成\u001b,导致颜色显示不出来。
             msg_color_without = msg_color_without.replace(rf'\u001b{background_color}', f'\033{background_color}')
             msg_color_without = msg_color_without.replace(r'\u001b[0m', f'\033[0m\033{complete_color}')
         msg_color = f'\033{complete_color}{msg_color_without}\033[0m'
@@ -758,6 +758,7 @@ class CompatibleSMTPSSLHandler(handlers.SMTPHandler):
             else:
                 very_nb_print(f' 邮件发送太频繁间隔不足60分钟，此次不发送这个邮件内容： {record.msg}     ')
 
+    # noinspection PyUnresolvedReferences
     def __emit(self, record):
         # noinspection PyBroadException
         try:
