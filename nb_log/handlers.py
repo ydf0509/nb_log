@@ -10,6 +10,7 @@ import json
 import time
 from collections import OrderedDict
 from queue import Queue, Empty
+# noinspection PyPackageRequirements
 from kafka import KafkaProducer
 from elasticsearch import Elasticsearch, helpers
 from threading import Lock, Thread
@@ -18,7 +19,10 @@ import requests
 import logging
 from logging import handlers
 from concurrent_log_handler import ConcurrentRotatingFileHandler  # 需要安装。concurrent-log-handler==0.9.1
-
+# noinspection PyUnresolvedReferences
+from logging.handlers import WatchedFileHandler
+# noinspection PyPackageRequirements
+from pythonjsonlogger.jsonlogger import JsonFormatter
 from nb_log import nb_log_config_default
 from nb_log import nb_print
 
@@ -389,6 +393,7 @@ class ElasticHandler(logging.Handler):
             self.handleError(record)
 
 
+# noinspection PyPep8Naming
 def formatMessage(self, record: logging.LogRecord):
     # print(record.__dict__)
     if hasattr(record, 'for_segmentation_color'):
@@ -399,7 +404,7 @@ def formatMessage(self, record: logging.LogRecord):
     return self._style.format(record)
 
 
-logging.Formatter.formatMessage = formatMessage
+# logging.Formatter.formatMessage = formatMessage
 
 
 class ColorHandler(logging.Handler):
@@ -437,7 +442,7 @@ class ColorHandler(logging.Handler):
         finally:
             self.release()
 
-    def __build_color_msg_with_backgroud_color(self, record_level, assist_msg, effective_information_msg):
+    def __build_color_msg_with_backgroud_color0(self, record_level, assist_msg, effective_information_msg):
 
         if record_level == 10:
             # msg_color = ('\033[0;32m%s\033[0m' % msg)  # 绿色
@@ -459,7 +464,8 @@ class ColorHandler(logging.Handler):
             msg_color = f'{assist_msg}  {effective_information_msg}'
         return msg_color
 
-    def __build_color_msg_with_no_backgroud_color(self, record_level, assist_msg, effective_information_msg):
+    @staticmethod
+    def __build_color_msg_with_no_backgroud_color0(record_level, assist_msg, effective_information_msg):
 
         if record_level == 10:
             # msg_color = ('\033[0;32m%s\033[0m' % msg)  # 绿色
@@ -481,6 +487,56 @@ class ColorHandler(logging.Handler):
             msg_color = f'{assist_msg}  {effective_information_msg}'
         return msg_color
 
+    def __build_color_msg_with_backgroud_color(self, record_level, record_copy: logging.LogRecord, ):
+        background_color = ''
+        complete_color = ''
+        if record_level == 10:
+            background_color = f'[0;{self._word_color};42m'
+            complete_color = f'[0;32m'
+        elif record_level == 20:
+            background_color = f'[0;{self._word_color};46m'
+            complete_color = f'[0;36m'
+        elif record_level == 30:
+            background_color = f'[0;{self._word_color};43m'
+            complete_color = f'[0;33m'
+        elif record_level == 40:
+            background_color = f'[0;{self._word_color};45m'
+            complete_color = f'[0;35m'
+        elif record_level == 50:
+            background_color = f'[0;{self._word_color};41m'
+            complete_color = f'[0;31m'
+        record_copy.msg = f'\033{background_color}{record_copy.msg}\033[0m'
+        msg_color_without = self.format(record_copy)
+        # print(repr(msg_color))
+        if isinstance(self.formatter, JsonFormatter) and background_color:  # json会把/033 转义成\u001b
+            msg_color_without = msg_color_without.replace(rf'\u001b{background_color}', f'\033{background_color}')
+            msg_color_without = msg_color_without.replace(r'\u001b[0m', f'\033[0m\033{complete_color}')
+        msg_color = f'\033{complete_color}{msg_color_without}\033[0m'
+        # print(repr(msg_color))
+        return msg_color
+
+    def __build_color_msg_with_no_backgroud_color(self, record_level, record_copy: logging.LogRecord, ):
+        complete_msg = self.format(record_copy)
+        if record_level == 10:
+            # msg_color = ('\033[0;32m%s\033[0m' % msg)  # 绿色
+            # print(msg1)
+            msg_color = f'\033[0;32m{complete_msg}\033[0m'  # 绿色
+        elif record_level == 20:
+            # msg_color = ('\033[%s;%sm%s\033[0m' % (self._display_method, self.bule, msg))  # 青蓝色 36    96
+            msg_color = f'\033[0;36m{complete_msg}\033[0m'
+        elif record_level == 30:
+            # msg_color = ('\033[%s;%sm%s\033[0m' % (self._display_method, self.yellow, msg))
+            msg_color = f'\033[0;33m{complete_msg}\033[0m'
+        elif record_level == 40:
+            # msg_color = ('\033[%s;35m%s\033[0m' % (self._display_method, msg))  # 紫红色
+            msg_color = f'\033[0;35m{complete_msg}\033[0m'
+        elif record_level == 50:
+            # msg_color = ('\033[%s;31m%s\033[0m' % (self._display_method, msg))  # 血红色
+            msg_color = f'\033[0;31m{complete_msg}\033[0m'
+        else:
+            msg_color = f'{complete_msg}'
+        return msg_color
+
     def emit(self, record: logging.LogRecord):
         """
         Emit a record.
@@ -496,19 +552,20 @@ class ColorHandler(logging.Handler):
         try:
             # very_nb_print(record)
             # record.message = record.getMessage()
-            effective_information_msg = record.getMessage()  # 不能用msg字段，例如有的包的日志格式化还有其他字段
-            record_copy = copy.copy(record)
+            # effective_information_msg = record.getMessage()  # 不能用msg字段，例如有的包的日志格式化还有其他字段
+            record_copy = copy.copy(record)  # copy是因为，不要因为要屏幕彩色日志而影响例如文件日志 叮叮日志等其他handler的格式。
             record_copy.for_segmentation_color = '彩色分段标志属性而已'
             # del record_copy.msg
-            assist_msg = self.format(record_copy)
+            # assist_msg = self.format(record_copy)
             # print(f'**  {assist_msg}  ** ')
             stream = self.stream
+            # print(assist_msg)
+            # print(effective_information_msg)
             if nb_log_config_default.DISPLAY_BACKGROUD_COLOR_IN_CONSOLE:
-                msg_color = self.__build_color_msg_with_backgroud_color(record.levelno, assist_msg,
-                                                                        effective_information_msg)
+                msg_color = self.__build_color_msg_with_backgroud_color(record.levelno, record_copy,
+                                                                        )
             else:
-                msg_color = self.__build_color_msg_with_no_backgroud_color(record.levelno, assist_msg,
-                                                                           effective_information_msg)
+                msg_color = self.__build_color_msg_with_no_backgroud_color(record.levelno, record_copy)
             # stream.write(msg_color)
             # stream.write(self.terminator)
             # self.flush()
@@ -664,6 +721,7 @@ class CompatibleSMTPSSLHandler(handlers.SMTPHandler):
         """
         # noinspection PyCompatibility
         # very_nb_print(credentials)
+        # noinspection PyTypeChecker
         super().__init__(mailhost, fromaddr, toaddrs, subject,
                          credentials, secure, timeout)
         self._is_use_ssl = is_use_ssl
