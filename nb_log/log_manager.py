@@ -28,6 +28,20 @@ from nb_log import nb_log_config_default
 def revision_call_handlers(self, record):  # 对logging标准模块打猴子补丁。主要是使父命名空间的handler不重复记录当前命名空间日志已有种类的handler。
     """
     重要。这可以使同名logger或父logger随意添加同种类型的handler，确保不会重复打印。
+    例如对"a"命名空间加上streamhandler，对"a.b"命名空间也加上streamhandler，则"a.b"命名空间的日志会被打印两次
+    例子如下
+
+    import logging
+
+    logger1 = logging.getLogger('a')
+    logger1.addHandler(logging.StreamHandler())
+
+    logger2 = logging.getLogger('a.b')
+    logger2.addHandler(logging.StreamHandler())
+
+    logger2.error(666)
+
+    明明只想打印一次666，结果却答应2次了。因为a.b的父命名空间的日志也加了streamhandler。
 
     :param self:
     :param record:
@@ -77,7 +91,7 @@ def revision_add_handler(self, hdlr):  # 从添加源头阻止同一个logger添
     """
     Add the specified handler to this logger.
     """
-    logging._acquireLock()
+    logging._acquireLock() # noqa
 
     try:
         """ 官方的
@@ -97,7 +111,7 @@ def revision_add_handler(self, hdlr):  # 从添加源头阻止同一个logger添
         if hdlr_type not in hdlrx_type_set:
             self.handlers.append(hdlr)
     finally:
-        logging._releaseLock()
+        logging._releaseLock() # noqa
 
 
 logging.Logger.callHandlers = revision_call_handlers  # 打猴子补丁。
@@ -405,6 +419,9 @@ def get_logger_with_filehanlder(name: str) -> logging.Logger:
 
 
 class LoggerMixin(object):
+    """
+    主要是生成把类名作为日志命名空间的logger，方便被混入类直接使用self.logger，不需要手动实例化get_logger。
+    """
     subclass_logger_dict = {}
 
     @property

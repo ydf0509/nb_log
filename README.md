@@ -84,9 +84,10 @@ logger.warning('啦啦啦')
 ###### 2.2）控制台日志根据日志级别自动变色。（支持配置文件关闭彩色或者关闭背景色块）
 
 ```python
-from nb_log import LogManager
+from nb_log import LogManager,get_logger
 
-logger = LogManager('lalala').get_logger_and_add_handlers()
+# logger = LogManager('lalala').get_logger_and_add_handlers()
+logger = get_logger('lalala') # 这个和上面的效果一样，但上面的LogManager还有其他公有方法可以使用。
 
 logger.debug('绿色')
 logger.info('蓝色')
@@ -119,14 +120,17 @@ nb_log是基于自动批量聚合，从而减少写入次数（但文件日志�
 
 ```python
 from multiprocessing import Process
-from nb_log import LogManager
+from nb_log import LogManager,get_logger
 
 #指定log_filename不为None 就自动写入文件了，并且默认使用的是多进程安全的切割方式的filehandler。
 #默认都添加了控制台日志，如果不想要控制台日志，设置is_add_stream_handler=False
 #为了保持方法入场数量少，具体的切割大小和备份文件个数有默认值，
 #如果需要修改切割大小和文件数量，在当前python项目根目录自动生成的nb_log_config.py文件中指定。
-logger = LogManager('ha').get_logger_and_add_handlers(is_add_stream_handler=True,
-log_filename='ha.log')
+
+#logger = LogManager('ha').get_logger_and_add_handlers(is_add_stream_handler=True,
+#log_filename='ha.log')
+#get_logger这个和上面一句一样。但LogManager不只有get_logger_and_add_handlers一个公有方法。
+logger = get_logger(is_add_stream_handler=True,log_filename='ha.log') 
 
 def f():
     for i in range(1000000000):
@@ -201,14 +205,63 @@ nb_log_config.py的内容如下，默认都是用#注释了，如果放开某项
 ```
 
 ```python
+"""
+此文件nb_log_config.py是自动生成到python项目的根目录的。
+在这里面写的变量会覆盖此文件nb_log_config_default中的值。对nb_log包进行默认的配置。
+但最终配置方式是由get_logger_and_add_handlers方法的各种传参决定，如果方法相应的传参为None则使用这里面的配置。
+"""
+# noinspection PyUnresolvedReferences
 import logging
+# noinspection PyUnresolvedReferences
+from pathlib import Path  # noqa
+import socket
+
+from pythonjsonlogger.jsonlogger import JsonFormatter
+
+
+def get_host_ip():
+    ip = ''
+    host_name = ''
+    # noinspection PyBroadException
+    try:
+        sc = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sc.connect(('8.8.8.8', 80))
+        ip = sc.getsockname()[0]
+        host_name = socket.gethostname()
+        sc.close()
+    except Exception:
+        pass
+    return ip, host_name
+
+
+computer_ip, computer_name = get_host_ip()
+
+
+class JsonFormatterJumpAble(JsonFormatter):
+    def add_fields(self, log_record, record, message_dict):
+        # log_record['jump_click']   = f"""File '{record.__dict__.get('pathname')}', line {record.__dict__.get('lineno')}"""
+        log_record[f"{record.__dict__.get('pathname')}:{record.__dict__.get('lineno')}"] = ''  # 加个能点击跳转的字段。
+        log_record['ip'] = computer_ip
+        log_record['host_name'] = computer_name
+        super().add_fields(log_record, record, message_dict)
+        if 'for_segmentation_color' in log_record:
+            del log_record['for_segmentation_color']
+
+
+DING_TALK_TOKEN = '3dd0eexxxxxadab014bd604XXXXXXXXXXXX'  # 钉钉报警机器人
+
+EMAIL_HOST = ('smtp.sohu.com', 465)
+EMAIL_FROMADDR = 'aaa0509@sohu.com'  # 'matafyhotel-techl@matafy.com',
+EMAIL_TOADDRS = ('cccc.cheng@silknets.com', 'yan@dingtalk.com',)
+EMAIL_CREDENTIALS = ('aaa0509@sohu.com', 'abcdefg')
+
 ELASTIC_HOST = '127.0.0.1'
 ELASTIC_PORT = 9200
 
 KAFKA_BOOTSTRAP_SERVERS = ['192.168.199.202:9092']
 ALWAYS_ADD_KAFKA_HANDLER_IN_TEST_ENVIRONENT = False
 
-MONGO_URL = 'mongodb://myUserAdmin:mima@127.0.0.1:27016/admin'
+MONGO_URL = 'mongodb://myUserAdmin:mimamiama@127.0.0.1:27016/admin'
 
 DEFAULUT_USE_COLOR_HANDLER = True  # 是否默认使用有彩的日志。
 DISPLAY_BACKGROUD_COLOR_IN_CONSOLE = True  # 在控制台是否显示彩色块状的日志。为False则不使用大块的背景颜色。
@@ -218,6 +271,9 @@ WARNING_PYCHARM_COLOR_SETINGS = True
 DEFAULT_ADD_MULTIPROCESSING_SAFE_ROATING_FILE_HANDLER = False  # 是否默认同时将日志记录到记log文件记事本中。
 LOG_FILE_SIZE = 100  # 单位是M,每个文件的切片大小，超过多少后就自动切割
 LOG_FILE_BACKUP_COUNT = 3
+LOG_PATH = '/pythonlogs'  # 默认的日志文件夹
+# LOG_PATH = Path(__file__).absolute().parent / Path("nblogpath")
+IS_USE_WATCHED_FILE_HANDLER_INSTEAD_OF_CUSTOM_CONCURRENT_ROTATING_FILE_HANDLER = False  # 需要依靠外力lograte来切割日志，watchedfilehandler性能比此包自定义的日志切割handler写入文件速度慢很多。
 
 LOG_LEVEL_FILTER = logging.DEBUG  # 默认日志级别，低于此级别的日志不记录了。例如设置为INFO，那么logger.debug的不会记录，只会记录logger.info以上级别的。
 RUN_ENV = 'test'
@@ -240,10 +296,13 @@ FORMATTER_DICT = {
         "%Y-%m-%d %H:%M:%S"),  # 我认为的最好的模板,推荐
     6: logging.Formatter('%(name)s - %(asctime)-15s - %(filename)s - %(lineno)d - %(levelname)s: %(message)s',
                          "%Y-%m-%d %H:%M:%S"),
-    7: logging.Formatter('%(levelname)s - %(filename)s - %(lineno)d - %(message)s',"%Y-%m-%d %H:%M:%S"), # 一个只显示简短文件名和所处行数的日志模板
+    7: logging.Formatter('%(asctime)s - %(name)s - "%(filename)s:%(lineno)d" - %(levelname)s - %(message)s', "%Y-%m-%d %H:%M:%S"),  # 一个只显示简短文件名和所处行数的日志模板
+
+    8: JsonFormatterJumpAble('%(asctime)s - %(name)s - %(levelname)s - %(message)s - "%(filename)s %(lineno)d -" ', "%Y-%m-%d %H:%M:%S", json_ensure_ascii=False)  # 这个是json日志，方便分析.
 }
 
 FORMATTER_KIND = 5  # 如果get_logger_and_add_handlers不指定日志模板，则默认选择第几个模板
+
 ```
 
 ## 7. 各種日志截圖

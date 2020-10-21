@@ -1,5 +1,9 @@
-print(''' 
+import logging
 
-"F:/coding2/nb_log/tests/test_requests.py:12"
+logger1 = logging.getLogger('a')
+logger1.addHandler(logging.StreamHandler())
 
-''')
+logger2 = logging.getLogger('a.b')
+logger2.addHandler(logging.StreamHandler())
+
+logger2.error(1)
