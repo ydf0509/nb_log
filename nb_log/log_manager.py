@@ -206,7 +206,8 @@ class LogManager(object):
        :param log_level_int: 日志输出级别，设置为 1 2 3 4 5，分别对应原生logging.DEBUG(10)，logging.INFO(20)，logging.WARNING(30)，logging.ERROR(40),logging.CRITICAL(50)级别，现在可以直接用10 20 30 40 50了，兼容了。
        :param is_add_stream_handler: 是否打印日志到控制台
        :param do_not_use_color_handler :是否禁止使用color彩色日志
-       :param log_path: 设置存放日志的文件夹路径
+       :param log_path: 设置存放日志的文件夹路径,如果不设置，则取nb_log_config.LOG_PATH，如果配置中也没指定则自动在代码所在磁盘的根目录创建/pythonlogs文件夹，
+              非windwos下要注意账号权限问题(如果python没权限在根目录建/pythonlogs，则需要手动先创建好)
        :param log_filename: 日志的名字，仅当log_path和log_filename都不为None时候才写入到日志文件。
        :param log_file_size :日志大小，单位M，默认100M
        :param is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler :是否使用watched_file_handler作为文件日志，
@@ -382,7 +383,8 @@ def get_logger(name: str, *, log_level_int: int = None, is_add_stream_handler=Tr
 
        :param is_add_stream_handler: 是否打印日志到控制台
        :param do_not_use_color_handler :是否禁止使用color彩色日志
-       :param log_path: 设置存放日志的文件夹路径
+       :param log_path: 设置存放日志的文件夹路径,如果不设置，则取nb_log_config.LOG_PATH，如果配置中也没指定则自动在代码所在磁盘的根目录创建/pythonlogs文件夹，
+              非windwos下要注意账号权限问题(如果python没权限在根目录建/pythonlogs，则需要手动先创建好)
        :param log_filename: 日志的名字，仅当log_path和log_filename都不为None时候才写入到日志文件。
        :param log_file_size :日志大小，单位M，默认100M
        :param is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler :是否使用watched_file_handler作为文件日志，
