@@ -12,7 +12,8 @@ if nb_log_config_default.WARNING_PYCHARM_COLOR_SETINGS:
         
         2)使用xshell或finashell工具连接linux也可以自定义主题颜色，默认使用shell连接工具的颜色也可以。
         
-        颜色效果如连接 https://i.niupic.com/images/2020/03/24/76zi.png
+        颜色效果如连接 https://i.niupic.com/images/2020/11/04/8WZf.png
+        
         """)
 
 simple_logger = LogManager('simple').get_logger_and_add_handlers()
