@@ -14,6 +14,8 @@ if nb_log_config_default.WARNING_PYCHARM_COLOR_SETINGS:
         
         颜色效果如连接 https://i.niupic.com/images/2020/11/04/8WZf.png
         
+        在当前项目根目录的 nb_log_config.py 中可以修改当get_logger方法不传参时后的默认日志行为。
+        
         """)
 
 simple_logger = LogManager('simple').get_logger_and_add_handlers()
