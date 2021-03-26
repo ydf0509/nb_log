@@ -8,7 +8,9 @@
 import sys
 import time
 import traceback
-from nb_log import nb_log_config_default
+
+print_raw = print
+
 
 # noinspection PyProtectedMember,PyUnusedLocal,PyIncorrectDocstring
 def nb_print(*args, sep=' ', end='\n', file=None):
@@ -20,22 +22,23 @@ def nb_print(*args, sep=' ', end='\n', file=None):
     args = (str(arg) for arg in args)  # REMIND 防止是数字不能被join
     if file == sys.stderr:
         sys.stderr.write(sep.join(args))  # 如 threading 模块第926行，打印线程错误，希望保持原始的红色错误方式，不希望转成蓝色。
-        sys.stderr.flush()
 
-    else:
+    elif file in [sys.stdout, None]:
         # 获取被调用函数在被调用时所处代码行数
         line = sys._getframe().f_back.f_lineno
         # 获取被调用函数所在模块文件名
         file_name = sys._getframe(1).f_code.co_filename
         # sys.stdout.write(f'"{__file__}:{sys._getframe().f_lineno}"    {x}\n')
-        if nb_log_config_default.DISPLAY_BACKGROUD_COLOR_IN_CONSOLE:
+        if True:
             sys.stdout.write(
                 f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   \033[0;30;44m{sep.join(args)}\033[0m{end} \033[0m')  # 36  93 96 94
         else:
             sys.stdout.write(
                 f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {sep.join(args)} {end} \033[0m')  # 36  93 96 94
         # sys.stdout.write(f'\033[0;30;44m"{file_name}:{line}"  {time.strftime("%H:%M:%S")}  {"".join(args)}\033[0m\n')
-        sys.stdout.flush()
+    else:  # 例如traceback模块的print_exception函数 file的入参是   <_io.StringIO object at 0x00000264F2F065E8>，必须把内容重定向到这个对象里面，否则exception日志记录不了错误堆栈。
+        print_raw(*args, sep=sep, end=end, file=file)
+
 
 # noinspection PyPep8,PyUnusedLocal
 def print_exception(etype, value, tb, limit=None, file=None, chain=True):
@@ -90,7 +93,7 @@ def patch_print():
         """
         # noinspection PyUnresolvedReferences
         __builtins__['print'] = nb_print
-    traceback.print_exception = print_exception
+    # traceback.print_exception = print_exception  # file类型为 <_io.StringIO object at 0x00000264F2F065E8> 单独判断，解决了，不要加这个。
 
 
 def common_print(*args, sep=' ', end='\n', file=None):
@@ -107,10 +110,15 @@ def reverse_patch_print():
     提供一个反猴子补丁，恢复print原状
     :return:
     """
+    # try:
+    #     __builtins__.print = common_print
+    # except AttributeError:
+    #     __builtins__['print'] = common_print
+
     try:
-        __builtins__.print = common_print
+        __builtins__.print = print_raw
     except AttributeError:
-        __builtins__['print'] = common_print
+        __builtins__['print'] = print_raw
 
 
 if __name__ == '__main__':
@@ -124,3 +132,9 @@ if __name__ == '__main__':
 
     reverse_patch_print()
     common_print('hi')
+
+    import logging
+    try:
+        1/0
+    except Exception as e:
+        logging.exception(e)
