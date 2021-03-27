@@ -83,6 +83,7 @@ def revision_call_handlers(self, record):  # 对logging标准模块打猴子补�
         elif logging.raiseExceptions and not self.manager.emittedNoHandlerWarning:
             sys.stderr.write("No handlers could be found for logger"
                              " \"%s\"\n" % self.name)
+            sys.stderr.flush()
             self.manager.emittedNoHandlerWarning = True
 
 

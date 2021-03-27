@@ -22,6 +22,7 @@ def nb_print(*args, sep=' ', end='\n', file=None):
     args = (str(arg) for arg in args)  # REMIND 防止是数字不能被join
     if file == sys.stderr:
         sys.stderr.write(sep.join(args))  # 如 threading 模块第926行，打印线程错误，希望保持原始的红色错误方式，不希望转成蓝色。
+        sys.stderr.flush()
 
     else:
         # 获取被调用函数在被调用时所处代码行数
@@ -35,6 +36,7 @@ def nb_print(*args, sep=' ', end='\n', file=None):
         else:
             sys.stdout.write(
                 f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {sep.join(args)} {end} \033[0m')  # 36  93 96 94
+        sys.stdout.flush()
         # sys.stdout.write(f'\033[0;30;44m"{file_name}:{line}"  {time.strftime("%H:%M:%S")}  {"".join(args)}\033[0m\n')
 
 
@@ -157,12 +159,14 @@ def use_config_form_nb_log_config_module():
         msg = f'nb_log包 读取到\n "{m.__file__}:1" 文件里面的变量作为优先配置了\n'
         # nb_print(msg)
         sys.stdout.write(f'{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {msg} \n \033[0m')
+        sys.stdout.flush()
         for var_namex, var_valuex in m.__dict__.items():
             if var_namex.isupper():
                 setattr(nb_log_config_default, var_namex, var_valuex)
     except ModuleNotFoundError:
         msg = f'''在你的项目根目录下生成了 \n "{Path(sys.path[1]) / Path('nb_log_config.py')}:1" 的nb_log包的日志配置文件，快去看看并修改一些自定义配置吧'''
         sys.stdout.write(f'{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {msg} \n \033[0m')
+        sys.stdout.flush()
         auto_creat_config_file_to_project_root_path()
 
 
