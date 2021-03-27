@@ -63,8 +63,11 @@ def print_exception(etype, value, tb, limit=None, file=None, chain=True):
         # print(line, file=file, end="")
         if file != sys.stderr:
             sys.stderr.write(f'{line} \n')
+            sys.stderr.flush()
         else:
             sys.stdout.write(f'{line} \n')
+            sys.stdout.flush()
+
 
 
 # print = nb_print
@@ -103,8 +106,11 @@ def common_print(*args, sep=' ', end='\n', file=None):
     args = (str(arg) for arg in args)  # REMIND 防止是数字不能被join
     if file == sys.stderr:
         sys.stderr.write(sep.join(args) + end)  # 如 threading 模块第926行，打印线程错误，希望保持原始的红色错误方式，不希望转成蓝色。
+        sys.stderr.flush()
     else:
         sys.stdout.write(sep.join(args) + end)
+        sys.stdout.flush()
+
 
 
 def reverse_patch_print():
