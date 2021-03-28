@@ -133,7 +133,6 @@ if __name__ == '__main__':
     patch_print()
     print(0)
     nb_print(123, 'abc')
-    print = nb_print
     print(456, 'def')
     print('http://www.baidu.com')
 
