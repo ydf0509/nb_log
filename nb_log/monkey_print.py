@@ -23,6 +23,7 @@ def nb_print(*args, sep=' ', end='\n', file=None):
     args = (str(arg) for arg in args)  # REMIND 防止是数字不能被join
     if file == sys.stderr:
         sys.stderr.write(sep.join(args))  # 如 threading 模块第926行，打印线程错误，希望保持原始的红色错误方式，不希望转成蓝色。
+        sys.stderr.flush()
 
     elif file in [sys.stdout, None]:
         # 获取被调用函数在被调用时所处代码行数
@@ -37,6 +38,7 @@ def nb_print(*args, sep=' ', end='\n', file=None):
             sys.stdout.write(
                 f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {sep.join(args)} {end} \033[0m')  # 36  93 96 94
         # sys.stdout.write(f'\033[0;30;44m"{file_name}:{line}"  {time.strftime("%H:%M:%S")}  {"".join(args)}\033[0m\n')
+        sys.stdout.flush()
     else:  # 例如traceback模块的print_exception函数 file的入参是   <_io.StringIO object at 0x00000264F2F065E8>，必须把内容重定向到这个对象里面，否则exception日志记录不了错误堆栈。
         print_raw(*args, sep=sep, end=end, file=file)
 
