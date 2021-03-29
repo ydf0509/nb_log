@@ -8,9 +8,10 @@
 import sys
 import time
 import traceback
+import  os
 
 print_raw = print
-
+word_color_in_block = 30 if os.name == 'nt' else 37
 
 # noinspection PyProtectedMember,PyUnusedLocal,PyIncorrectDocstring
 def nb_print(*args, sep=' ', end='\n', file=None):
@@ -31,7 +32,7 @@ def nb_print(*args, sep=' ', end='\n', file=None):
         # sys.stdout.write(f'"{__file__}:{sys._getframe().f_lineno}"    {x}\n')
         if True:
             sys.stdout.write(
-                f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   \033[0;30;44m{sep.join(args)}\033[0m{end} \033[0m')  # 36  93 96 94
+                f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   \033[0;{word_color_in_block};44m{sep.join(args)}\033[0m{end} \033[0m')  # 36  93 96 94
         else:
             sys.stdout.write(
                 f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {sep.join(args)} {end} \033[0m')  # 36  93 96 94
@@ -97,8 +98,7 @@ def patch_print():
 
 
 def common_print(*args, sep=' ', end='\n', file=None):
-    args = (str(arg) for arg in args)
-    args = (str(arg) for arg in args)  # REMIND 防止是数字不能被join
+    args = (str(arg) for arg in args)  # REMIND 防止是数字或其他非字符串不能被join
     if file == sys.stderr:
         sys.stderr.write(sep.join(args) + end)  # 如 threading 模块第926行，打印线程错误，希望保持原始的红色错误方式，不希望转成蓝色。
     else:
@@ -114,7 +114,6 @@ def reverse_patch_print():
     #     __builtins__.print = common_print
     # except AttributeError:
     #     __builtins__['print'] = common_print
-
     try:
         __builtins__.print = print_raw
     except AttributeError:
