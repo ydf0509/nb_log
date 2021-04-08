@@ -30,7 +30,6 @@ very_nb_print = nb_print
 os_name = os.name
 
 
-# noinspection DuplicatedCode
 class MongoHandler(logging.Handler):
     """
     一个mongodb的log handler,支持日志按loggername创建不同的集合写入mongodb中
@@ -177,7 +176,7 @@ class KafkaHandler(logging.Handler):
                 time.sleep(cls.ES_INTERVAL_SECONDS)
 
     def emit(self, record):
-        # noinspection PyBroadException, PyPep8,DuplicatedCode
+        # noinspection PyBroadException, PyPep8
         try:
             level_str = None
             if record.levelno == 10:
@@ -261,7 +260,6 @@ class ElasticHandler000(logging.Handler):
             finally:
                 time.sleep(1)
 
-    # noinspection DuplicatedCode
     def emit(self, record):
         # noinspection PyBroadException, PyPep8
         try:
@@ -431,7 +429,7 @@ class ColorHandler(logging.Handler):
             stream = sys.stdout  # stderr无彩。
         self.stream = stream
         self._display_method = 7 if os_name == 'posix' else 0
-        self._word_color = 37 if os_name == 'posix' else 30  # 因为背景色块是深色，希望字体是白色，37是白色。pycharm的darcula主题自动颠倒黑白，需要反着来。
+        self._word_color = 30 if os_name == 'posix' else 30
 
     def flush(self):
         """
@@ -508,12 +506,12 @@ class ColorHandler(logging.Handler):
             background_color = f'[0;{self._word_color};41m'
             complete_color = f'[0;31m'
         record_copy.msg = f'\033{background_color}{record_copy.msg}\033[0m'
-        msg_without_color = self.format(record_copy)
+        msg_color_without = self.format(record_copy)
         # print(repr(msg_color))
         if isinstance(self.formatter, JsonFormatter) and background_color:  # json会把/033 转义成\u001b,导致颜色显示不出来。
-            msg_without_color = msg_without_color.replace(rf'\u001b{background_color}', f'\033{background_color}')
-            msg_without_color = msg_without_color.replace(r'\u001b[0m', f'\033[0m\033{complete_color}')
-        msg_color = f'\033{complete_color}{msg_without_color}\033[0m'
+            msg_color_without = msg_color_without.replace(rf'\u001b{background_color}', f'\033{background_color}')
+            msg_color_without = msg_color_without.replace(r'\u001b[0m', f'\033[0m\033{complete_color}')
+        msg_color = f'\033{complete_color}{msg_color_without}\033[0m'
         # print(repr(msg_color))
         return msg_color
 

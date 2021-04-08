@@ -10,6 +10,7 @@ import time
 import importlib
 from pathlib import Path
 from nb_log import nb_log_config_default
+from nb_log.monkey_print import stdout_write, stderr_write
 
 
 # noinspection PyProtectedMember,PyUnusedLocal,PyIncorrectDocstring
@@ -21,8 +22,7 @@ def nb_print(*args, sep=' ', end='\n', file=None):
     """
     args = (str(arg) for arg in args)  # REMIND 防止是数字不能被join
     if file == sys.stderr:
-        sys.stderr.write(sep.join(args))  # 如 threading 模块第926行，打印线程错误，希望保持原始的红色错误方式，不希望转成蓝色。
-
+        stderr_write(sep.join(args))  # 如 threading 模块第926行，打印线程错误，希望保持原始的红色错误方式，不希望转成蓝色。
     else:
         # 获取被调用函数在被调用时所处代码行数
         line = sys._getframe().f_back.f_lineno
@@ -30,10 +30,10 @@ def nb_print(*args, sep=' ', end='\n', file=None):
         file_name = sys._getframe(1).f_code.co_filename
         # sys.stdout.write(f'"{__file__}:{sys._getframe().f_lineno}"    {x}\n')
         if nb_log_config_default.DISPLAY_BACKGROUD_COLOR_IN_CONSOLE:
-            sys.stdout.write(
+            stdout_write(
                 f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   \033[0;30;44m{sep.join(args)}\033[0m{end} \033[0m')  # 36  93 96 94
         else:
-            sys.stdout.write(
+            stdout_write(
                 f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {sep.join(args)} {end} \033[0m')  # 36  93 96 94
         # sys.stdout.write(f'\033[0;30;44m"{file_name}:{line}"  {time.strftime("%H:%M:%S")}  {"".join(args)}\033[0m\n')
 
@@ -156,13 +156,14 @@ def use_config_form_nb_log_config_module():
         m = importlib.import_module('nb_log_config')
         msg = f'nb_log包 读取到\n "{m.__file__}:1" 文件里面的变量作为优先配置了\n'
         # nb_print(msg)
-        sys.stdout.write(f'{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {msg} \n \033[0m')
+        stdout_write(f'{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {msg} \n \033[0m')
+
         for var_namex, var_valuex in m.__dict__.items():
             if var_namex.isupper():
                 setattr(nb_log_config_default, var_namex, var_valuex)
     except ModuleNotFoundError:
         msg = f'''在你的项目根目录下生成了 \n "{Path(sys.path[1]) / Path('nb_log_config.py')}:1" 的nb_log包的日志配置文件，快去看看并修改一些自定义配置吧'''
-        sys.stdout.write(f'{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {msg} \n \033[0m')
+        stdout_write(f'{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {msg} \n \033[0m')
         auto_creat_config_file_to_project_root_path()
 
 
@@ -182,8 +183,8 @@ def auto_creat_config_file_to_project_root_path():
     
     ['', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\python36.zip', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\DLLs', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib', 'F:\\minicondadir\\Miniconda2\\envs\\py36', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\multiprocessing_log_manager-0.2.0-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\pyinstaller-3.4-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\pywin32_ctypes-0.2.0-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\altgraph-0.16.1-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\macholib-1.11-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\pefile-2019.4.18-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\win32', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\win32\\lib', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\Pythonwin']
     """
-    if  '/lib/python' in sys.path[1]  or r'\lib\python' in sys.path[1] or '.zip' in sys.path[1]:
-        return   # 当没设置pythonpath时候，也不要在 /lib/python36.zip这样的地方创建配置文件。
+    if '/lib/python' in sys.path[1] or r'\lib\python' in sys.path[1] or '.zip' in sys.path[1]:
+        return  # 当没设置pythonpath时候，也不要在 /lib/python36.zip这样的地方创建配置文件。
     with (Path(sys.path[1]) / Path('nb_log_config.py')).open(mode='w', encoding='utf8') as f:
         f.write(config_file_content)
 
