@@ -7,3 +7,4 @@ requests
 pika
 flask
 python-json-logger==0.1.10
+pywin32

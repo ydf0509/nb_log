@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: nb-log
-Version: 4.3
+Version: 4.2
 Summary: very sharp color display,monkey patch bulitin print  and high-performance multiprocess safe roating file handler,other handlers includeing dintalk ,email,kafka,elastic and so on 
 Home-page: UNKNOWN
 Author: bfzs

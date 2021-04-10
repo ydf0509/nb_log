@@ -20,6 +20,7 @@ class LogUtil:
         self.logger.critical(msg)
 
 if __name__ == '__main__':
+    print('日志命名固定死了，没有多实例单独控制很差劲。')
     LogUtil().debug('不能跳转到本行，跳转到工具类去了')
     LogUtil().info('不能跳转到本行，跳转到工具类去了')
     LogUtil().warning('不能跳转到本行，跳转到工具类去了')
