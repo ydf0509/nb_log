@@ -553,8 +553,8 @@ class ColorHandler(logging.Handler):
             # very_nb_print(record)
             # record.message = record.getMessage()
             # effective_information_msg = record.getMessage()  # 不能用msg字段，例如有的包的日志格式化还有其他字段
-            record_copy = copy.copy(record)  # copy是因为，不要因为要屏幕彩色日志而影响例如文件日志 叮叮日志等其他handler的格式。
-            record_copy.for_segmentation_color = '彩色分段标志属性而已'
+            # record_copy = copy.copy(record)  # copy是因为，不要因为要屏幕彩色日志而影响例如文件日志 叮叮日志等其他handler的格式。
+            # record_copy.for_segmentation_color = '彩色分段标志属性而已'
             # del record_copy.msg
             # assist_msg = self.format(record_copy)
             # print(f'**  {assist_msg}  ** ')
@@ -562,10 +562,10 @@ class ColorHandler(logging.Handler):
             # print(assist_msg)
             # print(effective_information_msg)
             if nb_log_config_default.DISPLAY_BACKGROUD_COLOR_IN_CONSOLE:
-                msg_color = self.__build_color_msg_with_backgroud_color(record.levelno, record_copy,
+                msg_color = self.__build_color_msg_with_backgroud_color(record.levelno, record,
                                                                         )
             else:
-                msg_color = self.__build_color_msg_with_no_backgroud_color(record.levelno, record_copy)
+                msg_color = self.__build_color_msg_with_no_backgroud_color(record.levelno, record)
             # stream.write(msg_color)
             # stream.write(self.terminator)
             # self.flush()
