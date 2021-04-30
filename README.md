@@ -405,7 +405,7 @@ StreamHandler FileHandler DingTalkHandler类的 emit方法是uml图的doOperatio
 在python日志的理解和使用上，国内能和我打成平手的没有几人。
 
 
-## 9.演示一个由于不好好理解观察者模式，封装的日志类在调用时候十分惨烈的例子，惨烈程度达到10级。
+## 9.1 演示一个由于不好好理解观察者模式，封装的日志类在调用时候十分惨烈的例子，惨烈程度达到10级。
 
 这个是真实发生的例子。
 
@@ -465,6 +465,79 @@ for i in range(100000):
 
 print(time.time() - t1)
 
+```
+
+
+## 9.2 使用博客园搜索后排名第一个的python 日志封装，也是严重重复记录。
+
+[博客园 python 日志封装](https://www.cnblogs.com/linuxchao/p/linuxchao-logger.html)
+
+```python
+import logging
+
+
+class Log(object):
+    def __init__(self, name=__name__, path='mylog.log', level='DEBUG'):
+        self.__name = name
+        self.__path = path
+        self.__level = level
+        self.__logger = logging.getLogger(self.__name)
+        self.__logger.setLevel(self.__level)
+
+    def __ini_handler(self):
+        """初始化handler"""
+        stream_handler = logging.StreamHandler()
+        file_handler = logging.FileHandler(self.__path, encoding='utf-8')
+        return stream_handler, file_handler
+
+    def __set_handler(self, stream_handler, file_handler, level='DEBUG'):
+        """设置handler级别并添加到logger收集器"""
+        stream_handler.setLevel(level)
+        file_handler.setLevel(level)
+        self.__logger.addHandler(stream_handler)
+        self.__logger.addHandler(file_handler)
+
+    def __set_formatter(self, stream_handler, file_handler):
+        """设置日志输出格式"""
+        formatter = logging.Formatter('%(asctime)s-%(name)s-%(filename)s-[line:%(lineno)d]'
+                                      '-%(levelname)s-[日志信息]: %(message)s',
+                                      datefmt='%a, %d %b %Y %H:%M:%S')
+        stream_handler.setFormatter(formatter)
+        file_handler.setFormatter(formatter)
+
+    def __close_handler(self, stream_handler, file_handler):
+        """关闭handler"""
+        stream_handler.close()
+        file_handler.close()
+
+    @property
+    def Logger(self):
+        """构造收集器，返回looger"""
+        stream_handler, file_handler = self.__ini_handler()
+        self.__set_handler(stream_handler, file_handler)
+        self.__set_formatter(stream_handler, file_handler)
+        self.__close_handler(stream_handler, file_handler)
+        return self.__logger
+
+
+if __name__ == '__main__':
+    def f():
+        log = Log(__name__, 'file.log')
+        logger = log.Logger
+        # logger.debug('I am a debug message')
+        # logger.info('I am a info message')
+        # logger.warning('I am a warning message')
+        # logger.error('I am a error message')
+        logger.critical('I am a critical message')
+    for i in range(10):
+        f()
+```
+
+```
+运行上面这个代码，应为调用了f函数10次，应该是一共打印10次和写入文件10次，结果是打印55次，写入文件55次。
+因为这个实例化写在了函数内部，造成每调用一次就新增一次handler，日志记录的总次数不是预期期待的变成了高斯求和。
+这种日志封装很惨，如果部署线上，f函数调用了10万次，那么会造成重复记录  100000*100001/2次变成50亿次，
+随着程序部署的时间越来越长，服务器cpu会越来越卡，磁盘增长也会越来越快，而且问题难以排查，造成事故会非常惨烈。
 ```
 
 ![Total visitor](https://visitor-count-badge.herokuapp.com/total.svg?repo_id=xxxxxsadsadwqeasds)
