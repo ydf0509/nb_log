@@ -546,6 +546,45 @@ if __name__ == '__main__':
 但是使用nb_log就可以随便你怎么折腾，放在for循环下面无限实例化都不怕不会重复记录日志。
 ```
 
+## 9.3 使用火热的loguru 来演示惨烈的文件日志重复记录。
+
+```python
+"""
+这也是一个很惨烈的真实例子。使用大火的 loguru ，然来用户让来本意是想实现每天生成一个新的日志文件。
+结果造成了在所有历史文件中都重复记录当前日志，随着部署的天数越来越长，长时间例如半年 八九个月 如果不重新部署程序，
+会造成严重的磁盘紧张和cpu飙升。
+"""
+
+from  loguru import logger
+import time
+
+
+def f(x):
+    """
+     用户实际生产是想每一天生成一个日志， time.strftime("%Y-%m-%d")}.log，
+     但这里为了节约时间方便演示文件日志重复记录所以换成时分秒演示，不然的话要观察很长的时间每隔一天观察一次才能观察出来。
+    """
+    logger.add(f'test_{time.strftime("%H-%M-%S")}.log')
+    logger.debug(f'loguru 太惨了重复记录 {x}')
+    logger.info(f'loguru 太惨了重复记录 {x}')
+    logger.warning(f'loguru 太惨了重复记录 {x}')
+    logger.error(f'loguru 太惨了重复记录 {x}')
+    logger.critical(f'loguru 太惨了重复记录 {x}')
+
+for i in range(100):
+    time.sleep(1)
+    f(i)
+
+"""
+预期是每秒调用一次函数f，但函数里面面有5次记录，debug info warning error  critical，
+所以预期是每秒有5条日志只写入当前最新的日志文件中，但结果是每秒都写入到历史所有日志文件中。
+只看当前最新的那个日志文件，似乎没有看到重复记录，但如果看所有的历史旧日志文件可以看到每个旧文件都严重重复记录了。
+这种问题很难排查，所以用日志要谨慎，要搞懂日志handlers，和设计模式的观察者模式才能用好日志。
+"""
+```
+
+
+
 ![Total visitor](https://visitor-count-badge.herokuapp.com/total.svg?repo_id=xxxxxsadsadwqeasds)
  
  
