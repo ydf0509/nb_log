@@ -20,7 +20,7 @@ def stderr_write(msg:str):
     sys.stderr.flush()
 
 # noinspection PyProtectedMember,PyUnusedLocal,PyIncorrectDocstring
-def nb_print(*args, sep=' ', end='\n', file=None):
+def nb_print(*args, sep=' ', end='\n', file=None,flush=True):
     """
     超流弊的print补丁
     :param x:
