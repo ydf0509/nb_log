@@ -570,6 +570,7 @@ class ColorHandler(logging.Handler):
             # stream.write(self.terminator)
             # self.flush()
             stream.write(msg_color + self.terminator)
+            # self.flush()
         except Exception as e:
             very_nb_print(e)
             very_nb_print(traceback.format_exc())
