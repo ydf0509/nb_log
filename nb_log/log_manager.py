@@ -291,7 +291,7 @@ class LogManager(object):
         """
         if handler_class not in (
             logging.StreamHandler, ColorHandler, MongoHandler, ConcurrentRotatingFileHandler, MongoHandler,
-                CompatibleSMTPSSLHandler, ElasticHandler, DingTalkHandler, KafkaHandler):
+            CompatibleSMTPSSLHandler, ElasticHandler, DingTalkHandler, KafkaHandler):
             raise TypeError('设置的handler类型不正确')
         for handler in self.logger.handlers:
             if isinstance(handler, handler_class):
@@ -312,14 +312,14 @@ class LogManager(object):
 
         # REMIND 添加控制台日志
         if not (self._judge_logger_has_handler_type(ColorHandler) or self._judge_logger_has_handler_type(
-                logging.StreamHandler)) and self._is_add_stream_handler:
+            logging.StreamHandler)) and self._is_add_stream_handler:
             handler = ColorHandler() if not self._do_not_use_color_handler else logging.StreamHandler()  # 不使用streamhandler，使用自定义的彩色日志
             # handler = logging.StreamHandler()
             self.__add_a_hanlder(handler)
 
         # REMIND 添加多进程安全切片的文件日志
         if not self._judge_logger_has_handler_type(ConcurrentRotatingFileHandler) and all(
-                [self._log_path, self._log_filename]):
+            [self._log_path, self._log_filename]):
             if not os.path.exists(self._log_path):
                 os.makedirs(self._log_path)
             log_file = os.path.join(self._log_path, self._log_filename)
@@ -348,7 +348,7 @@ class LogManager(object):
             self.__add_a_hanlder(MongoHandler(self._mongo_url))
 
         if not self._judge_logger_has_handler_type(
-                ElasticHandler) and self._is_add_elastic_handler and nb_log_config_default.RUN_ENV == 'test':  # 使用kafka。不直接es。
+            ElasticHandler) and self._is_add_elastic_handler and nb_log_config_default.RUN_ENV == 'test':  # 使用kafka。不直接es。
             """
             生产环境使用阿里云 oss日志，不使用这个。
             """
@@ -359,7 +359,7 @@ class LogManager(object):
         # if self._is_add_kafka_handler:
         if not self._judge_logger_has_handler_type(
             KafkaHandler) and nb_log_config_default.RUN_ENV == 'test' \
-                and nb_log_config_default.ALWAYS_ADD_KAFKA_HANDLER_IN_TEST_ENVIRONENT:
+            and nb_log_config_default.ALWAYS_ADD_KAFKA_HANDLER_IN_TEST_ENVIRONENT:
             self.__add_a_hanlder(KafkaHandler(nb_log_config_default.KAFKA_BOOTSTRAP_SERVERS, ))
 
         # REMIND 添加钉钉日志。
