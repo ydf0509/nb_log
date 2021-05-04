@@ -5,22 +5,26 @@
 不直接给print打补丁，自己重新赋值。
 
 """
+import multiprocessing
 import sys
 import time
 import traceback
 
 print_raw = print
 
-def stdout_write(msg:str):
+
+def stdout_write(msg: str):
     sys.stdout.write(msg)
     sys.stdout.flush()
 
-def stderr_write(msg:str):
+
+def stderr_write(msg: str):
     sys.stderr.write(msg)
     sys.stderr.flush()
 
+
 # noinspection PyProtectedMember,PyUnusedLocal,PyIncorrectDocstring
-def nb_print(*args, sep=' ', end='\n', file=None,flush=True):
+def nb_print(*args, sep=' ', end='\n', file=None, flush=True):
     """
     超流弊的print补丁
     :param x:
@@ -28,7 +32,7 @@ def nb_print(*args, sep=' ', end='\n', file=None,flush=True):
     """
     args = (str(arg) for arg in args)  # REMIND 防止是数字不能被join
     if file == sys.stderr:
-        stderr_write(sep.join(args)) # 如 threading 模块第926行，打印线程错误，希望保持原始的红色错误方式，不希望转成蓝色。
+        stderr_write(sep.join(args))  # 如 threading 模块第926行，打印线程错误，希望保持原始的红色错误方式，不希望转成蓝色。
     elif file in [sys.stdout, None]:
         # 获取被调用函数在被调用时所处代码行数
         line = sys._getframe().f_back.f_lineno
@@ -71,7 +75,6 @@ def print_exception(etype, value, tb, limit=None, file=None, chain=True):
             stdout_write(f'{line} \n')
 
 
-
 # print = nb_print
 
 def patch_print():
@@ -107,7 +110,7 @@ def common_print(*args, sep=' ', end='\n', file=None):
     args = (str(arg) for arg in args)
     args = (str(arg) for arg in args)  # REMIND 防止是数字不能被join
     if file == sys.stderr:
-        stderr_write(sep.join(args) + end) # 如 threading 模块第926行，打印线程错误，希望保持原始的红色错误方式，不希望转成蓝色。
+        stderr_write(sep.join(args) + end)  # 如 threading 模块第926行，打印线程错误，希望保持原始的红色错误方式，不希望转成蓝色。
     else:
         stdout_write(sep.join(args) + end)
 
@@ -128,6 +131,15 @@ def reverse_patch_print():
         __builtins__['print'] = print_raw
 
 
+def is_main_process():
+    return multiprocessing.process.current_process().name == 'MainProcess'
+
+
+def only_print_on_main_process(*args, sep=' ', end='\n', file=None, flush=True):
+    if is_main_process():
+        nb_print(*args, sep=sep, end=end, file=file, flush=flush)
+
+
 if __name__ == '__main__':
     print('before patch')
     patch_print()
@@ -140,7 +152,8 @@ if __name__ == '__main__':
     common_print('hi')
 
     import logging
+
     try:
-        1/0
+        1 / 0
     except Exception as e:
         logging.exception(e)

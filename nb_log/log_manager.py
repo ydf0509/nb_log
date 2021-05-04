@@ -1,4 +1,5 @@
 # coding=utf8
+# noinspection SpellCheckingInspection
 """
 日志管理，支持日志打印到控制台和写入切片文件和mongodb和email和钉钉机器人和elastic和kafka。
 建造者模式一键创建返回添加了各种好用的handler的原生官方Logger对象，兼容性扩展性极强。
@@ -25,6 +26,7 @@ from nb_log.handlers import *
 from nb_log import nb_log_config_default
 
 
+# noinspection DuplicatedCode
 def revision_call_handlers(self, record):  # 对logging标准模块打猴子补丁。主要是使父命名空间的handler不重复记录当前命名空间日志已有种类的handler。
     """
     重要。这可以使同名logger或父logger随意添加同种类型的handler，确保不会重复打印。
@@ -92,7 +94,7 @@ def revision_add_handler(self, hdlr):  # 从添加源头阻止同一个logger添
     """
     Add the specified handler to this logger.
     """
-    logging._acquireLock() # noqa
+    logging._acquireLock()  # noqa
 
     try:
         """ 官方的
@@ -112,7 +114,7 @@ def revision_add_handler(self, hdlr):  # 从添加源头阻止同一个logger添
         if hdlr_type not in hdlrx_type_set:
             self.handlers.append(hdlr)
     finally:
-        logging._releaseLock() # noqa
+        logging._releaseLock()  # noqa
 
 
 logging.Logger.callHandlers = revision_call_handlers  # 打猴子补丁。
@@ -130,6 +132,7 @@ class _Undefind:
 undefind = _Undefind()
 
 
+# noinspection DuplicatedCode
 class DataClassBase:
     """
     使用类实现的
@@ -189,7 +192,8 @@ class LogManager(object):
         :param logger_name: 日志名称，当为None时候创建root命名空间的日志，一般情况下千万不要传None，除非你确定需要这么做和是在做什么.这个命名空间是双刃剑
         """
         if logger_name in (None, '', 'root'):
-            very_nb_print('logger_name 设置为None和root和空字符串都是一个意义，在操作根日志命名空间，任何其他日志的行为将会发生变化，一定要弄清楚原生logging包的日志name的意思。这个命名空间是双刃剑')
+            very_nb_print(
+                'logger_name 设置为None和root和空字符串都是一个意义，在操作根日志命名空间，任何其他日志的行为将会发生变化，一定要弄清楚原生logging包的日志name的意思。这个命名空间是双刃剑')
         self._logger_name = logger_name
         self.logger = logging.getLogger(logger_name)
 
@@ -201,7 +205,8 @@ class LogManager(object):
                                     is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler=undefind,
                                     mongo_url=None, is_add_elastic_handler=False, is_add_kafka_handler=False,
                                     ding_talk_token=None, ding_talk_time_interval=60,
-                                    mail_handler_config: MailHandlerConfig = MailHandlerConfig(), is_add_mail_handler=False,
+                                    mail_handler_config: MailHandlerConfig = MailHandlerConfig(),
+                                    is_add_mail_handler=False,
                                     formatter_template: int = None):
         """
        :param log_level_int: 日志输出级别，设置为 1 2 3 4 5，分别对应原生logging.DEBUG(10)，logging.INFO(20)，logging.WARNING(30)，logging.ERROR(40),logging.CRITICAL(50)级别，现在可以直接用10 20 30 40 50了，兼容了。
@@ -247,8 +252,9 @@ class LogManager(object):
         self._log_path = log_path
         self._log_filename = log_filename
         self._log_file_size = log_file_size
-        self._is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler = (nb_log_config_default.IS_USE_WATCHED_FILE_HANDLER_INSTEAD_OF_CUSTOM_CONCURRENT_ROTATING_FILE_HANDLER if is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler is undefind
-                                                                                                else is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler)
+        self._is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler = (
+            nb_log_config_default.IS_USE_WATCHED_FILE_HANDLER_INSTEAD_OF_CUSTOM_CONCURRENT_ROTATING_FILE_HANDLER if is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler is undefind
+            else is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler)
         self._mongo_url = mongo_url
         self._is_add_elastic_handler = is_add_elastic_handler
         self._is_add_kafka_handler = is_add_kafka_handler
@@ -284,7 +290,7 @@ class LogManager(object):
         :return:
         """
         if handler_class not in (
-                logging.StreamHandler, ColorHandler, MongoHandler, ConcurrentRotatingFileHandler, MongoHandler,
+            logging.StreamHandler, ColorHandler, MongoHandler, ConcurrentRotatingFileHandler, MongoHandler,
                 CompatibleSMTPSSLHandler, ElasticHandler, DingTalkHandler, KafkaHandler):
             raise TypeError('设置的handler类型不正确')
         for handler in self.logger.handlers:
@@ -352,7 +358,7 @@ class LogManager(object):
         # REMIND 添加kafka日志。
         # if self._is_add_kafka_handler:
         if not self._judge_logger_has_handler_type(
-                KafkaHandler) and nb_log_config_default.RUN_ENV == 'test' \
+            KafkaHandler) and nb_log_config_default.RUN_ENV == 'test' \
                 and nb_log_config_default.ALWAYS_ADD_KAFKA_HANDLER_IN_TEST_ENVIRONENT:
             self.__add_a_hanlder(KafkaHandler(nb_log_config_default.KAFKA_BOOTSTRAP_SERVERS, ))
 

@@ -5,6 +5,7 @@
 """
 # noinspection PyUnresolvedReferences
 import logging
+import os
 # noinspection PyUnresolvedReferences
 from pathlib import Path  # noqa
 import socket
@@ -64,8 +65,14 @@ WARNING_PYCHARM_COLOR_SETINGS = True
 DEFAULT_ADD_MULTIPROCESSING_SAFE_ROATING_FILE_HANDLER = False  # 是否默认同时将日志记录到记log文件记事本中。
 LOG_FILE_SIZE = 100  # 单位是M,每个文件的切片大小，超过多少后就自动切割
 LOG_FILE_BACKUP_COUNT = 3
-LOG_PATH = '/pythonlogs'  # 默认的日志文件夹
+
+
+LOG_PATH = '/pythonlogs'  # 默认的日志文件夹,如果不写明磁盘名，则是项目代码所在磁盘的根目录下的/pythonlogs
 # LOG_PATH = Path(__file__).absolute().parent / Path("nblogpath")
+if os.name == 'posix':
+    home_path = os.environ["HOME"]
+    LOG_PATH = Path(home_path) / Path('/pythonlogs')  # linux mac 权限很严格，非root权限不能在/pythonlogs写入，修改一下默认值。
+
 IS_USE_WATCHED_FILE_HANDLER_INSTEAD_OF_CUSTOM_CONCURRENT_ROTATING_FILE_HANDLER = False  # 需要依靠外力lograte来切割日志，watchedfilehandler性能比此包自定义的日志切割handler写入文件速度慢很多。
 
 LOG_LEVEL_FILTER = logging.DEBUG  # 默认日志级别，低于此级别的日志不记录了。例如设置为INFO，那么logger.debug的不会记录，只会记录logger.info以上级别的。
