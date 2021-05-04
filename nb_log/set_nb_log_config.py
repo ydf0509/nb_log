@@ -10,10 +10,10 @@ import time
 import importlib
 from pathlib import Path
 from nb_log import nb_log_config_default
-from nb_log.monkey_print import stdout_write, stderr_write
+from nb_log.monkey_print import stdout_write, stderr_write, is_main_process
 
 
-# noinspection PyProtectedMember,PyUnusedLocal,PyIncorrectDocstring
+# noinspection PyProtectedMember,PyUnusedLocal,PyIncorrectDocstring,PyPep8
 def nb_print(*args, sep=' ', end='\n', file=None):
     """
     超流弊的print补丁
@@ -45,12 +45,14 @@ def show_nb_log_config():
     print('\n')
 
 
+# noinspection SpellCheckingInspection
 config_file_content = '''
 """
 此文件nb_log_config.py是自动生成到python项目的根目录的。
 在这里面写的变量会覆盖此文件nb_log_config_default中的值。对nb_log包进行默认的配置。
 但最终配置方式是由get_logger_and_add_handlers方法的各种传参决定，如果方法相应的传参为None则使用这里面的配置。
 """
+import os
 import logging
 from pathlib import Path
 import socket
@@ -109,8 +111,14 @@ class JsonFormatterJumpAble(JsonFormatter):
 # DEFAULT_ADD_MULTIPROCESSING_SAFE_ROATING_FILE_HANDLER = False  # 是否默认同时将日志记录到记log文件记事本中。
 # LOG_FILE_SIZE = 100  # 单位是M,每个文件的切片大小，超过多少后就自动切割
 # LOG_FILE_BACKUP_COUNT = 3
-# LOG_PATH = '/pythonlogs'  # 默认的日志文件夹
-# # LOG_PATH = Path(__file__).absolute().parent / Path("nblogpath")
+
+
+#LOG_PATH = '/pythonlogs'  # 默认的日志文件夹,如果不写明磁盘名，则是项目代码所在磁盘的根目录下的/pythonlogs
+#LOG_PATH = Path(__file__).absolute().parent / Path("nblogpath")
+#if os.name == 'posix':
+#    home_path = os.environ["HOME"]
+#    LOG_PATH = Path(home_path) / Path('/pythonlogs')  # linux mac 权限很严格，非root权限不能在/pythonlogs写入，修改一下默认值。
+    
 # IS_USE_WATCHED_FILE_HANDLER_INSTEAD_OF_CUSTOM_CONCURRENT_ROTATING_FILE_HANDLER = False  # 需要依靠外力lograte来切割日志，watchedfilehandler性能比此包自定义的日志切割handler写入文件速度慢。
 # 
 # LOG_LEVEL_FILTER = logging.DEBUG  # 默认日志级别，低于此级别的日志不记录了。例如设置为INFO，那么logger.debug的不会记录，只会记录logger.info以上级别的。
@@ -145,18 +153,21 @@ class JsonFormatterJumpAble(JsonFormatter):
 '''
 
 
+# noinspection PyProtectedMember
 def use_config_form_nb_log_config_module():
     """
     自动读取配置。会优先读取启动脚本的目录的distributed_frame_config.py文件。没有则读取项目根目录下的distributed_frame_config.py
     :return:
     """
     line = sys._getframe().f_back.f_lineno
+    # noinspection PyProtectedMember
     file_name = sys._getframe(1).f_code.co_filename
     try:
         m = importlib.import_module('nb_log_config')
         msg = f'nb_log包 读取到\n "{m.__file__}:1" 文件里面的变量作为优先配置了\n'
         # nb_print(msg)
-        stdout_write(f'{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {msg} \n \033[0m')
+        if is_main_process():
+            stdout_write(f'{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {msg} \n \033[0m')
 
         for var_namex, var_valuex in m.__dict__.items():
             if var_namex.isupper():
@@ -177,12 +188,13 @@ def auto_creat_config_file_to_project_root_path():
         pass
         nb_print('不希望在本项目里面创建')
         return
+    # noinspection PyPep8
     """
-    如果没设置PYTHONPATH，sys.path会这样，取第一个就会报错
-    ['', '/data/miniconda3dir/inner/envs/mtfy/lib/python36.zip', '/data/miniconda3dir/inner/envs/mtfy/lib/python3.6', '/data/miniconda3dir/inner/envs/mtfy/lib/python3.6/lib-dynload', '/root/.local/lib/python3.6/site-packages', '/data/miniconda3dir/inner/envs/mtfy/lib/python3.6/site-packages']
-    
-    ['', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\python36.zip', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\DLLs', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib', 'F:\\minicondadir\\Miniconda2\\envs\\py36', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\multiprocessing_log_manager-0.2.0-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\pyinstaller-3.4-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\pywin32_ctypes-0.2.0-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\altgraph-0.16.1-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\macholib-1.11-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\pefile-2019.4.18-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\win32', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\win32\\lib', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\Pythonwin']
-    """
+        如果没设置PYTHONPATH，sys.path会这样，取第一个就会报错
+        ['', '/data/miniconda3dir/inner/envs/mtfy/lib/python36.zip', '/data/miniconda3dir/inner/envs/mtfy/lib/python3.6', '/data/miniconda3dir/inner/envs/mtfy/lib/python3.6/lib-dynload', '/root/.local/lib/python3.6/site-packages', '/data/miniconda3dir/inner/envs/mtfy/lib/python3.6/site-packages']
+        
+        ['', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\python36.zip', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\DLLs', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib', 'F:\\minicondadir\\Miniconda2\\envs\\py36', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\multiprocessing_log_manager-0.2.0-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\pyinstaller-3.4-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\pywin32_ctypes-0.2.0-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\altgraph-0.16.1-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\macholib-1.11-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\pefile-2019.4.18-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\win32', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\win32\\lib', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\Pythonwin']
+        """
     if '/lib/python' in sys.path[1] or r'\lib\python' in sys.path[1] or '.zip' in sys.path[1]:
         return  # 当没设置pythonpath时候，也不要在 /lib/python36.zip这样的地方创建配置文件。
     with (Path(sys.path[1]) / Path('nb_log_config.py')).open(mode='w', encoding='utf8') as f:
