@@ -11,6 +11,7 @@ import importlib
 from pathlib import Path
 from nb_log import nb_log_config_default
 from nb_log.monkey_print import stdout_write, stderr_write, is_main_process
+from shutil import copyfile
 
 
 # noinspection PyProtectedMember,PyUnusedLocal,PyIncorrectDocstring,PyPep8
@@ -45,114 +46,6 @@ def show_nb_log_config():
     print('\n')
 
 
-# noinspection SpellCheckingInspection
-config_file_content = '''
-"""
-此文件nb_log_config.py是自动生成到python项目的根目录的。
-在这里面写的变量会覆盖此文件nb_log_config_default中的值。对nb_log包进行默认的配置。
-但最终配置方式是由get_logger_and_add_handlers方法的各种传参决定，如果方法相应的传参为None则使用这里面的配置。
-"""
-import os
-import logging
-from pathlib import Path
-import socket
-
-from pythonjsonlogger.jsonlogger import JsonFormatter
-
-
-def get_host_ip():
-    ip = ''
-    host_name = ''
-    try:
-        sc = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sc.connect(('8.8.8.8', 80))
-        ip = sc.getsockname()[0]
-        host_name = socket.gethostname()
-        sc.close()
-    except Exception:
-        pass
-    return ip, host_name
-
-
-computer_ip,computer_name = get_host_ip()
-
-
-class JsonFormatterJumpAble(JsonFormatter):
-    def add_fields(self, log_record, record, message_dict):
-        # log_record['jump_click']   = f"""File '{record.__dict__.get('pathname')}', line {record.__dict__.get('lineno')}"""
-        log_record[f"{record.__dict__.get('pathname')}:{record.__dict__.get('lineno')}"] = ''  # 加个能点击跳转的字段。
-        log_record['ip'] = computer_ip
-        log_record['host_name'] = computer_name
-        super().add_fields(log_record, record, message_dict)
-        if 'for_segmentation_color' in log_record:
-            del log_record['for_segmentation_color']
-
-
-# DING_TALK_TOKEN = '3dd0eexxxxxadab014bd604XXXXXXXXXXXX'  # 钉钉报警机器人
-# 
-# EMAIL_HOST = ('smtp.sohu.com', 465)
-# EMAIL_FROMADDR = 'aaa0509@sohu.com'  # 'matafyhotel-techl@matafy.com',
-# EMAIL_TOADDRS = ('cccc.cheng@silknets.com', 'yan@dingtalk.com',)
-# EMAIL_CREDENTIALS = ('aaa0509@sohu.com', 'abcdefg')
-# 
-# ELASTIC_HOST = '127.0.0.1'
-# ELASTIC_PORT = 9200
-# 
-# KAFKA_BOOTSTRAP_SERVERS = ['192.168.199.202:9092']
-# ALWAYS_ADD_KAFKA_HANDLER_IN_TEST_ENVIRONENT = False
-# 
-# MONGO_URL = 'mongodb://myUserAdmin:mimamiama@127.0.0.1:27016/admin'
-# 
-# DEFAULUT_USE_COLOR_HANDLER = True  # 是否默认使用有彩的日志。
-# DISPLAY_BACKGROUD_COLOR_IN_CONSOLE = True  # 在控制台是否显示彩色块状的日志。为False则不使用大块的背景颜色。
-# AUTO_PATCH_PRINT = True  # 是否自动打print的猴子补丁，如果打了猴子补丁，print自动变色和可点击跳转。
-# WARNING_PYCHARM_COLOR_SETINGS = True
-# 
-# DEFAULT_ADD_MULTIPROCESSING_SAFE_ROATING_FILE_HANDLER = False  # 是否默认同时将日志记录到记log文件记事本中。
-# LOG_FILE_SIZE = 100  # 单位是M,每个文件的切片大小，超过多少后就自动切割
-# LOG_FILE_BACKUP_COUNT = 3
-
-
-#LOG_PATH = '/pythonlogs'  # 默认的日志文件夹,如果不写明磁盘名，则是项目代码所在磁盘的根目录下的/pythonlogs
-#LOG_PATH = Path(__file__).absolute().parent / Path("nblogpath")
-#if os.name == 'posix':
-#    home_path = os.environ["HOME"]
-#    LOG_PATH = Path(home_path) / Path('/pythonlogs')  # linux mac 权限很严格，非root权限不能在/pythonlogs写入，修改一下默认值。
-    
-# IS_USE_WATCHED_FILE_HANDLER_INSTEAD_OF_CUSTOM_CONCURRENT_ROTATING_FILE_HANDLER = False  # 需要依靠外力lograte来切割日志，watchedfilehandler性能比此包自定义的日志切割handler写入文件速度慢。
-# 
-# LOG_LEVEL_FILTER = logging.DEBUG  # 默认日志级别，低于此级别的日志不记录了。例如设置为INFO，那么logger.debug的不会记录，只会记录logger.info以上级别的。
-# RUN_ENV = 'test'
-# 
-# FORMATTER_DICT = {
-#     1: logging.Formatter(
-#         '日志时间【%(asctime)s】 - 日志名称【%(name)s】 - 文件【%(filename)s】 - 第【%(lineno)d】行 - 日志等级【%(levelname)s】 - 日志信息【%(message)s】',
-#         "%Y-%m-%d %H:%M:%S"),
-#     2: logging.Formatter(
-#         '%(asctime)s - %(name)s - %(filename)s - %(funcName)s - %(lineno)d - %(levelname)s - %(message)s',
-#         "%Y-%m-%d %H:%M:%S"),
-#     3: logging.Formatter(
-#         '%(asctime)s - %(name)s - 【 File "%(pathname)s", line %(lineno)d, in %(funcName)s 】 - %(levelname)s - %(message)s',
-#         "%Y-%m-%d %H:%M:%S"),  # 一个模仿traceback异常的可跳转到打印日志地方的模板
-#     4: logging.Formatter(
-#         '%(asctime)s - %(name)s - "%(filename)s" - %(funcName)s - %(lineno)d - %(levelname)s - %(message)s -               File "%(pathname)s", line %(lineno)d ',
-#         "%Y-%m-%d %H:%M:%S"),  # 这个也支持日志跳转
-#     5: logging.Formatter(
-#         '%(asctime)s - %(name)s - "%(pathname)s:%(lineno)d" - %(funcName)s - %(levelname)s - %(message)s',
-#         "%Y-%m-%d %H:%M:%S"),  # 我认为的最好的模板,推荐
-#     6: logging.Formatter('%(name)s - %(asctime)-15s - %(filename)s - %(lineno)d - %(levelname)s: %(message)s',
-#                          "%Y-%m-%d %H:%M:%S"),
-#     7: logging.Formatter('%(asctime)s - %(name)s - "%(filename)s:%(lineno)d" - %(levelname)s - %(message)s', "%Y-%m-%d %H:%M:%S"),  # 一个只显示简短文件名和所处行数的日志模板
-# 
-#     8: JsonFormatterJumpAble('%(asctime)s - %(name)s - %(levelname)s - %(message)s - "%(filename)s %(lineno)d -" ', "%Y-%m-%d %H:%M:%S", json_ensure_ascii=False)  # 这个是json日志，方便分析,但背景彩色块状显示不出来。
-# }
-# 
-# FORMATTER_KIND = 5  # 如果get_logger_and_add_handlers不指定日志模板，则默认选择第几个模板
-
-
-'''
-
-
 # noinspection PyProtectedMember
 def use_config_form_nb_log_config_module():
     """
@@ -168,14 +61,13 @@ def use_config_form_nb_log_config_module():
         # nb_print(msg)
         if is_main_process():
             stdout_write(f'{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {msg} \n \033[0m')
-
         for var_namex, var_valuex in m.__dict__.items():
             if var_namex.isupper():
                 setattr(nb_log_config_default, var_namex, var_valuex)
     except ModuleNotFoundError:
+        auto_creat_config_file_to_project_root_path()
         msg = f'''在你的项目根目录下生成了 \n "{Path(sys.path[1]) / Path('nb_log_config.py')}:1" 的nb_log包的日志配置文件，快去看看并修改一些自定义配置吧'''
         stdout_write(f'{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {msg} \n \033[0m')
-        auto_creat_config_file_to_project_root_path()
 
 
 def auto_creat_config_file_to_project_root_path():
@@ -184,10 +76,6 @@ def auto_creat_config_file_to_project_root_path():
     """
     :return:
     """
-    if Path(sys.path[1]).as_posix() in Path(__file__).parent.parent.absolute().as_posix():
-        pass
-        nb_print('不希望在本项目里面创建')
-        return
     # noinspection PyPep8
     """
         如果没设置PYTHONPATH，sys.path会这样，取第一个就会报错
@@ -196,9 +84,17 @@ def auto_creat_config_file_to_project_root_path():
         ['', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\python36.zip', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\DLLs', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib', 'F:\\minicondadir\\Miniconda2\\envs\\py36', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\multiprocessing_log_manager-0.2.0-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\pyinstaller-3.4-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\pywin32_ctypes-0.2.0-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\altgraph-0.16.1-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\macholib-1.11-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\pefile-2019.4.18-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\win32', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\win32\\lib', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\Pythonwin']
         """
     if '/lib/python' in sys.path[1] or r'\lib\python' in sys.path[1] or '.zip' in sys.path[1]:
-        return  # 当没设置pythonpath时候，也不要在 /lib/python36.zip这样的地方创建配置文件。
-    with (Path(sys.path[1]) / Path('nb_log_config.py')).open(mode='w', encoding='utf8') as f:
-        f.write(config_file_content)
+        raise EnvironmentError('''如果用pycahrm启动，默认不需要你手动亲自设置PYTHONPATH，如果你是cmd或者shell中直接敲击python xx.py 来运行，
+                               报现在这个错误，你现在肯定是没有设置PYTHONPATH环境变量，不要设置永久环境变量，设置临时会话环境变量就行，
+                               windows设置  set PYTHONPATH=你当前python项目根目录,然后敲击你的python运行命令    
+                               linux设置    export PYTHONPATH=你当前python项目根目录,然后敲击你的python运行命令    
+                               要是连PYTHONPATH这个知识点都不知道，那就要google 百度去学习PYTHONPATH作用了，非常重要非常好用，
+                               不知道PYTHONPATH作用的人，在深层级文件夹作为运行起点导入外层目录的包的时候，如果把深层级文件作为python的执行文件起点，经常需要到处很low的手写 sys.path.insert硬编码，这种方式写代码太low了。
+                               知道PYTHONPATH的人无论项目有多少层级的文件夹，无论是多深层级文件夹导入外层文件夹，代码里面永久都不需要出现手动硬编码操纵sys.path.append
+                               ''')
+    # with (Path(sys.path[1]) / Path('nb_log_config.py')).open(mode='w', encoding='utf8') as f:
+    #     f.write(config_file_content)
+    copyfile(Path(__file__).parent / Path('nb_log_config_default.py'), Path(sys.path[1]) / Path('nb_log_config.py'))
 
 
 use_config_form_nb_log_config_module()
