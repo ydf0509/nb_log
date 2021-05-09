@@ -76,6 +76,10 @@ def auto_creat_config_file_to_project_root_path():
     """
     :return:
     """
+    if Path(sys.path[1]).as_posix() in Path(__file__).parent.parent.absolute().as_posix():
+        pass
+        nb_print('不希望在本项目里面创建')
+        return
     # noinspection PyPep8
     """
         如果没设置PYTHONPATH，sys.path会这样，取第一个就会报错
