@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: nb-log
-Version: 4.5
+Version: 4.6
 Summary: very sharp color display,monkey patch bulitin print  and high-performance multiprocess safe roating file handler,other handlers includeing dintalk ,email,kafka,elastic and so on 
 Home-page: UNKNOWN
 Author: bfzs
@@ -415,7 +415,7 @@ Description: ## 1. pip install nb_log
         在python日志的理解和使用上，国内能和我打成平手的没有几人。
         
         
-        ## 9.演示一个由于不好好理解观察者模式，封装的日志类在调用时候十分惨烈的例子，惨烈程度达到10级。
+        ## 9.1 演示一个由于不好好理解观察者模式，封装的日志类在调用时候十分惨烈的例子，惨烈程度达到10级。
         
         这个是真实发生的例子。
         
@@ -476,6 +476,124 @@ Description: ## 1. pip install nb_log
         print(time.time() - t1)
         
         ```
+        
+        
+        ## 9.2 使用博客园搜索后排名第一个的python 日志封装，也是严重重复记录。
+        
+        [博客园 python 日志封装](https://www.cnblogs.com/linuxchao/p/linuxchao-logger.html)
+        
+        ```python
+        import logging
+        
+        
+        class Log(object):
+            def __init__(self, name=__name__, path='mylog.log', level='DEBUG'):
+                self.__name = name
+                self.__path = path
+                self.__level = level
+                self.__logger = logging.getLogger(self.__name)
+                self.__logger.setLevel(self.__level)
+        
+            def __ini_handler(self):
+                """初始化handler"""
+                stream_handler = logging.StreamHandler()
+                file_handler = logging.FileHandler(self.__path, encoding='utf-8')
+                return stream_handler, file_handler
+        
+            def __set_handler(self, stream_handler, file_handler, level='DEBUG'):
+                """设置handler级别并添加到logger收集器"""
+                stream_handler.setLevel(level)
+                file_handler.setLevel(level)
+                self.__logger.addHandler(stream_handler)
+                self.__logger.addHandler(file_handler)
+        
+            def __set_formatter(self, stream_handler, file_handler):
+                """设置日志输出格式"""
+                formatter = logging.Formatter('%(asctime)s-%(name)s-%(filename)s-[line:%(lineno)d]'
+                                              '-%(levelname)s-[日志信息]: %(message)s',
+                                              datefmt='%a, %d %b %Y %H:%M:%S')
+                stream_handler.setFormatter(formatter)
+                file_handler.setFormatter(formatter)
+        
+            def __close_handler(self, stream_handler, file_handler):
+                """关闭handler"""
+                stream_handler.close()
+                file_handler.close()
+        
+            @property
+            def Logger(self):
+                """构造收集器，返回looger"""
+                stream_handler, file_handler = self.__ini_handler()
+                self.__set_handler(stream_handler, file_handler)
+                self.__set_formatter(stream_handler, file_handler)
+                self.__close_handler(stream_handler, file_handler)
+                return self.__logger
+        
+        
+        if __name__ == '__main__':
+            def f():
+                log = Log(__name__, 'file.log')
+                logger = log.Logger
+                # logger.debug('I am a debug message')
+                # logger.info('I am a info message')
+                # logger.warning('I am a warning message')
+                # logger.error('I am a error message')
+                logger.critical('I am a critical message')
+            for i in range(10):
+                f()
+        ```
+        
+        ```
+        运行上面这个代码，应为调用了f函数10次，应该是一共打印10次和写入文件10次，结果是打印55次，写入文件55次。
+        因为这个实例化写在了函数内部，造成每调用一次就新增一次handler，日志记录的总次数不是预期期待的变成了高斯求和。
+        这种日志封装很惨，如果部署线上，f函数调用了10万次，那么会造成重复记录  100000*100001/2次变成50亿次，
+        随着程序部署的时间越来越长，服务器cpu会越来越卡，磁盘增长也会越来越快，而且问题难以排查，造成事故会非常惨烈。
+        
+        
+        千万别说你会注意，只会把Log封装类实例化放在函数的外面，这样做没用的，一个项目几百个模块，
+        如果在很多个模块级下面都实例化相同命名空间的日志，然后使用run.py调用了几百个模块作为运行起点，一样会造成重复打印。
+        所以只是小心翼翼的吧日志类的实例化放在模块级下面，仍然会发生重复记录的可能，只不过没有for循环那么惨烈的高斯求和叠加出记录那么多。
+        但是使用nb_log就可以随便你怎么折腾，放在for循环下面无限实例化都不怕不会重复记录日志。
+        ```
+        
+        ## 9.3 使用火热的loguru 来演示惨烈的文件日志重复记录。
+        
+        ```python
+        """
+        这也是一个很惨烈的真实例子。使用大火的 loguru ，然来用户让来本意是想实现每天生成一个新的日志文件。
+        结果造成了在所有历史文件中都重复记录当前日志，随着部署的天数越来越长，长时间例如半年 八九个月 如果不重新部署程序，
+        会造成严重的磁盘紧张和cpu飙升。
+        """
+        
+        from  loguru import logger
+        import time
+        
+        
+        def f(x):
+            """
+             用户实际生产是想每一天生成一个日志， time.strftime("%Y-%m-%d")}.log，
+             但这里为了节约时间方便演示文件日志重复记录所以换成时分秒演示，不然的话要观察很长的时间每隔一天观察一次才能观察出来。
+            """
+            logger.add(f'test_{time.strftime("%H-%M-%S")}.log')
+            logger.debug(f'loguru 太惨了重复记录 {x}')
+            logger.info(f'loguru 太惨了重复记录 {x}')
+            logger.warning(f'loguru 太惨了重复记录 {x}')
+            logger.error(f'loguru 太惨了重复记录 {x}')
+            logger.critical(f'loguru 太惨了重复记录 {x}')
+        
+        for i in range(100):
+            time.sleep(1)
+            f(i)
+        
+        """
+        预期是每秒调用一次函数f，但函数里面面有5次记录，debug info warning error  critical，
+        所以预期是每秒有5条日志只写入当前最新的日志文件中，但结果是每秒都写入到历史所有日志文件中。
+        只看当前最新的那个日志文件，似乎没有看到重复记录，但如果看所有的历史旧日志文件可以看到每个旧文件都严重重复记录了。
+        这种问题很难排查，所以用日志要谨慎，要搞懂日志handlers，和设计模式的观察者模式才能用好日志。
+        """
+        ```
+        
+        
         
         ![Total visitor](https://visitor-count-badge.herokuapp.com/total.svg?repo_id=xxxxxsadsadwqeasds)
          
