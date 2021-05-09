@@ -5,6 +5,9 @@
 ![Image text](https://i.niupic.com/images/2020/07/30/8tka.png)
 
 
+### 屏幕流日志效果图
+![Image text](https://i.niupic.com/images/2020/11/04/8WZf.png)
+
 ```
 very sharp color display,monkey patch bulitin print  
 and high-performance multiprocess safe roating file handler,
