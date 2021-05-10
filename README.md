@@ -586,7 +586,7 @@ for i in range(100):
 """
 ```
 
-![](https://visitor-badge.glitch.me/badge?page_id=nb_log)
+![](https://visitor-badge.glitch.me/badge?page_id=nb_log) 
 
 
  
