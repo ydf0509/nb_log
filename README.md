@@ -586,8 +586,8 @@ for i in range(100):
 """
 ```
 
+![](https://visitor-badge.glitch.me/badge?page_id=nb_log)
 
 
-![Total visitor](https://visitor-count-badge.herokuapp.com/total.svg?repo_id=xxxxxsadsadwqeasds)
  
  
