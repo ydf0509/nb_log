@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: nb-log
-Version: 4.6
+Version: 4.7
 Summary: very sharp color display,monkey patch bulitin print  and high-performance multiprocess safe roating file handler,other handlers includeing dintalk ,email,kafka,elastic and so on 
 Home-page: UNKNOWN
 Author: bfzs
@@ -14,6 +14,9 @@ Description: ## 1. pip install nb_log
         
         ![Image text](https://i.niupic.com/images/2020/07/30/8tka.png)
         
+        
+        ### 屏幕流日志效果图
+        ![Image text](https://i.niupic.com/images/2020/11/04/8WZf.png)
         
         ```
         very sharp color display,monkey patch bulitin print  
