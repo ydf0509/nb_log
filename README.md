@@ -21,7 +21,7 @@ other handlers includeing dintalk ,email,kafka,elastic and so on
 比如打印x变量的值，有人是为了省代码直接 print(x)，而没有多打几个字母使用print("x的值是：",x)，
 这样打印出来的x变量，根本无法通过全局查找找到打印x变量是在什么py文件的哪一行。
 
-有人说把之前的print全部用#注释不就好了，那这要全局找找print，一个一个的修改，一个10万行项目，
+有人说把之前的print全部用#注释不就好了，那这要全局找找print，一个一个的修改，一个10万行项目， 
 就算平均100行有一个print关键字，那起码也得有1000个print关键字吧，一个个的修改那要改到猴年马月呢。
 
 只有使用nb_log，才能让一切print妖魔鬼怪自动现形。
