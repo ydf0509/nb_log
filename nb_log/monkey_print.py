@@ -9,6 +9,7 @@ import multiprocessing
 import sys
 import time
 import traceback
+import nb_log_config # noqa
 
 print_raw = print
 
@@ -39,7 +40,7 @@ def nb_print(*args, sep=' ', end='\n', file=None, flush=True):
         # 获取被调用函数所在模块文件名
         file_name = sys._getframe(1).f_code.co_filename
         # sys.stdout.write(f'"{__file__}:{sys._getframe().f_lineno}"    {x}\n')
-        if True:
+        if nb_log_config.DISPLAY_BACKGROUD_COLOR_IN_CONSOLE:
             stdout_write(
                 f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   \033[0;30;44m{sep.join(args)}\033[0m{end} \033[0m')  # 36  93 96 94
         else:
@@ -147,7 +148,7 @@ def only_print_on_main_process(*args, sep=' ', end='\n', file=None, flush=True):
             # 获取被调用函数所在模块文件名
             file_name = sys._getframe(1).f_code.co_filename
             # sys.stdout.write(f'"{__file__}:{sys._getframe().f_lineno}"    {x}\n')
-            if True:
+            if nb_log_config.DISPLAY_BACKGROUD_COLOR_IN_CONSOLE:
                 stdout_write(
                     f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   \033[0;30;44m{sep.join(args)}\033[0m{end} \033[0m')  # 36  93 96 94
             else:
