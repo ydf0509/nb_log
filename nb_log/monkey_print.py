@@ -9,7 +9,7 @@ import multiprocessing
 import sys
 import time
 import traceback
-import nb_log_config # noqa
+from nb_log import nb_log_config_default
 
 print_raw = print
 
@@ -24,7 +24,7 @@ def stderr_write(msg: str):
     sys.stderr.flush()
 
 
-# noinspection PyProtectedMember,PyUnusedLocal,PyIncorrectDocstring
+# noinspection PyProtectedMember,PyUnusedLocal,PyIncorrectDocstring,DuplicatedCode
 def nb_print(*args, sep=' ', end='\n', file=None, flush=True):
     """
     超流弊的print补丁
@@ -40,7 +40,7 @@ def nb_print(*args, sep=' ', end='\n', file=None, flush=True):
         # 获取被调用函数所在模块文件名
         file_name = sys._getframe(1).f_code.co_filename
         # sys.stdout.write(f'"{__file__}:{sys._getframe().f_lineno}"    {x}\n')
-        if nb_log_config.DISPLAY_BACKGROUD_COLOR_IN_CONSOLE:
+        if nb_log_config_default.DISPLAY_BACKGROUD_COLOR_IN_CONSOLE:
             stdout_write(
                 f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   \033[0;30;44m{sep.join(args)}\033[0m{end} \033[0m')  # 36  93 96 94
         else:
@@ -68,7 +68,7 @@ def print_exception(etype, value, tb, limit=None, file=None, chain=True):
     if file is None:
         file = sys.stderr
     for line in traceback.TracebackException(
-            type(value), value, tb, limit=limit).format(chain=chain):
+        type(value), value, tb, limit=limit).format(chain=chain):
         # print(line, file=file, end="")
         if file != sys.stderr:
             stderr_write(f'{line} \n')
@@ -136,6 +136,7 @@ def is_main_process():
     return multiprocessing.process.current_process().name == 'MainProcess'
 
 
+# noinspection DuplicatedCode
 def only_print_on_main_process(*args, sep=' ', end='\n', file=None, flush=True):
     # 获取被调用函数在被调用时所处代码行数
     if is_main_process():
@@ -148,7 +149,7 @@ def only_print_on_main_process(*args, sep=' ', end='\n', file=None, flush=True):
             # 获取被调用函数所在模块文件名
             file_name = sys._getframe(1).f_code.co_filename
             # sys.stdout.write(f'"{__file__}:{sys._getframe().f_lineno}"    {x}\n')
-            if nb_log_config.DISPLAY_BACKGROUD_COLOR_IN_CONSOLE:
+            if nb_log_config_default.DISPLAY_BACKGROUD_COLOR_IN_CONSOLE:
                 stdout_write(
                     f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   \033[0;30;44m{sep.join(args)}\033[0m{end} \033[0m')  # 36  93 96 94
             else:
@@ -157,6 +158,7 @@ def only_print_on_main_process(*args, sep=' ', end='\n', file=None, flush=True):
             # sys.stdout.write(f'\033[0;30;44m"{file_name}:{line}"  {time.strftime("%H:%M:%S")}  {"".join(args)}\033[0m\n')
         else:  # 例如traceback模块的print_exception函数 file的入参是   <_io.StringIO object at 0x00000264F2F065E8>，必须把内容重定向到这个对象里面，否则exception日志记录不了错误堆栈。
             print_raw(*args, sep=sep, end=end, file=file)
+
 
 if __name__ == '__main__':
     print('before patch')
