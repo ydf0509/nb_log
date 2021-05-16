@@ -21,3 +21,5 @@ function_result_web/
 test_frame/my/
 redis_queue_web/
 not_up_git/
+dist/
+*.egg-info/
