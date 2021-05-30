@@ -19,6 +19,8 @@ concurrent_log_handler的ConcurrentRotatingFileHandler解决了logging模块自�
 使极限多进程安全切片的文件日志写入性能在win下提高100倍，linux下提高10倍。
 
 """
+import multiprocessing
+import typing
 import unittest
 from functools import lru_cache
 
@@ -187,13 +189,13 @@ class LogManager(object):
     logger_name_list = []
     logger_list = []
 
-    def __init__(self, logger_name='nb_log_default_namespace'):
+    def __init__(self, logger_name:typing.Union[str,None]='nb_log_default_namespace'):
         """
         :param logger_name: 日志名称，当为None时候创建root命名空间的日志，一般情况下千万不要传None，除非你确定需要这么做和是在做什么.这个命名空间是双刃剑
         """
-        if logger_name in (None, '', 'root'):
-            very_nb_print(
-                'logger_name 设置为None和root和空字符串都是一个意义，在操作根日志命名空间，任何其他日志的行为将会发生变化，一定要弄清楚原生logging包的日志name的意思。这个命名空间是双刃剑')
+        if logger_name in (None, '', 'root') and multiprocessing.process.current_process().name == 'MainProcess':
+            very_nb_print('logger_name 设置为None和root和空字符串都是一个意义，在操作根日志命名空间，任何其他日志的行为将会发生变化，'
+                          '一定要弄清楚原生logging包的日志name的意思。这个命名空间是双刃剑')
         self._logger_name = logger_name
         self.logger = logging.getLogger(logger_name)
 
@@ -371,7 +373,7 @@ class LogManager(object):
 
 
 @lru_cache()  # LogManager 本身也支持无限实例化
-def get_logger(name: str, *, log_level_int: int = None, is_add_stream_handler=True,
+def get_logger(name: typing.Union[str,None], *, log_level_int: int = None, is_add_stream_handler=True,
                do_not_use_color_handler=None, log_path=None,
                log_filename=None, log_file_size: int = None,
                is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler=undefind,

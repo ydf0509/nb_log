@@ -8,6 +8,10 @@
 ### 屏幕流日志效果图
 ![Image text](https://i.niupic.com/images/2020/11/04/8WZf.png)
 
+### 屏幕流日志效果图，设置不使用背景色块。
+###### 在项目根目录下自动生成的nb_log_config.py配置文件中设置DISPLAY_BACKGROUD_COLOR_IN_CONSOLE = False
+![Image text](jietu/img.png)
+
 ```
 very sharp color display,monkey patch bulitin print  
 and high-performance multiprocess safe roating file handler,
@@ -588,8 +592,5 @@ for i in range(100):
 """
 ```
 
-![](https://visitor-badge.glitch.me/badge?page_id=nb_log) 
+![](https://visitor-badge.glitch.me/badge?page_id=nb_log)
 
-
- 
- 
