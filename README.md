@@ -12,6 +12,13 @@
 ###### 在项目根目录下自动生成的nb_log_config.py配置文件中设置DISPLAY_BACKGROUD_COLOR_IN_CONSOLE = False
 ![Image text](jietu/img.png)
 
+### 屏幕流日志效果图，设置既不使用背景色块也不使用彩色文字
+
+例如只希望使用nb_log的强大多进程文件切片的功能等其他功能，对彩色控制台日志不感冒，则可以设置完全不要彩色。
+
+###### 在项目根目录下自动生成的nb_log_config.py配置文件中设置 DEFAULUT_USE_COLOR_HANDLER = False
+![Image text](jietu/img_no_color.png)
+
 ```
 very sharp color display,monkey patch bulitin print  
 and high-performance multiprocess safe roating file handler,
