@@ -1,5 +1,8 @@
 import nb_log
 
+"""
+禁止使用此种错误方式来封装 nb_log ，因为跳转到的日志地方跳转到你的这个类了，而不是精确跳转到 logger.debug/info()  的地方
+"""
 class LogUtil:
     def __init__(self):
         self.logger = nb_log.get_logger('xx')
