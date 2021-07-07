@@ -435,23 +435,14 @@ class LoggerMixin(object):
     主要是生成把类名作为日志命名空间的logger，方便被混入类直接使用self.logger，不需要手动实例化get_logger。
     """
     subclass_logger_dict = {}
+    logger_extra_suffix = ''
 
-    @property
-    def logger_extra_suffix(self):
-        return self.__logger_extra_suffix
-
-    @logger_extra_suffix.setter
-    def logger_extra_suffix(self, value):
-        # noinspection PyAttributeOutsideInit
-        self.__logger_extra_suffix = value
 
     @property
     def logger_full_name(self):
-        try:
-            # noinspection PyUnresolvedReferences
+        if self.logger_extra_suffix != '':
             return type(self).__name__ + '-' + self.logger_extra_suffix
-        except AttributeError:
-            # very_nb_print(type(e))
+        else:
             return type(self).__name__
 
     @property
