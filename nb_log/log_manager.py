@@ -244,6 +244,7 @@ class LogManager(object):
         if log_file_size is None:
             log_file_size = nb_log_config_default.LOG_FILE_SIZE
         if log_path is None:
+            # print(nb_log_config_default.LOG_PATH)
             log_path = nb_log_config_default.LOG_PATH or '/pythonlogs'
         if formatter_template is None:
             formatter_template = nb_log_config_default.FORMATTER_KIND
