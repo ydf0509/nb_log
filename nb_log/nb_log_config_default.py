@@ -1,3 +1,4 @@
+# coding=utf8
 """
 此文件nb_log_config.py是自动生成到python项目的根目录的。
 在这里面写的变量会覆盖此文件nb_log_config_default中的值。对nb_log包进行默认的配置。
@@ -77,7 +78,7 @@ LOG_FILE_BACKUP_COUNT = 3  # 对同一个日志文件，默认最多备份几个
 LOG_PATH = '/pythonlogs'  # 默认的日志文件夹,如果不写明磁盘名，则是项目代码所在磁盘的根目录下的/pythonlogs
 # LOG_PATH = Path(__file__).absolute().parent / Path("pythonlogs")   #这么配置就会自动在你项目的根目录下创建pythonlogs文件夹了并写入。
 if os.name == 'posix':  # linux非root用户和mac用户无法操作 /pythonlogs 文件夹，没有权限，默认修改为   home/[username]  下面了。例如你的linux用户名是  xiaomin，那么默认会创建并在 /home/xiaomin/pythonlogs文件夹下写入日志文件。
-    home_path = os.environ.get("HOME",'/')  # 这个是获取linux系统的当前用户的主目录，不需要亲自设置
+    home_path = os.environ.get("HOME", '/')  # 这个是获取linux系统的当前用户的主目录，不需要亲自设置
     LOG_PATH = Path(home_path) / Path('pythonlogs')  # linux mac 权限很严格，非root权限不能在/pythonlogs写入，修改一下默认值。
 
 IS_USE_WATCHED_FILE_HANDLER_INSTEAD_OF_CUSTOM_CONCURRENT_ROTATING_FILE_HANDLER = False  # 需要依靠外力lograte来切割日志，watchedfilehandler性能比此包自定义的日志切割handler写入文件速度慢很多。
@@ -106,7 +107,13 @@ FORMATTER_DICT = {
                          "%Y-%m-%d %H:%M:%S"),
     7: logging.Formatter('%(asctime)s - %(name)s - "%(filename)s:%(lineno)d" - %(levelname)s - %(message)s', "%Y-%m-%d %H:%M:%S"),  # 一个只显示简短文件名和所处行数的日志模板
 
-    8: JsonFormatterJumpAble('%(asctime)s - %(name)s - %(levelname)s - %(message)s - "%(filename)s %(lineno)d -" ', "%Y-%m-%d %H:%M:%S", json_ensure_ascii=False)  # 这个是json日志，方便分析.
+    8: JsonFormatterJumpAble('%(asctime)s - %(name)s - %(levelname)s - %(message)s - "%(filename)s %(lineno)d -" ', "%Y-%m-%d %H:%M:%S", json_ensure_ascii=False),  # 这个是json日志，方便分析.
+
+    9: logging.Formatter(
+        '[p%(process)d_t%(thread)d] %(asctime)s - %(name)s - "%(pathname)s:%(lineno)d" - %(funcName)s - %(levelname)s - %(message)s',
+        "%Y-%m-%d %H:%M:%S"),  # 对5改进，带进程和线程显示的日志模板。
+    10: logging.Formatter(
+        '[p%(process)d_t%(thread)d] %(asctime)s - %(name)s - "%(filename)s:%(lineno)d" - %(levelname)s - %(message)s', "%Y-%m-%d %H:%M:%S"),  # 对7改进，带进程和线程显示的日志模板。
 }
 
 FORMATTER_KIND = 5  # 如果get_logger_and_add_handlers不指定日志模板，则默认选择第几个模板

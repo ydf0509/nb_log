@@ -1,6 +1,8 @@
 # noinspection PyMissingOrEmptyDocstring
 import atexit
 import copy
+import queue
+import re
 import sys
 import os
 import traceback
@@ -9,6 +11,7 @@ import datetime
 import json
 import time
 from collections import OrderedDict
+from pathlib import Path
 from queue import Queue, Empty
 # noinspection PyPackageRequirements
 from kafka import KafkaProducer
@@ -22,6 +25,7 @@ from concurrent_log_handler import ConcurrentRotatingFileHandler  # 需要安装
 # noinspection PyUnresolvedReferences
 from logging.handlers import WatchedFileHandler
 # noinspection PyPackageRequirements
+from nb_filelock import FileLock
 from pythonjsonlogger.jsonlogger import JsonFormatter
 from nb_log import nb_log_config_default
 from nb_log import nb_print
@@ -844,3 +848,108 @@ class DingTalkHandler(logging.Handler):
             for index, hdlr in enumerate(logging.getLogger(logger_name).handlers):
                 if 'DingTalkHandler' in str(hdlr):
                     logging.getLogger(logger_name).handlers.pop(index)
+
+
+# noinspection PyPep8Naming
+class ConcurrentDayRotatingFileHandler(logging.Handler):
+    """
+    这个多进程按时间切片安全的。
+    官方的 TimedRotatingFileHandler 在多进程下疯狂报错，
+    不信的话可以试试官方 TimedRotatingFileHandler 多进程写入文件日志，设置成每秒换一个新的文件写(主要是按天来切割要耽误很长的时间才能观察错误)
+    """
+    file_handler_list = []
+    has_start_emit_all_file_handler_process_id_set = set()  # 这个linux和windwos都兼容，windwos是多进程每个进程的变量has_start_emit_all_file_handler是独立的。linux是共享的。
+    __lock_for_rotate = Lock()
+
+    @classmethod
+    def _emit_all_file_handler(cls):
+        while True:
+            for hr in cls.file_handler_list:
+                # very_nb_print(hr.buffer_msgs_queue.qsize())
+                # noinspection PyProtectedMember
+                hr._write_to_file()
+            time.sleep(1)  # 每隔一秒钟批量写入一次，性能好了很多。
+
+    @classmethod
+    def _start_emit_all_file_handler(cls):
+        pass
+        Thread(target=cls._emit_all_file_handler, daemon=True).start()
+
+    # noinspection PyMissingConstructor
+    def __init__(self, file_name: str, file_path: str, back_count=10):
+        super().__init__()
+        self.file_name = file_name
+        self.file_path = file_path
+        self.backupCount = back_count
+        self.extMatch = re.compile(r"^\d{4}-\d{2}-\d{2}(\.\w+)?$", re.ASCII)
+        self.extMatch2 = re.compile(r"^\d{2}-\d{2}-\d{2}(\.\w+)?$", re.ASCII)
+        self._last_delete_time = time.time()
+
+        self.buffer_msgs_queue = queue.Queue()
+        atexit.register(self._write_to_file)  # 如果程序属于立马就能结束的，需要在程序结束前执行这个钩子，防止不到最后一秒的日志没记录到。
+        self.file_handler_list.append(self)
+        if os.getpid() not in self.has_start_emit_all_file_handler_process_id_set:
+            self._start_emit_all_file_handler()
+            self.__class__.has_start_emit_all_file_handler_process_id_set.add(os.getpid())
+
+    def emit(self, record: logging.LogRecord):
+        """
+        emit已经在logger的handle方法中加了锁，所以这里的重置上次写入时间和清除buffer_msgs不需要加锁了。
+        :param record:
+        :return:
+        """
+        # noinspection PyBroadException
+        try:
+            msg = self.format(record)
+            self.buffer_msgs_queue.put(msg)
+        except Exception:
+            self.handleError(record)
+
+    def _write_to_file(self):
+        buffer_msgs = ''
+        while True:
+            try:
+                msg = self.buffer_msgs_queue.get(block=False)
+                buffer_msgs += msg + '\n'
+            except queue.Empty:
+                break
+        if buffer_msgs:
+            time_str = time.strftime('%Y-%m-%d')
+            # time_str = time.strftime('%H-%M-%S')  # 方便测试用的，方便观察。
+            new_file_name = self.file_name + '.' + time_str
+            path_obj = Path(self.file_path) / Path(new_file_name)
+            path_obj.touch(exist_ok=True)
+            with path_obj.open(mode='a') as f:
+                f.write(buffer_msgs)
+        if time.time() - self._last_delete_time > 60:
+            with FileLock(self.file_path / Path(f'_delete_{self.file_name}.lock')):
+                self._find_and_delete_files()
+            self._last_delete_time = time.time()
+
+    def _find_and_delete_files(self):
+        """
+        这一段命名不规范是复制原来的官方旧代码。
+        Determine the files to delete when rolling over.
+
+        More specific than the earlier method, which just used glob.glob().
+        """
+        dirName = self.file_path
+        baseName = self.file_name
+        fileNames = os.listdir(dirName)
+        result = []
+        prefix = baseName + "."
+        plen = len(prefix)
+        for fileName in fileNames:
+            if fileName[:plen] == prefix:
+                suffix = fileName[plen:]
+                # print(fileName, prefix,suffix)
+                if self.extMatch.match(suffix) or self.extMatch2.match(suffix):
+                    result.append(os.path.join(dirName, fileName))
+        if len(result) < self.backupCount:
+            result = []
+        else:
+            result.sort()
+            result = result[:len(result) - self.backupCount]
+        # print(result)
+        for r in result:
+            Path(r).unlink()

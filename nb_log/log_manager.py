@@ -21,11 +21,10 @@ concurrent_log_handler的ConcurrentRotatingFileHandler解决了logging模块自�
 """
 import multiprocessing
 import typing
-import unittest
 from functools import lru_cache
 
-from nb_log.handlers import *
 from nb_log import nb_log_config_default
+from nb_log.handlers import *
 
 
 # noinspection DuplicatedCode
@@ -189,7 +188,7 @@ class LogManager(object):
     logger_name_list = []
     logger_list = []
 
-    def __init__(self, logger_name:typing.Union[str,None]='nb_log_default_namespace'):
+    def __init__(self, logger_name: typing.Union[str, None] = 'nb_log_default_namespace'):
         """
         :param logger_name: 日志名称，当为None时候创建root命名空间的日志，一般情况下千万不要传None，除非你确定需要这么做和是在做什么.这个命名空间是双刃剑
         """
@@ -209,7 +208,7 @@ class LogManager(object):
                                     ding_talk_token=None, ding_talk_time_interval=60,
                                     mail_handler_config: MailHandlerConfig = MailHandlerConfig(),
                                     is_add_mail_handler=False,
-                                    formatter_template: int = None):
+                                    formatter_template: typing.Union[int, logging.Formatter] = None):
         """
        :param log_level_int: 日志输出级别，设置为 1 2 3 4 5，分别对应原生logging.DEBUG(10)，logging.INFO(20)，logging.WARNING(30)，logging.ERROR(40),logging.CRITICAL(50)级别，现在可以直接用10 20 30 40 50了，兼容了。
        :param is_add_stream_handler: 是否打印日志到控制台
@@ -227,7 +226,9 @@ class LogManager(object):
        :param ding_talk_time_interval : 时间间隔，少于这个时间不发送钉钉消息
        :param mail_handler_config : 邮件配置
        :param is_add_mail_handler :是否发邮件
-       :param formatter_template :日志模板，1为formatter_dict的详细模板，2为简要模板,5为最好模板
+       :param formatter_template :日志模板，如果为数字，则为nb_log_config.py字典formatter_dict的键对应的模板，
+                                1为formatter_dict的详细模板，2为简要模板,5为最好模板。
+                                如果为logging.Formatter对象，则直接使用用户传入的模板。
        :type log_level_int :int
        :type is_add_stream_handler :bool
        :type log_path :str
@@ -266,7 +267,12 @@ class LogManager(object):
         self._mail_handler_config = mail_handler_config
         self._is_add_mail_handler = is_add_mail_handler
 
-        self._formatter = nb_log_config_default.FORMATTER_DICT[formatter_template]
+        if isinstance(formatter_template, int):
+            self._formatter = nb_log_config_default.FORMATTER_DICT[formatter_template]
+        elif isinstance(formatter_template, logging.Formatter):
+            self._formatter = formatter_template
+        else:
+            raise ValueError('设置的 formatter_template 不正确')
 
         self.logger.setLevel(self._logger_level)
         self.__add_handlers()
@@ -374,7 +380,7 @@ class LogManager(object):
 
 
 @lru_cache()  # LogManager 本身也支持无限实例化
-def get_logger(name: typing.Union[str,None], *, log_level_int: int = None, is_add_stream_handler=True,
+def get_logger(name: typing.Union[str, None], *, log_level_int: int = None, is_add_stream_handler=True,
                do_not_use_color_handler=None, log_path=None,
                log_filename=None, log_file_size: int = None,
                is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler=undefind,
@@ -406,7 +412,9 @@ def get_logger(name: typing.Union[str,None], *, log_level_int: int = None, is_ad
        :param ding_talk_time_interval : 时间间隔，少于这个时间不发送钉钉消息
        :param mail_handler_config : 邮件配置
        :param is_add_mail_handler :是否发邮件
-       :param formatter_template :日志模板，1为formatter_dict的详细模板，2为简要模板,5为最好模板
+        :param formatter_template :日志模板，如果为数字，则为nb_log_config.py字典formatter_dict的键对应的模板，
+                                1为formatter_dict的详细模板，2为简要模板,5为最好模板。
+                                如果为logging.Formatter对象，则直接使用用户传入的模板。
        :type log_level_int :int
        :type is_add_stream_handler :bool
        :type log_path :str
@@ -436,7 +444,6 @@ class LoggerMixin(object):
     """
     subclass_logger_dict = {}
     logger_extra_suffix = ''
-
 
     @property
     def logger_full_name(self):
