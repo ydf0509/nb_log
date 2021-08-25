@@ -20,6 +20,7 @@ install_requires = [
     'pika',
     'flask',
     'python-json-logger==0.1.10',
+    'nb_filelock',
 ]
 
 if os.name == 'nt':
@@ -27,7 +28,7 @@ if os.name == 'nt':
 
 setup(
     name='nb_log',  #
-    version="5.2",
+    version="5.3",
     description=(
         'very sharp color display,monkey patch bulitin print  and high-performance multiprocess safe roating file handler,other handlers includeing dintalk ,email,kafka,elastic and so on '
     ),
@@ -62,7 +63,7 @@ setup(
 python setup.py sdist upload -r pypi
 
 
-python setup.py sdist & twine upload dist/nb_log-5.2.tar.gz
+python setup.py sdist & twine upload dist/nb_log-5.3.tar.gz
 twine upload dist/*
 
 
