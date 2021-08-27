@@ -355,7 +355,7 @@ class LogManager(object):
             elif self._log_file_handler_type == 2:
                 file_handler = ConcurrentDayRotatingFileHandler(self._log_filename, self._log_path, back_count=nb_log_config_default.LOG_FILE_BACKUP_COUNT)
             elif self._log_file_handler_type == 3:
-                file_handler = FileHandler(Path(self._log_path) / Path(self._log_filename), mode='a', encoding='utf-8')
+                file_handler = FileHandler(log_file, mode='a', encoding='utf-8')
             self.__add_a_hanlder(file_handler)
 
         # REMIND 添加mongo日志。
