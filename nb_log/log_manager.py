@@ -329,7 +329,12 @@ class LogManager(object):
             self.__add_a_hanlder(handler)
 
         # REMIND 添加多进程安全切片的文件日志
-        if not self._judge_logger_has_handler_type(ConcurrentRotatingFileHandler) and all(
+        if not (self._judge_logger_has_handler_type(ConcurrentRotatingFileHandler) or
+                self._judge_logger_has_handler_type(ConcurrentRotatingFileHandlerWithBufferInitiativeWindwos) or
+                self._judge_logger_has_handler_type(ConcurrentRotatingFileHandlerWithBufferInitiativeLinux) or
+                self._judge_logger_has_handler_type(ConcurrentDayRotatingFileHandler) or
+                self._judge_logger_has_handler_type(FileHandler)
+        ) and all(
             [self._log_path, self._log_filename]):
             if not os.path.exists(self._log_path):
                 os.makedirs(self._log_path)
