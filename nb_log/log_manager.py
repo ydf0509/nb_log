@@ -335,7 +335,7 @@ class LogManager(object):
                 os.makedirs(self._log_path)
             log_file = os.path.join(self._log_path, self._log_filename)
             file_handler = None
-            if self._log_file_handler_type == 1:
+            if self._log_file_handler_type in (1, None):
                 if os_name == 'nt':
                     # 在win下使用这个ConcurrentRotatingFileHandler可以解决多进程安全切片，但性能损失惨重。
                     # 10进程各自写入10万条记录到同一个文件消耗15分钟。比不切片写入速度降低100倍。
