@@ -81,11 +81,11 @@ if os.name == 'posix':  # linux非root用户和mac用户无法操作 /pythonlogs
     home_path = os.environ.get("HOME", '/')  # 这个是获取linux系统的当前用户的主目录，不需要亲自设置
     LOG_PATH = Path(home_path) / Path('pythonlogs')  # linux mac 权限很严格，非root权限不能在/pythonlogs写入，修改一下默认值。
 
-LOG_FILE_HANDLER_TYPE = 1   #  1 2 3 4
+LOG_FILE_HANDLER_TYPE = 1  # 1 2 3 4
 """
 LOG_FILE_HANDLER_TYPE 这个值可以设置为 1 2 3 4 四种值，
 1为使用多进程安全按日志文件大小切割的文件日志
-2为多进程安全按天自动切割的文件日志，
+2为多进程安全按天自动切割的文件日志，同一个文件，每天生成一个日志
 3为不自动切割的单个文件的日志(不切割文件就不会出现所谓进程安不安全的问题) 
 4为 WatchedFileHandler，这个是需要在linux下才能使用，需要借助lograte外力进行日志文件的切割，多进程安全。
 """
