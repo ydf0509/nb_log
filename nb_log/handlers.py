@@ -914,17 +914,17 @@ class ConcurrentDayRotatingFileHandler(logging.Handler):
             except queue.Empty:
                 break
         if buffer_msgs:
-            time_str = time.strftime('%Y-%m-%d')
-            # time_str = time.strftime('%H-%M-%S')  # 方便测试用的，方便观察。
-            new_file_name = self.file_name + '.' + time_str
-            path_obj = Path(self.file_path) / Path(new_file_name)
-            path_obj.touch(exist_ok=True)
-            with path_obj.open(mode='a') as f:
-                f.write(buffer_msgs)
-        if time.time() - self._last_delete_time > 60:
             with FileLock(self.file_path / Path(f'_delete_{self.file_name}.lock')):
-                self._find_and_delete_files()
-            self._last_delete_time = time.time()
+                time_str = time.strftime('%Y-%m-%d')
+                # time_str = time.strftime('%H-%M-%S')  # 方便测试用的，方便观察。
+                new_file_name = self.file_name + '.' + time_str
+                path_obj = Path(self.file_path) / Path(new_file_name)
+                path_obj.touch(exist_ok=True)
+                with path_obj.open(mode='a') as f:
+                    f.write(buffer_msgs)
+                if time.time() - self._last_delete_time > 60:
+                    self._find_and_delete_files()
+                    self._last_delete_time = time.time()
 
     def _find_and_delete_files(self):
         """

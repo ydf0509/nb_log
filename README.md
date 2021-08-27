@@ -642,12 +642,6 @@ for i in range(100):
 这是loguru 屏幕渲染颜色
 [![hZC2PU.png](https://z3.ax1x.com/2021/08/25/hZC2PU.png)](https://imgtu.com/i/hZC2PU)
 
-nb_log 屏幕流效果之一
-![Image text](https://i.niupic.com/images/2020/11/04/8WZf.png)
-
-nb_log 屏幕流效果之二
-[![hVoOmj.png](https://z3.ax1x.com/2021/08/25/hVoOmj.png)](https://imgtu.com/i/hVoOmj)
-
 
 1）nb_log 颜色更炫
 
@@ -820,7 +814,7 @@ nb_log的核心方法是get_logger，此方法是返回原生loggin.Logger类型
 例如老代码 
 logger = logging.getLogger("my_namespage")
 
-老代吗的其他地方使用了logger对象的这些方法
+老代码的其他地方使用了logger对象的这些方法，远不止这两个。
 logger.setLevel()
 logger.addHandler()
 

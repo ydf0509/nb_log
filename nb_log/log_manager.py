@@ -22,7 +22,7 @@ concurrent_log_handler的ConcurrentRotatingFileHandler解决了logging模块自�
 import multiprocessing
 import typing
 from functools import lru_cache
-
+from logging import FileHandler
 from nb_log import nb_log_config_default
 from nb_log.handlers import *
 
@@ -203,7 +203,7 @@ class LogManager(object):
     def get_logger_and_add_handlers(self, log_level_int: int = None, *, is_add_stream_handler=True,
                                     do_not_use_color_handler=None, log_path=None,
                                     log_filename=None, log_file_size: int = None,
-                                    is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler=undefind,
+                                    log_file_handler_type: int = None,
                                     mongo_url=None, is_add_elastic_handler=False, is_add_kafka_handler=False,
                                     ding_talk_token=None, ding_talk_time_interval=60,
                                     mail_handler_config: MailHandlerConfig = MailHandlerConfig(),
@@ -217,8 +217,9 @@ class LogManager(object):
               非windwos下要注意账号权限问题(如果python没权限在根目录建/pythonlogs，则需要手动先创建好)
        :param log_filename: 日志的名字，仅当log_path和log_filename都不为None时候才写入到日志文件。
        :param log_file_size :日志大小，单位M，默认100M
-       :param is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler :是否使用watched_file_handler作为文件日志，
-              这个需要在linux配合lograte才能切割日志，win下不行，不推荐使用此方式来写文件日志切割。
+       :param log_file_handler_type :这个值可以设置为1 2 3 4 四种值，1为使用多进程安全按日志文件大小切割的文件日志，2为多进程安全按天自动切割的文件日志，
+              3为不自动切割的单个文件的日志(不切割文件就不会出现所谓进程安不安全的问题)
+              4为 WatchedFileHandler，这个是需要在linux下才能使用，需要借助lograte外力进行日志文件的切割，多进程安全。
        :param mongo_url : mongodb的连接，为None时候不添加mongohandler
        :param is_add_elastic_handler: 是否记录到es中。
        :param is_add_kafka_handler: 日志是否发布到kafka。
@@ -256,9 +257,9 @@ class LogManager(object):
         self._log_path = log_path
         self._log_filename = log_filename
         self._log_file_size = log_file_size
-        self._is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler = (
-            nb_log_config_default.IS_USE_WATCHED_FILE_HANDLER_INSTEAD_OF_CUSTOM_CONCURRENT_ROTATING_FILE_HANDLER if is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler is undefind
-            else is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler)
+        if log_file_handler_type not in (None, 1, 2, 3, 4):
+            raise ValueError("log_file_handler_type的值必须设置为 1 2 3 4这四个数字")
+        self._log_file_handler_type = log_file_handler_type or nb_log_config_default.LOG_FILE_HANDLER_TYPE
         self._mongo_url = mongo_url
         self._is_add_elastic_handler = is_add_elastic_handler
         self._is_add_kafka_handler = is_add_kafka_handler
@@ -332,25 +333,29 @@ class LogManager(object):
             if not os.path.exists(self._log_path):
                 os.makedirs(self._log_path)
             log_file = os.path.join(self._log_path, self._log_filename)
-            rotate_file_handler = None
-            if self._is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler:
-                rotate_file_handler = WatchedFileHandler(log_file)
-            else:
+            file_handler = None
+            if self._log_file_handler_type == 1:
                 if os_name == 'nt':
                     # 在win下使用这个ConcurrentRotatingFileHandler可以解决多进程安全切片，但性能损失惨重。
                     # 10进程各自写入10万条记录到同一个文件消耗15分钟。比不切片写入速度降低100倍。
-                    rotate_file_handler = ConcurrentRotatingFileHandlerWithBufferInitiativeWindwos(log_file,
-                                                                                                   maxBytes=self._log_file_size * 1024 * 1024,
-                                                                                                   backupCount=nb_log_config_default.LOG_FILE_BACKUP_COUNT,
-                                                                                                   encoding="utf-8")
+                    file_handler = ConcurrentRotatingFileHandlerWithBufferInitiativeWindwos(log_file,
+                                                                                            maxBytes=self._log_file_size * 1024 * 1024,
+                                                                                            backupCount=nb_log_config_default.LOG_FILE_BACKUP_COUNT,
+                                                                                            encoding="utf-8")
                 elif os_name == 'posix':
                     # linux下可以使用ConcurrentRotatingFileHandler，进程安全的日志方式。
                     # 10进程各自写入10万条记录到同一个文件消耗100秒，还是比不切片写入速度降低10倍。因为每次检查切片大小和文件锁的原因。
-                    rotate_file_handler = ConcurrentRotatingFileHandlerWithBufferInitiativeLinux(log_file,
-                                                                                                 maxBytes=self._log_file_size * 1024 * 1024,
-                                                                                                 backupCount=nb_log_config_default.LOG_FILE_BACKUP_COUNT,
-                                                                                                 encoding="utf-8")
-            self.__add_a_hanlder(rotate_file_handler)
+                    file_handler = ConcurrentRotatingFileHandlerWithBufferInitiativeLinux(log_file,
+                                                                                          maxBytes=self._log_file_size * 1024 * 1024,
+                                                                                          backupCount=nb_log_config_default.LOG_FILE_BACKUP_COUNT,
+                                                                                          encoding="utf-8")
+            elif self._log_file_handler_type == 4:
+                file_handler = WatchedFileHandler(log_file)
+            elif self._log_file_handler_type == 2:
+                file_handler = ConcurrentDayRotatingFileHandler(self._log_filename, self._log_path, back_count=nb_log_config_default.LOG_FILE_BACKUP_COUNT)
+            elif self._log_file_handler_type == 3:
+                file_handler = FileHandler(Path(self._log_path) / Path(self._log_filename), mode='a', encoding='utf-8')
+            self.__add_a_hanlder(file_handler)
 
         # REMIND 添加mongo日志。
         if not self._judge_logger_has_handler_type(MongoHandler) and self._mongo_url:
@@ -383,7 +388,7 @@ class LogManager(object):
 def get_logger(name: typing.Union[str, None], *, log_level_int: int = None, is_add_stream_handler=True,
                do_not_use_color_handler=None, log_path=None,
                log_filename=None, log_file_size: int = None,
-               is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler=undefind,
+               log_file_handler_type: int = None,
                mongo_url=None, is_add_elastic_handler=False, is_add_kafka_handler=False,
                ding_talk_token=None, ding_talk_time_interval=60,
                mail_handler_config: MailHandlerConfig = MailHandlerConfig(), is_add_mail_handler=False,
@@ -403,8 +408,9 @@ def get_logger(name: typing.Union[str, None], *, log_level_int: int = None, is_a
               非windwos下要注意账号权限问题(如果python没权限在根目录建/pythonlogs，则需要手动先创建好)
        :param log_filename: 日志的名字，仅当log_path和log_filename都不为None时候才写入到日志文件。
        :param log_file_size :日志大小，单位M，默认100M
-       :param is_use_watched_file_handler_instead_of_custom_concurrent_rotating_file_handler :是否使用watched_file_handler作为文件日志，
-              这个需要在linux配合lograte才能切割日志，win下不行，不推荐使用此方式来写文件日志切割。
+       :param log_file_handler_type :这个值可以设置为1 2 3 4 四种值，1为使用多进程安全按日志文件大小切割的文件日志，2为多进程安全按天自动切割的文件日志，
+              3为不自动切割的单个文件的日志(不切割文件就不会出现所谓进程安不安全的问题)
+              4为 WatchedFileHandler，这个是需要在linux下才能使用，需要借助lograte外力进行日志文件的切割，多进程安全。
        :param mongo_url : mongodb的连接，为None时候不添加mongohandler
        :param is_add_elastic_handler: 是否记录到es中。
        :param is_add_kafka_handler: 日志是否发布到kafka。

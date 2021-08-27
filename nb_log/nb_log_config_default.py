@@ -81,7 +81,14 @@ if os.name == 'posix':  # linux非root用户和mac用户无法操作 /pythonlogs
     home_path = os.environ.get("HOME", '/')  # 这个是获取linux系统的当前用户的主目录，不需要亲自设置
     LOG_PATH = Path(home_path) / Path('pythonlogs')  # linux mac 权限很严格，非root权限不能在/pythonlogs写入，修改一下默认值。
 
-IS_USE_WATCHED_FILE_HANDLER_INSTEAD_OF_CUSTOM_CONCURRENT_ROTATING_FILE_HANDLER = False  # 需要依靠外力lograte来切割日志，watchedfilehandler性能比此包自定义的日志切割handler写入文件速度慢很多。
+LOG_FILE_HANDLER_TYPE = 1   #  1 2 3 4
+"""
+LOG_FILE_HANDLER_TYPE 这个值可以设置为 1 2 3 4 四种值，
+1为使用多进程安全按日志文件大小切割的文件日志
+2为多进程安全按天自动切割的文件日志，
+3为不自动切割的单个文件的日志(不切割文件就不会出现所谓进程安不安全的问题) 
+4为 WatchedFileHandler，这个是需要在linux下才能使用，需要借助lograte外力进行日志文件的切割，多进程安全。
+"""
 
 LOG_LEVEL_FILTER = logging.DEBUG  # 默认日志级别，低于此级别的日志不记录了。例如设置为INFO，那么logger.debug的不会记录，只会记录logger.info以上级别的。
 
