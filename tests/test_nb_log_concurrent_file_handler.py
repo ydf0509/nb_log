@@ -10,8 +10,8 @@ def f(x):
 if __name__ == '__main__':
     # 200万条 45秒
     pool = ProcessPoolExecutor(10)
-    print('开始')
+    print('start')
     for i in range(10):
         pool.submit(f,i)
     pool.shutdown()
-    print('结束')
+    print('end')
