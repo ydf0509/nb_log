@@ -840,5 +840,48 @@ nb_log 比loguru添加控制台和文件日志更简单，并且显示格式更�
 
 
 
+### 10.10 nb_log可以灵活捕获所有第三方python包、库、框架的日志,loguru不行
+```
+不知道大家喜欢看三方包的源码不，或者跳转进去看过三方包源码不，
+95%的第三方包的源码的大量文件中都有写   logger = logging.getLogger(__name__)  这段代码。
+假设第三包的包名是  packagex, 这个包下面有 ./dira/dirb/yy.py 文件，
+假设logger = logging.getLogger(__name__)  这段代码在 ./dira/dirb/moduley.py文件中，
+当使用这个三方包时候，就会有一个 packagex.dira.dirb.yy.moduley 的命名空间的日志，如果你很在意这个模块的日志，
+希望吧这个模块的日志捕获出来，那么可以 logger = logging.getLogger("packagex.dira.dirb.moduley"),
+然后对logger添加文件和控制台等各种handler，设置合适的日志级别，就可以显示出来这个模块的日志了。
+
+为什么第三方包不默认给他们自己的logger添加handler呢，这是因为第三方包不知道你喜欢吧日志记载到哪里，而且第三包不知道你会很关心这个模块的日志，
+如果每隔第三方包都那么自私，把日志默认添加handler，并且设置成info或debug级别，那各种模块的日志加起来就会很多，干扰用户。很多用户又不知道如何移除handler，
+所以三方包都不会主动添加handler，需要用户自己去添加handler和设置用户喜爱的formattor。
+
+代码例子如下，因为requests调用了urllib3，这里有urllib3的命名空间的日志，只是没有添加日志handler所以没显示出来。
+nb_log.get_logger 自动加上handler和设置日志模板了，方便你调试你所关心的模块的日志。
+```
+
+```python
+from nb_log import get_logger
+import requests
+
+get_logger('urllib3')  # 也可以更精确只捕获 urllib3.connectionpool 的日志，不要urllib3包其他模块文件的日志
+requests.get("http://www.baidu.com")
+```
+<a href="https://imgtu.com/i/hJbkrD"><img src="https://z3.ax1x.com/2021/08/30/hJbkrD.png" alt="hJbkrD.png" border="0" /></a>
+
+
+###### 日志的命名空间意义很重要 ，就是那个logging.getLogger的入参，很多人还不懂。
+```
+如果日志名字是  a.b.c
+那么 logging.getLogger("a")可以捕获a文件夹下的所有子文件夹下的所有模块下的日志，
+logging.getLogger("a.b")可以捕获a/b文件夹下的所有模块下的日志
+logging.getLogger("a.b.c") 可以精确只捕获a/b/c.py 这个模块的日志
+```
+
+[![hJOYIH.png](https://z3.ax1x.com/2021/08/30/hJOYIH.png)](https://imgtu.com/i/hJOYIH)
+
+
+
+
+
+
 ![](https://visitor-badge.glitch.me/badge?page_id=nb_log)
 
