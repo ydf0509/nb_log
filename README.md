@@ -132,14 +132,22 @@ print('print样式被自动发生变化')
 ```
 
 ## 3 文件日志
-###### 3.1）这个文件日志的自定义filehandler是python史上性能最强大的 支持多进程下日志文件按大小自动切割。
+###### 3.1）这个文件日志的自定义多进程安全按大小切割，filehandler是python史上性能最强大的支持多进程下日志文件按大小自动切割。
 
+
+关于按大小切割的性能可以看第10章的和loggeru的性能对比，nb_log文件日志写入性能快400%。
+
+nb_log 支持4种文件日志，get_logger 的log_file_handler_type可以优先设置是按照 大小/时间/watchfilehandler/单文件永不切割.
+
+也可以在你代码项目根目录下的 nb_log_config.py 配置文件的 LOG_FILE_HANDLER_TYPE 设置默认的filehandler类型。
+
+```
 在各种filehandler实现难度上 
-单进程永不切割 <  多进程按时间切割 < 单进程按大小切割  << 多进程按大小切割
+单进程永不切割  < 单进程按大小切割 <  多进程按时间切割 < 多进程按大小切割
 
-因为每天日志大小很难确定，如果每天所有日志文件以及备份加起来超过40g了，硬盘就会满挂了，所以nb_log的文件日志filehandler采用的是按大小切割，不使用按时间切割。
+因为每天日志大小很难确定，如果每天所有日志文件以及备份加起来超过40g了，硬盘就会满挂了，所以nb_log的文件日志filehandler默认采用的是按大小切割，不使用按时间切割。
 
-文件日志自动使用的是多进程安全切割的自定义filehandler，
+文件日志自动使用的默认是多进程安全切割的自定义filehandler，
 logging包的RotatingFileHandler多进程运行代码时候，如果要实现向文件写入到规定大小时候并自动备份切割，win和linux都100%报错。
 
 支持多进程安全切片的知名的handler有ConcurrentRotatingFileHandler，
@@ -149,6 +157,10 @@ logging包的RotatingFileHandler多进程运行代码时候，如果要实现向
 nb_log是基于自动批量聚合，从而减少写入次数（但文件日志的追加最多会有1秒的延迟），从而大幅度减少反复给文件加锁解锁，
 使快速大量写入文件日志的性能大幅提高，在保证多进程安全且排列的前提下，对比这个ConcurrentRotatingFileHandler
 使win的日志文件写入速度提高100倍，在linux上写入速度提高10倍。
+
+```
+
+
 
 ###### 3.2）演示文件日志，并且直接演示最高实现难度的多进程安全切片文件日志
 
