@@ -23,7 +23,7 @@ import multiprocessing
 import typing
 from functools import lru_cache
 from logging import FileHandler
-from nb_log import nb_log_config_default
+from nb_log import nb_log_config_default # noqa
 from nb_log.handlers import *
 
 
@@ -258,7 +258,7 @@ class LogManager(object):
         self._log_path = log_path
         self._log_filename = log_filename
         self._log_file_size = log_file_size
-        if log_file_handler_type not in (None, 1, 2, 3, 4):
+        if log_file_handler_type not in (None, 1, 2, 3, 4, 5):
             raise ValueError("log_file_handler_type的值必须设置为 1 2 3 4这四个数字")
         self._log_file_handler_type = log_file_handler_type or nb_log_config_default.LOG_FILE_HANDLER_TYPE
         self._mongo_url = mongo_url
@@ -333,14 +333,15 @@ class LogManager(object):
                 self._judge_logger_has_handler_type(ConcurrentRotatingFileHandlerWithBufferInitiativeWindwos) or
                 self._judge_logger_has_handler_type(ConcurrentRotatingFileHandlerWithBufferInitiativeLinux) or
                 self._judge_logger_has_handler_type(ConcurrentDayRotatingFileHandler) or
-                self._judge_logger_has_handler_type(FileHandler)
+                self._judge_logger_has_handler_type(FileHandler) or
+                self._judge_logger_has_handler_type(ConcurrentRotatingFileHandler)
         ) and all(
             [self._log_path, self._log_filename]):
             if not os.path.exists(self._log_path):
                 os.makedirs(self._log_path)
             log_file = os.path.join(self._log_path, self._log_filename)
             file_handler = None
-            if self._log_file_handler_type in (1, None):
+            if self._log_file_handler_type == 1:
                 if os_name == 'nt':
                     # 在win下使用这个ConcurrentRotatingFileHandler可以解决多进程安全切片，但性能损失惨重。
                     # 10进程各自写入10万条记录到同一个文件消耗15分钟。比不切片写入速度降低100倍。
@@ -355,12 +356,18 @@ class LogManager(object):
                                                                                           maxBytes=self._log_file_size * 1024 * 1024,
                                                                                           backupCount=nb_log_config_default.LOG_FILE_BACKUP_COUNT,
                                                                                           encoding="utf-8")
+
             elif self._log_file_handler_type == 4:
                 file_handler = WatchedFileHandler(log_file)
             elif self._log_file_handler_type == 2:
                 file_handler = ConcurrentDayRotatingFileHandler(self._log_filename, self._log_path, back_count=nb_log_config_default.LOG_FILE_BACKUP_COUNT)
             elif self._log_file_handler_type == 3:
                 file_handler = FileHandler(log_file, mode='a', encoding='utf-8')
+            elif self._log_file_handler_type == 5:
+                file_handler = ConcurrentRotatingFileHandler(log_file,
+                                                             maxBytes=self._log_file_size * 1024 * 1024,
+                                                             backupCount=nb_log_config_default.LOG_FILE_BACKUP_COUNT,
+                                                             encoding="utf-8")
             self.__add_a_hanlder(file_handler)
 
         # REMIND 添加mongo日志。
