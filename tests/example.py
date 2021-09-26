@@ -3,7 +3,7 @@ print('导入nb_log之前的print是普通的')
 
 from nb_log import get_logger
 
-logger = get_logger('lalala',log_filename='jinzhifengzhuang.log',formatter_template=10)
+logger = get_logger('lalala',log_filename='jinzhifengzhuang.log',formatter_template=11)
 
 logger.debug(f'debug是绿色，说明是调试的，代码ok')
 logger.info('info是天蓝色，日志正常')
