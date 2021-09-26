@@ -28,7 +28,7 @@ if os.name == 'nt':
 
 setup(
     name='nb_log',  #
-    version="5.4",
+    version="5.8",
     description=(
         'very sharp color display,monkey patch bulitin print  and high-performance multiprocess safe roating file handler,other handlers includeing dintalk ,email,kafka,elastic and so on '
     ),
@@ -63,7 +63,7 @@ setup(
 python setup.py sdist upload -r pypi
 
 
-python setup.py sdist & twine upload dist/nb_log-5.4.tar.gz
+python setup.py sdist & twine upload dist/nb_log-5.8.tar.gz
 twine upload dist/*
 
 
