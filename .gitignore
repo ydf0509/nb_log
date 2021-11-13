@@ -23,3 +23,4 @@ redis_queue_web/
 not_up_git/
 dist/
 *.egg-info/
+distributed_frame_config.py
