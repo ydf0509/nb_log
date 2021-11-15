@@ -11,7 +11,7 @@ if __name__ == '__main__':
     # 200万条 45秒
     pool = ProcessPoolExecutor(10)
     print('start')
-    for i in range(10):
+    for i in range(2):
         pool.submit(f,i)
     pool.shutdown()
     print('end')

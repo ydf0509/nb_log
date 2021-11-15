@@ -57,6 +57,7 @@ def use_config_form_nb_log_config_module():
     file_name = sys._getframe(1).f_code.co_filename
     try:
         m = importlib.import_module('nb_log_config')
+        importlib.reload(m)  # 这行是防止用户在导入框架之前，写了 from nb_log_config import xx 这种，导致 m.__dict__.items() 不包括所有配置变量了。
         msg = f'nb_log包 读取到\n "{m.__file__}:1" 文件里面的变量作为优先配置了\n'
         # nb_print(msg)
         if is_main_process():
