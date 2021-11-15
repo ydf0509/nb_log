@@ -23,7 +23,7 @@ import multiprocessing
 import typing
 from functools import lru_cache
 from logging import FileHandler
-from nb_log import nb_log_config_default # noqa
+from nb_log import nb_log_config_default  # noqa
 from nb_log.handlers import *
 
 
@@ -187,6 +187,7 @@ class LogManager(object):
     """
     logger_name_list = []
     logger_list = []
+    preset_name__level_map = dict()
 
     def __init__(self, logger_name: typing.Union[str, None] = 'nb_log_default_namespace'):
         """
@@ -197,6 +198,15 @@ class LogManager(object):
                           '一定要弄清楚原生logging包的日志name的意思。这个命名空间是双刃剑')
         self._logger_name = logger_name
         self.logger = logging.getLogger(logger_name)
+
+    def preset_log_level(self, log_level_int=20):
+        """
+        提前设置锁定日志级别，当之后再设置该命名空间日志的级别的时候，按照提前预设的级别，无视之后设定的级别。
+        主要是针对动态初始化的日志，在生成日志之后再去设置日志级别不方便。
+        :param log_level_int:
+        :return:
+        """
+        self.preset_name__level_map[self._logger_name] =  log_level_int
 
     # 加*是为了强制在调用此方法时候使用关键字传参，如果以位置传参强制报错，因为此方法后面的参数中间可能以后随时会增加更多参数，造成之前的使用位置传参的代码参数意义不匹配。
     # noinspection PyAttributeOutsideInit
@@ -275,8 +285,11 @@ class LogManager(object):
             self._formatter = formatter_template
         else:
             raise ValueError('设置的 formatter_template 不正确')
-
-        self.logger.setLevel(self._logger_level)
+        if self._logger_name in self.preset_name__level_map:
+            # print(self.preset_name__level_map)
+            self.logger.setLevel(self.preset_name__level_map[self._logger_name])
+        else:
+            self.logger.setLevel(self._logger_level)
         self.__add_handlers()
         # self.logger_name_list.append(self._logger_name)
         # self.logger_list.append(self.logger)
@@ -335,8 +348,7 @@ class LogManager(object):
                 self._judge_logger_has_handler_type(ConcurrentDayRotatingFileHandler) or
                 self._judge_logger_has_handler_type(FileHandler) or
                 self._judge_logger_has_handler_type(ConcurrentRotatingFileHandler)
-        ) and all(
-            [self._log_path, self._log_filename]):
+        ) and all([self._log_path, self._log_filename]):
             if not os.path.exists(self._log_path):
                 os.makedirs(self._log_path)
             log_file = os.path.join(self._log_path, self._log_filename)
