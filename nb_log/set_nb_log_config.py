@@ -14,6 +14,7 @@ from nb_log.monkey_print import stdout_write, stderr_write, is_main_process
 from shutil import copyfile
 
 
+
 # noinspection PyProtectedMember,PyUnusedLocal,PyIncorrectDocstring,PyPep8
 def nb_print(*args, sep=' ', end='\n', file=None):
     """
@@ -38,6 +39,8 @@ def nb_print(*args, sep=' ', end='\n', file=None):
                 f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {sep.join(args)} {end} \033[0m')  # 36  93 96 94
         # sys.stdout.write(f'\033[0;30;44m"{file_name}:{line}"  {time.strftime("%H:%M:%S")}  {"".join(args)}\033[0m\n')
 
+
+nb_print(f'当前项目的根目录是：\n {sys.path[1]}')   # 如果获取的项目根目录不正确，请不要在python代码硬编码操作sys.path。pycahrm自动给项目根目录加了PYTHONPATh，如果是shell命令行运行python命令前脚本前先在会话中设置临时环境变量 export PYTHONPATH=项目根目录
 
 def show_nb_log_config():
     nb_print('显示nb_log 包的默认的低优先级的配置参数')
