@@ -36,6 +36,7 @@ setup(
     # long_description=open('README.md', 'r',encoding='utf8').read(),
     long_description_content_type="text/markdown",
     long_description=open(filepath, 'r', encoding='utf8').read(),
+    url='https://github.com/ydf0509/nb_log',
     # data_files=[filepath],
     author='bfzs',
     author_email='ydf0509@sohu.com',
