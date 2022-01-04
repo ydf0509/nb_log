@@ -231,6 +231,8 @@ class LogManager(object):
               2为多进程安全按天自动切割的文件日志，同一个文件，每天生成一个日志
               3为不自动切割的单个文件的日志(不切割文件就不会出现所谓进程安不安全的问题)
               4为 WatchedFileHandler，这个是需要在linux下才能使用，需要借助lograte外力进行日志文件的切割，多进程安全。
+              5 为第三方的concurrent_log_handler.ConcurrentRotatingFileHandler按日志文件大小切割的文件日志，
+                这个是采用了文件锁，多进程安全切割，文件锁在linux上使用fcntl性能还行，win上使用win32con性能非常惨。按大小切割建议不要选第5个个filehandler而是选择第1个。
        :param mongo_url : mongodb的连接，为None时候不添加mongohandler
        :param is_add_elastic_handler: 是否记录到es中。
        :param is_add_kafka_handler: 日志是否发布到kafka。
@@ -437,6 +439,8 @@ def get_logger(name: typing.Union[str, None], *, log_level_int: int = None, is_a
               2为多进程安全按天自动切割的文件日志，同一个文件，每天生成一个日志
               3为不自动切割的单个文件的日志(不切割文件就不会出现所谓进程安不安全的问题)
               4为 WatchedFileHandler，这个是需要在linux下才能使用，需要借助lograte外力进行日志文件的切割，多进程安全。
+              5 为第三方的concurrent_log_handler.ConcurrentRotatingFileHandler按日志文件大小切割的文件日志，
+                这个是采用了文件锁，多进程安全切割，文件锁在linux上使用fcntl性能还行，win上使用win32con性能非常惨。按大小切割建议不要选第5个个filehandler而是选择第1个。
        :param mongo_url : mongodb的连接，为None时候不添加mongohandler
        :param is_add_elastic_handler: 是否记录到es中。
        :param is_add_kafka_handler: 日志是否发布到kafka。
