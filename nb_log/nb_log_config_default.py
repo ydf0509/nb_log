@@ -127,4 +127,4 @@ FORMATTER_DICT = {
         f'({computer_ip},{computer_name})-[p%(process)d_t%(thread)d] %(asctime)s - %(name)s - "%(filename)s:%(lineno)d" - %(levelname)s - %(message)s', "%Y-%m-%d %H:%M:%S"),  # 对7改进，带进程和线程显示的日志模板以及ip和主机名。
 }
 
-FORMATTER_KIND = 5  # 如果get_logger_and_add_handlers不指定日志模板，则默认选择第几个模板
+FORMATTER_KIND = 5  # 如果get_logger不指定日志模板，则默认选择第几个模板

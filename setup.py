@@ -14,7 +14,7 @@ install_requires = [
     'pymongo==3.5.1',
     'tomorrow3==1.1.0',
     'concurrent-log-handler==0.9.19',
-    'elasticsearch',
+    'elasticsearch==7.16.2',
     'kafka-python==1.4.6',
     'requests',
     'pika',
