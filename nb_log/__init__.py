@@ -1,3 +1,4 @@
+import json
 from nb_log.set_nb_log_config import use_config_form_nb_log_config_module
 from nb_log import nb_log_config_default
 from nb_log.monkey_print import nb_print, patch_print, reverse_patch_print,stdout_write,stderr_write,print_raw,is_main_process,only_print_on_main_process
@@ -31,3 +32,4 @@ if nb_log_config_default.AUTO_PATCH_PRINT:
     patch_print()
 else:
     reverse_patch_print()
+
