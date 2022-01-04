@@ -2,6 +2,7 @@ import subprocess
 
 import time
 
+
 def getstatusoutput(cmd):
     try:
         data = subprocess.check_output(cmd, shell=True, universal_newlines=True,
@@ -14,6 +15,7 @@ def getstatusoutput(cmd):
         data = data[:-1]
     return exitcode, data
 
+
 def do_cmd(cmd_strx):
     print(f'执行 {cmd_strx}')
     retx = getstatusoutput(cmd_strx)
@@ -22,6 +24,7 @@ def do_cmd(cmd_strx):
     #     raise ValueError('要检查git提交')
     print(retx[1], '\n')
     return retx
+
 
 t0 = time.time()
 
@@ -33,16 +36,8 @@ do_cmd('git add ../.')
 
 do_cmd('git commit -m commit')
 
-
-
 do_cmd('git push origin')
 
 # print(subprocess.getstatusoutput('git push github'))
 print(f'spend_time {time.time() - t0}')
 time.sleep(100000)
-
-
-
-
-
-
