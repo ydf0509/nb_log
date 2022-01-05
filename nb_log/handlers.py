@@ -433,7 +433,7 @@ class ColorHandler(logging.Handler):
             stream = sys.stdout  # stderr无彩。
         self.stream = stream
         self._display_method = 7 if os_name == 'posix' else 0
-        self._word_color = 30 if os_name == 'posix' else 30
+        self._word_color = 37 if os_name == 'posix' else 37
 
     def flush(self):
         """
@@ -678,7 +678,7 @@ class ConcurrentRotatingFileHandlerWithBufferInitiativeWindwos(ConcurrentRotatin
                 self._do_unlock()
 
 
-class ConcurrentRotatingFileHandlerWithBufferInitiativeLinux(ConcurrentRotatingFileHandlerWithBufferInitiativeWindwos):
+class ConcurrentRotatingFileHandlerWithBufferInitiativeLinux00000000(ConcurrentRotatingFileHandlerWithBufferInitiativeWindwos):
     """
     ConcurrentRotatingFileHandler 解决了多进程下文件切片问题，但频繁操作文件锁，带来程序性能巨大下降。
     反复测试极限日志写入频次，在windows上比不切片的写入性能降低100倍。在linux上比不切片性能降低10倍。多进程切片文件锁在windows使用pywin32，在linux上还是要fcntl实现。
@@ -703,6 +703,7 @@ class ConcurrentRotatingFileHandlerWithBufferInitiativeLinux(ConcurrentRotatingF
         with self.__lock_for_rotate:
             self._rollover_and_do_write()
 
+ConcurrentRotatingFileHandlerWithBufferInitiativeLinux = ConcurrentRotatingFileHandler
 
 class CompatibleSMTPSSLHandler(handlers.SMTPHandler):
     """

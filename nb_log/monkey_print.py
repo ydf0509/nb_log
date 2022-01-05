@@ -13,6 +13,8 @@ from nb_log import nb_log_config_default
 
 print_raw = print
 
+WORD_COLOR = 37
+
 
 def stdout_write(msg: str):
     sys.stdout.write(msg)
@@ -43,10 +45,10 @@ def nb_print(*args, sep=' ', end='\n', file=None, flush=True):
         if nb_log_config_default.DEFAULUT_USE_COLOR_HANDLER:
             if nb_log_config_default.DISPLAY_BACKGROUD_COLOR_IN_CONSOLE:
                 stdout_write(
-                    f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   \033[0;30;44m{sep.join(args)}\033[0m{end} \033[0m')  # 36  93 96 94
+                    f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   \033[0;{WORD_COLOR};44m{sep.join(args)}\033[0m{end} \033[0m')  # 36  93 96 94
             else:
                 stdout_write(
-                    f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {sep.join(args)} {end} \033[0m')  # 36  93 96 94
+                    f'\033[0;{WORD_COLOR}34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {sep.join(args)} {end} \033[0m')  # 36  93 96 94
             # sys.stdout.write(f'\033[0;30;44m"{file_name}:{line}"  {time.strftime("%H:%M:%S")}  {"".join(args)}\033[0m\n')
         else:
             stdout_write(
@@ -156,10 +158,10 @@ def only_print_on_main_process(*args, sep=' ', end='\n', file=None, flush=True):
             if nb_log_config_default.DEFAULUT_USE_COLOR_HANDLER:
                 if nb_log_config_default.DISPLAY_BACKGROUD_COLOR_IN_CONSOLE:
                     stdout_write(
-                        f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   \033[0;30;44m{sep.join(args)}\033[0m{end} \033[0m')  # 36  93 96 94
+                        f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   \033[0;{WORD_COLOR};44m{sep.join(args)}\033[0m{end} \033[0m')  # 36  93 96 94
                 else:
                     stdout_write(
-                        f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {sep.join(args)} {end} \033[0m')  # 36  93 96 94
+                        f'\033[0;{WORD_COLOR}34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {sep.join(args)} {end} \033[0m')  # 36  93 96 94
                 # sys.stdout.write(f'\033[0;30;44m"{file_name}:{line}"  {time.strftime("%H:%M:%S")}  {"".join(args)}\033[0m\n')
             else:
                 stdout_write(
