@@ -32,7 +32,7 @@ def nb_print(*args, sep=' ', end='\n', file=None):
         # sys.stdout.write(f'"{__file__}:{sys._getframe().f_lineno}"    {x}\n')
         if nb_log_config_default.DISPLAY_BACKGROUD_COLOR_IN_CONSOLE:
             stdout_write(
-                f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   \033[0;30;44m{sep.join(args)}\033[0m{end} \033[0m')  # 36  93 96 94
+                f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   \033[0;37;44m{sep.join(args)}\033[0m{end} \033[0m')  # 36  93 96 94
         else:
             stdout_write(
                 f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {sep.join(args)} {end} \033[0m')  # 36  93 96 94
