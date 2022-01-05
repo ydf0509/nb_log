@@ -118,7 +118,7 @@ logger.warning('啦啦啦')
 ###### 2.2）控制台日志根据日志级别自动变色。（支持配置文件关闭彩色或者关闭背景色块）
 
 
-# 使用之前先学习 PYTHONPATH的概念  [https://github.com/ydf0509/pythonpathdemo](https://github.com/ydf0509/pythonpathdemo)
+### 使用之前先学习 PYTHONPATH的概念  [https://github.com/ydf0509/pythonpathdemo](https://github.com/ydf0509/pythonpathdemo)
 ```python
 from nb_log import LogManager,get_logger
 
