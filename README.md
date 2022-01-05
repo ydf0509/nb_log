@@ -246,9 +246,9 @@ if __name__ == '__main__':
 
 ## 4 钉钉日志
 ```python
-from nb_log import LogManager
-logger4 = LogManager('hi').get_logger_and_add_handlers(is_add_stream_handler=True,
-    log_filename='hi.log',ding_talk_token='your_dingding_token')
+from nb_log import get_logger
+logger4 = get_logger("hi",is_add_stream_handler=True,
+    log_filename="hi.log",ding_talk_token='your_dingding_token')
 logger4.debug('这条日志会同时出现在控制台 文件 和钉钉群消息')
 ```
 
