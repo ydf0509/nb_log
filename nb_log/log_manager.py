@@ -206,7 +206,7 @@ class LogManager(object):
         :param log_level_int:
         :return:
         """
-        self.preset_name__level_map[self._logger_name] =  log_level_int
+        self.preset_name__level_map[self._logger_name] = log_level_int
 
     # 加*是为了强制在调用此方法时候使用关键字传参，如果以位置传参强制报错，因为此方法后面的参数中间可能以后随时会增加更多参数，造成之前的使用位置传参的代码参数意义不匹配。
     # noinspection PyAttributeOutsideInit
