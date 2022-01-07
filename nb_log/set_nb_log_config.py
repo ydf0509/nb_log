@@ -80,9 +80,9 @@ def auto_creat_config_file_to_project_root_path():
     """
     :return:
     """
-    if Path(sys.path[1]).as_posix() in Path(__file__).parent.parent.absolute().as_posix():
+    if Path(sys.path[1]).as_posix() == Path(__file__).parent.parent.absolute().as_posix():
         pass
-        nb_print('不希望在本项目里面创建')
+        nb_print('不希望在本项目 sys.path[1] 里面创建 nb_log_config.py')
         return
     # noinspection PyPep8
     """
@@ -99,6 +99,8 @@ def auto_creat_config_file_to_project_root_path():
                                要是连PYTHONPATH这个知识点都不知道，那就要google 百度去学习PYTHONPATH作用了，非常重要非常好用，
                                不知道PYTHONPATH作用的人，在深层级文件夹作为运行起点导入外层目录的包的时候，如果把深层级文件作为python的执行文件起点，经常需要到处很low的手写 sys.path.insert硬编码，这种方式写代码太low了。
                                知道PYTHONPATH的人无论项目有多少层级的文件夹，无论是多深层级文件夹导入外层文件夹，代码里面永久都不需要出现手动硬编码操纵sys.path.append
+                               
+                               懂PYTHONPATH 的重要性和妙用见： https://github.com/ydf0509/pythonpathdemo
                                ''')
     # with (Path(sys.path[1]) / Path('nb_log_config.py')).open(mode='w', encoding='utf8') as f:
     #     f.write(config_file_content)
