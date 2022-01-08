@@ -6,7 +6,7 @@
 
 
 ### 屏幕流日志效果图
-![Image text](https://i.niupic.com/images/2020/11/04/8WZf.png)
+![Image text](https://i.ibb.co/VvSSrfq/X-X1-MW4-XJ-PRJVQ3-XZSG9-R.png)
 
 
 ```
@@ -30,7 +30,7 @@
 ```
 ### 屏幕流日志效果图，设置不使用背景色块。
 ###### 在项目根目录下自动生成的nb_log_config.py配置文件中设置DISPLAY_BACKGROUD_COLOR_IN_CONSOLE = False
-[![hVoOmj.png](https://z3.ax1x.com/2021/08/25/hVoOmj.png)](https://imgtu.com/i/hVoOmj)
+[![hVoOmj.png](https://s4.ax1x.com/2022/01/08/7iQGEn.md.png)](https://s4.ax1x.com/2022/01/08/7iQGEn.md.png)
 
 ### 屏幕流日志效果图，设置既不使用背景色块也不使用彩色文字
 
@@ -38,6 +38,9 @@
 
 ###### 在项目根目录下自动生成的nb_log_config.py配置文件中设置 DEFAULUT_USE_COLOR_HANDLER = False
 [![hVTiX4.png](https://z3.ax1x.com/2021/08/25/hVTiX4.png)](https://imgtu.com/i/hVTiX4)
+
+
+##### 如果不希望每次启动代码显示教你怎么设置pycharm颜色，可以设置 SHOW_PYCHARM_COLOR_SETINGS = False
 
 ```
 very sharp color display,monkey patch bulitin print  
@@ -267,7 +270,7 @@ nb_log_config.py的内容如下，默认都是用#注释了，如果放开某项
 ```
 如果反对日志有各种彩色，可以设置 DEFAULUT_USE_COLOR_HANDLER = False
 如果反对日志有块状背景彩色，可以设置 DISPLAY_BACKGROUD_COLOR_IN_CONSOLE = False
-如果想屏蔽nb_log包对怎么设置pycahrm的颜色的提示，可以设置 WARNING_PYCHARM_COLOR_SETINGS = False
+如果想屏蔽nb_log包对怎么设置pycahrm的颜色的提示，可以设置 SHOW_PYCHARM_COLOR_SETINGS = False
 如果想改变日志模板，可以设置 FORMATTER_KIND 参数，只带了7种模板，可以自定义添加喜欢的模板
 ```
 

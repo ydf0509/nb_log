@@ -9,12 +9,12 @@ if nb_log_config_default.SHOW_PYCHARM_COLOR_SETINGS:
             """
             1)使用pycharm时候，强烈建议按下面的重新自定义设置pycharm的console里面的主题颜色，否则颜色显示瞎眼，代码里面规定的颜色只是大概的红黄蓝绿。在不同的ide软件和主题、字体下是不同的显示效果，需要用户自己设置。
             设置方式为 打开pycharm的 file -> settings -> Editor -> Color Scheme -> Console Colors 选择monokai，点击展开 ANSI colors，
-            并重新修改自定义6个颜色，设置Blue为 1585FF ，Cyan为 06B8B8 ，Green 为 05A53F ，Magenta为 ff1cd5 ,red为 FF0207 ，yellow为 FFB009  。
-            如果设置为显示背景色快，由于不同版本的pycahrm或主题，可以根据控制台实际显示设置 White 为 FFFFFF  ， Black 为 1F1F1F ，因为背景色是深色，前景色的文字设置为白色比黑色好。
+            并重新修改自定义7个颜色，设置Blue为 0454F3 ，Cyan为 04DCF8 ，Green 为 13FC02 ，Magenta为 ff1cd5 ,red为 EB02F6 ，yellow为 EAFA04 ，gray 为 FFFFFF ，white 为 FFFFFF 。
+            不同版本的pycahrm或主题或ide，可以根据控制台根据实际显示设置。
             
             2)使用xshell或finashell工具连接linux也可以自定义主题颜色，默认使用shell连接工具的颜色也可以。
             
-            颜色效果如连接 https://i.niupic.com/images/2020/11/04/8WZf.png
+            颜色效果如连接 https://ibb.co/qRssXTr
             
             在当前项目根目录的 nb_log_config.py 中可以修改当get_logger方法不传参时后的默认日志行为。
             
