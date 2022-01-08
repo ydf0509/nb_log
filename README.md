@@ -30,7 +30,7 @@
 ```
 ### 屏幕流日志效果图，设置不使用背景色块。
 ###### 在项目根目录下自动生成的nb_log_config.py配置文件中设置DISPLAY_BACKGROUD_COLOR_IN_CONSOLE = False
-![hVoOmj.png](https://i.ibb.co/wyVLXXr/PZY-D-AW9-EA-XO-N-U-E.png)
+![hVoOmj.png](https://i.niupic.com/images/2022/01/08/9T0T.png)
 
 ### 屏幕流日志效果图，设置既不使用背景色块也不使用彩色文字
 
