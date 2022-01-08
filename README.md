@@ -143,6 +143,8 @@ nb_log 支持4种文件日志，get_logger 的log_file_handler_type可以优先�
 
 也可以在你代码项目根目录下的 nb_log_config.py 配置文件的 LOG_FILE_HANDLER_TYPE 设置默认的filehandler类型。
 
+nb_log_config.py 的 LOG_PATH 配置默认的日志文件夹位置，如果get_logger函数没有传log_path入参，就默认使用这里的LOG_PATH
+
 ```
 在各种filehandler实现难度上 
 单进程永不切割  < 单进程按大小切割 <  多进程按时间切割 < 多进程按大小切割
