@@ -1,8 +1,8 @@
 
 print('导入nb_log之前的print是普通的')
 
-import sys
-print(sys.path)
+# import sys
+# print(sys.path)
 
 from nb_log import get_logger
 
