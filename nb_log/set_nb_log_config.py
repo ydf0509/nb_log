@@ -82,7 +82,7 @@ def auto_creat_config_file_to_project_root_path():
     """
     if Path(sys.path[1]).as_posix() == Path(__file__).parent.parent.absolute().as_posix():
         pass
-        nb_print('不希望在本项目 sys.path[1] 里面创建 nb_log_config.py')
+        nb_print(f'不希望在本项目 {sys.path[1]} 里面创建 nb_log_config.py')
         return
     # noinspection PyPep8
     """

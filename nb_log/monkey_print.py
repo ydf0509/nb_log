@@ -161,7 +161,7 @@ def only_print_on_main_process(*args, sep=' ', end='\n', file=None, flush=True):
                         f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   \033[0;{WORD_COLOR};44m{sep.join(args)}\033[0m{end} \033[0m')  # 36  93 96 94
                 else:
                     stdout_write(
-                        f'\033[0;{WORD_COLOR}34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {sep.join(args)} {end} \033[0m')  # 36  93 96 94
+                        f'\033[0;{WORD_COLOR};34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {sep.join(args)} {end} \033[0m')  # 36  93 96 94
                 # sys.stdout.write(f'\033[0;30;44m"{file_name}:{line}"  {time.strftime("%H:%M:%S")}  {"".join(args)}\033[0m\n')
             else:
                 stdout_write(

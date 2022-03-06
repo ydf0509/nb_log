@@ -489,7 +489,7 @@ class LoggerMixin(object):
             return type(self).__name__
 
     @property
-    def logger(self):
+    def logger(self) -> logging.Logger:
         logger_name_key = self.logger_full_name + '1'
         if logger_name_key not in self.subclass_logger_dict:
             logger_var = LogManager(self.logger_full_name).get_logger_and_add_handlers()
@@ -499,7 +499,7 @@ class LoggerMixin(object):
             return self.subclass_logger_dict[logger_name_key]
 
     @property
-    def logger_with_file(self):
+    def logger_with_file(self) -> logging.Logger:
         logger_name_key = self.logger_full_name + '2'
         if logger_name_key not in self.subclass_logger_dict:
             logger_var = LogManager(self.logger_full_name).get_logger_and_add_handlers(
