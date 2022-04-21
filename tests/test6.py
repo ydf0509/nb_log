@@ -1,19 +1,13 @@
-# from nb_log import get_logger,LogManager
-# import requests
-#
-# get_logger('urllib3')
-# requests.get("http://www.baidu.com")
-#
-#
-# LogManager('abcd').preset_log_level(20)
-# l1 = get_logger('abcd',log_level_int=20)
-# l2 = get_logger('abcd',log_level_int=30)
-#
-#
-# l1.debug('能显示不？')
-#
-# l1.info('能显示不？')
-
 import time
 
-print(f'''\033[0;34m 前缀 \033[0;37;44mdfdsffdsf\033[0m ''')
+from nb_log import get_logger
+
+
+logger = get_logger('test_time_raote',log_filename='test_roat_file_log3.log',log_file_handler_type=2)
+
+# for i in range(10):
+#     time.sleep(0.001)
+#     logger.warning('hhh')
+
+
+logger.warning('dddd')
