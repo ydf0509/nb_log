@@ -265,6 +265,11 @@ class LogManager(object):
             formatter_template = nb_log_config_default.FORMATTER_KIND
 
         self._logger_level = log_level_int * 10 if log_level_int < 10 else log_level_int
+        if self._logger_name in self.preset_name__level_map:
+            # print(self.preset_name__level_map)
+            self._logger_level2 = (self.preset_name__level_map[self._logger_name])
+        else:
+            self._logger_level2 = self._logger_level
         self._is_add_stream_handler = is_add_stream_handler
         self._do_not_use_color_handler = do_not_use_color_handler
         self._log_path = log_path
@@ -287,11 +292,8 @@ class LogManager(object):
             self._formatter = formatter_template
         else:
             raise ValueError('设置的 formatter_template 不正确')
-        if self._logger_name in self.preset_name__level_map:
-            # print(self.preset_name__level_map)
-            self.logger.setLevel(self.preset_name__level_map[self._logger_name])
-        else:
-            self.logger.setLevel(self._logger_level)
+
+        self.logger.setLevel(self._logger_level2)
         self.__add_handlers()
         # self.logger_name_list.append(self._logger_name)
         # self.logger_list.append(self.logger)
@@ -306,8 +308,9 @@ class LogManager(object):
         very_nb_print(f'{self._logger_name}名字的日志的所有handlers是--> {self.logger.handlers}')
 
     def remove_all_handlers(self):
-        for hd in self.logger.handlers:
-            self.logger.removeHandler(hd)
+        # for hd in self.logger.handlers:
+        #     self.logger.removeHandler(hd)
+        self.logger.handlers = []
 
     def remove_handler_by_handler_class(self, handler_class: type):
         """
@@ -319,7 +322,8 @@ class LogManager(object):
             logging.StreamHandler, ColorHandler, MongoHandler, ConcurrentRotatingFileHandler, MongoHandler,
             CompatibleSMTPSSLHandler, ElasticHandler, DingTalkHandler, KafkaHandler):
             raise TypeError('设置的handler类型不正确')
-        for handler in self.logger.handlers:
+        all_handlers = copy.copy(self.logger.handlers)
+        for handler in all_handlers:
             if isinstance(handler, handler_class):
                 self.logger.removeHandler(handler)  # noqa
 
@@ -341,6 +345,7 @@ class LogManager(object):
             logging.StreamHandler)) and self._is_add_stream_handler:
             handler = ColorHandler() if not self._do_not_use_color_handler else logging.StreamHandler()  # 不使用streamhandler，使用自定义的彩色日志
             # handler = logging.StreamHandler()
+            handler.setLevel(self._logger_level2)
             self.__add_a_hanlder(handler)
 
         # REMIND 添加多进程安全切片的文件日志
@@ -382,33 +387,43 @@ class LogManager(object):
                                                              maxBytes=self._log_file_size * 1024 * 1024,
                                                              backupCount=nb_log_config_default.LOG_FILE_BACKUP_COUNT,
                                                              encoding="utf-8")
+            file_handler.setLevel(self._logger_level2)
             self.__add_a_hanlder(file_handler)
 
         # REMIND 添加mongo日志。
         if not self._judge_logger_has_handler_type(MongoHandler) and self._mongo_url:
-            self.__add_a_hanlder(MongoHandler(self._mongo_url))
+            handler = MongoHandler(self._mongo_url)
+            handler.setLevel(self._logger_level2)
+            self.__add_a_hanlder(handler)
 
         if not self._judge_logger_has_handler_type(
             ElasticHandler) and self._is_add_elastic_handler and nb_log_config_default.RUN_ENV == 'test':  # 使用kafka。不直接es。
             """
             生产环境使用阿里云 oss日志，不使用这个。
             """
-            self.__add_a_hanlder(
-                ElasticHandler([nb_log_config_default.ELASTIC_HOST], nb_log_config_default.ELASTIC_PORT))
+            handler = ElasticHandler([nb_log_config_default.ELASTIC_HOST], nb_log_config_default.ELASTIC_PORT)
+            handler.setLevel(self._logger_level2)
+            self.__add_a_hanlder(handler)
 
         # REMIND 添加kafka日志。
         # if self._is_add_kafka_handler:
         if not self._judge_logger_has_handler_type(
             KafkaHandler) and nb_log_config_default.RUN_ENV == 'test' \
             and nb_log_config_default.ALWAYS_ADD_KAFKA_HANDLER_IN_TEST_ENVIRONENT:
-            self.__add_a_hanlder(KafkaHandler(nb_log_config_default.KAFKA_BOOTSTRAP_SERVERS, ))
+            handler = KafkaHandler(nb_log_config_default.KAFKA_BOOTSTRAP_SERVERS, )
+            handler.setLevel(self._logger_level2)
+            self.__add_a_hanlder(handler)
 
         # REMIND 添加钉钉日志。
         if not self._judge_logger_has_handler_type(DingTalkHandler) and self._ding_talk_token:
-            self.__add_a_hanlder(DingTalkHandler(self._ding_talk_token, self._ding_talk_time_interval))
+            handler = DingTalkHandler(self._ding_talk_token, self._ding_talk_time_interval)
+            handler.setLevel(self._logger_level2)
+            self.__add_a_hanlder(handler)
 
         if not self._judge_logger_has_handler_type(CompatibleSMTPSSLHandler) and self._is_add_mail_handler:
-            self.__add_a_hanlder(CompatibleSMTPSSLHandler(**self._mail_handler_config.get_dict()))
+            handler = CompatibleSMTPSSLHandler(**self._mail_handler_config.get_dict())
+            handler.setLevel(self._logger_level2)
+            self.__add_a_hanlder(handler)
 
 
 @lru_cache()  # LogManager 本身也支持无限实例化

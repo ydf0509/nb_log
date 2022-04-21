@@ -1,10 +1,12 @@
 # noinspection PyMissingOrEmptyDocstring
 import atexit
 import copy
+import multiprocessing
 import queue
 import re
 import sys
 import os
+import threading
 import traceback
 import socket
 import datetime
@@ -880,9 +882,8 @@ class DingTalkHandler(logging.Handler):
                 if 'DingTalkHandler' in str(hdlr):
                     logging.getLogger(logger_name).handlers.pop(index)
 
-
 # noinspection PyPep8Naming
-class ConcurrentDayRotatingFileHandler(logging.Handler):
+class ConcurrentDayRotatingFileHandlerWin(logging.Handler):
     """
     这个多进程按时间切片安全的。
     官方的 TimedRotatingFileHandler 在多进程下疯狂报错，
@@ -939,6 +940,7 @@ class ConcurrentDayRotatingFileHandler(logging.Handler):
     def _write_to_file(self):
         buffer_msgs = ''
         while True:
+            # print(self.buffer_msgs_queue.qsize())
             try:
                 msg = self.buffer_msgs_queue.get(block=False)
                 buffer_msgs += msg + '\n'
@@ -984,3 +986,176 @@ class ConcurrentDayRotatingFileHandler(logging.Handler):
         # print(result)
         for r in result:
             Path(r).unlink()
+
+# noinspection PyPep8Naming
+class ConcurrentDayRotatingFileHandlerLinux(logging.Handler):
+    def __init__(self, file_name: str, file_path: str, back_count=10):
+        super().__init__()
+        self.file_name = file_name
+        self.file_path = file_path
+        self.backupCount = back_count
+        self.extMatch = re.compile(r"^\d{4}-\d{2}-\d{2}(\.\w+)?$", re.ASCII)
+        self.extMatch2 = re.compile(r"^\d{2}-\d{2}-\d{2}(\.\w+)?$", re.ASCII)
+        self._last_delete_time = time.time()
+
+        time_str = time.strftime('%Y-%m-%d')
+        # time_str = time.strftime('%H-%M-%S')  # 方便测试用的，方便观察。
+        new_file_name = self.file_name + '.' + time_str
+        path_obj = Path(self.file_path) / Path(new_file_name)
+        path_obj.touch(exist_ok=True)
+        self.fp = open(path_obj, 'a', encoding='utf-8')
+        self.time_str = time_str
+        self._lock = multiprocessing.Lock()
+
+    def _get_fp(self):
+        with self._lock:
+            time_str = time.strftime('%Y-%m-%d')
+            # time_str = time.strftime('%H-%M-%S')  # 方便测试用的，方便观察。
+            if time_str != self.time_str:
+                try:
+                    self.fp.close()
+                except Exception as e:
+                    print(e)
+                new_file_name = self.file_name + '.' + time_str
+                path_obj = Path(self.file_path) / Path(new_file_name)
+                path_obj.touch(exist_ok=True)
+                self.fp = open(path_obj, 'a', encoding='utf-8')
+
+    def emit(self, record: logging.LogRecord):
+        """
+        emit已经在logger的handle方法中加了锁，所以这里的重置上次写入时间和清除buffer_msgs不需要加锁了。
+        :param record:
+        :return:
+        """
+        # noinspection PyBroadException
+        try:
+            msg = self.format(record)
+            self.fp.write(msg + '\n')
+        except Exception:
+            self.handleError(record)
+        if time.time() - self._last_delete_time > 60:
+            self._get_fp()
+            self._find_and_delete_files()
+            self._last_delete_time = time.time()
+
+    def _find_and_delete_files(self):
+        """
+        这一段命名不规范是复制原来的官方旧代码。
+        Determine the files to delete when rolling over.
+
+        More specific than the earlier method, which just used glob.glob().
+        """
+        dirName = self.file_path
+        baseName = self.file_name
+        fileNames = os.listdir(dirName)
+        result = []
+        prefix = baseName + "."
+        plen = len(prefix)
+        for fileName in fileNames:
+            if fileName[:plen] == prefix:
+                suffix = fileName[plen:]
+                # print(fileName, prefix,suffix)
+                if self.extMatch.match(suffix) or self.extMatch2.match(suffix):
+                    result.append(os.path.join(dirName, fileName))
+        if len(result) < self.backupCount:
+            result = []
+        else:
+            result.sort()
+            result = result[:len(result) - self.backupCount]
+        # print(result)
+        for r in result:
+            Path(r).unlink()
+
+
+# noinspection PyPep8Naming
+class ConcurrentSecondRotatingFileHandlerLinux(logging.Handler):
+    """ 按秒切割的多进程安全文件日志，方便测试验证"""
+
+    def __init__(self, file_name: str, file_path: str, back_count=10):
+        super().__init__()
+        self.file_name = file_name
+        self.file_path = file_path
+        self.backupCount = back_count
+        self.extMatch = re.compile(r"^\d{4}-\d{2}-\d{2}(\.\w+)?$", re.ASCII)
+        self.extMatch2 = re.compile(r"^\d{2}-\d{2}-\d{2}(\.\w+)?$", re.ASCII)
+        self._last_delete_time = time.time()
+
+        time_str = time.strftime('%H-%M-%S')  # 方便测试用的，方便观察。
+        new_file_name = self.file_name + '.' + time_str
+        path_obj = Path(self.file_path) / Path(new_file_name)
+        path_obj.touch(exist_ok=True)
+        self.fp = open(path_obj, 'a', encoding='utf-8')
+        self.time_str = time_str
+        self._lock = multiprocessing.Lock()
+
+    def _get_fp(self):
+        with self._lock:
+            time_str = time.strftime('%H-%M-%S')
+            # time_str = time.strftime('%H-%M-%S')  # 方便测试用的，方便观察。
+            if time_str != self.time_str:
+                try:
+                    pass
+                    # self.fp.close()
+                except Exception as e:
+                    print(e)
+                new_file_name = self.file_name + '.' + time_str
+                path_obj = Path(self.file_path) / Path(new_file_name)
+                path_obj.touch(exist_ok=True)
+                self.fp = open(path_obj, 'a', encoding='utf-8')
+
+    def emit(self, record: logging.LogRecord):
+        """
+        emit已经在logger的handle方法中加了锁，所以这里的重置上次写入时间和清除buffer_msgs不需要加锁了。
+        :param record:
+        :return:
+        """
+        # noinspection PyBroadException
+        try:
+            msg = self.format(record)
+            self.fp.write(msg + '\n')
+            if time.time() - self._last_delete_time > 0.5:
+                self._get_fp()
+                self._find_and_delete_files()
+                self._last_delete_time = time.time()
+        except Exception as e:
+            print(e)
+            self.handleError(record)
+
+    def _find_and_delete_files(self):
+        """
+        这一段命名不规范是复制原来的官方旧代码。
+        Determine the files to delete when rolling over.
+
+        More specific than the earlier method, which just used glob.glob().
+        """
+        dirName = self.file_path
+        baseName = self.file_name
+        fileNames = os.listdir(dirName)
+        result = []
+        prefix = baseName + "."
+        plen = len(prefix)
+        for fileName in fileNames:
+            if fileName[:plen] == prefix:
+                suffix = fileName[plen:]
+                # print(fileName, prefix,suffix)
+                if self.extMatch.match(suffix) or self.extMatch2.match(suffix):
+                    result.append(os.path.join(dirName, fileName))
+        if len(result) < self.backupCount:
+            result = []
+        else:
+            result.sort()
+            result = result[:len(result) - self.backupCount]
+        # print(result)
+        for r in result:
+            try:
+                Path(r).unlink()
+                print(f'删除成功 {r}')
+            except (PermissionError, FileNotFoundError) as e:
+                print(e)
+
+
+ConcurrentDayRotatingFileHandler = ConcurrentDayRotatingFileHandlerWin if os_name == 'nt' else ConcurrentDayRotatingFileHandlerLinux
+
+# ConcurrentDayRotatingFileHandler = ConcurrentSecondRotatingFileHandlerLinux
+#
+# print(ConcurrentDayRotatingFileHandler)
