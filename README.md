@@ -45,9 +45,10 @@
 ##### 如果不希望每次启动代码显示教你怎么设置pycharm颜色，可以设置 SHOW_PYCHARM_COLOR_SETINGS = False
 
 ```
-very sharp color display,monkey patch bulitin print  
-and high-performance multiprocess safe roating file handler,
-other handlers includeing dintalk ,email,kafka,elastic and so on 
+
+nb_log 五彩日志根据日志级别渲染，对python内置的print打了猴子补丁，使用户知道是在哪里print的。
+nb_log的文件日志，多进程安全切割(注意是多进程 并且对日志进行大小或时间切割)
+nb_log 支持控制台、文件、钉钉、邮件、kafka、elastic、mongo中的任意几个地方的组合进行日志记录。
 
 0) 自动转换print效果，再也不怕有人在项目中随意print，导致很难找到是从哪里冒出来的print。
 只要import nb_log，项目所有地方的print自动现型并在控制台可点击几精确跳转到print的地方。
