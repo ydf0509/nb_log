@@ -882,6 +882,7 @@ class DingTalkHandler(logging.Handler):
                 if 'DingTalkHandler' in str(hdlr):
                     logging.getLogger(logger_name).handlers.pop(index)
 
+
 # noinspection PyPep8Naming
 class ConcurrentDayRotatingFileHandlerWin(logging.Handler):
     """
@@ -908,11 +909,11 @@ class ConcurrentDayRotatingFileHandlerWin(logging.Handler):
         Thread(target=cls._emit_all_file_handler, daemon=True).start()
 
     # noinspection PyMissingConstructor
-    def __init__(self, file_name: str, file_path: str, back_count=10):
+    def __init__(self, file_name: str, file_path: str, back_count=None):
         super().__init__()
         self.file_name = file_name
         self.file_path = file_path
-        self.backupCount = back_count
+        self.backupCount = back_count or nb_log_config_default.LOG_FILE_BACKUP_COUNT
         self.extMatch = re.compile(r"^\d{4}-\d{2}-\d{2}(\.\w+)?$", re.ASCII)
         self.extMatch2 = re.compile(r"^\d{2}-\d{2}-\d{2}(\.\w+)?$", re.ASCII)
         self._last_delete_time = time.time()
@@ -953,7 +954,7 @@ class ConcurrentDayRotatingFileHandlerWin(logging.Handler):
                 new_file_name = self.file_name + '.' + time_str
                 path_obj = Path(self.file_path) / Path(new_file_name)
                 path_obj.touch(exist_ok=True)
-                with path_obj.open(mode='a') as f:
+                with path_obj.open(mode='a',encoding='utf-8') as f:
                     f.write(buffer_msgs)
                 if time.time() - self._last_delete_time > 60:
                     self._find_and_delete_files()
@@ -987,13 +988,14 @@ class ConcurrentDayRotatingFileHandlerWin(logging.Handler):
         for r in result:
             Path(r).unlink()
 
+
 # noinspection PyPep8Naming
 class ConcurrentDayRotatingFileHandlerLinux(logging.Handler):
-    def __init__(self, file_name: str, file_path: str, back_count=10):
+    def __init__(self, file_name: str, file_path: str, back_count=None):
         super().__init__()
         self.file_name = file_name
         self.file_path = file_path
-        self.backupCount = back_count
+        self.backupCount = back_count or nb_log_config_default.LOG_FILE_BACKUP_COUNT
         self.extMatch = re.compile(r"^\d{4}-\d{2}-\d{2}(\.\w+)?$", re.ASCII)
         self.extMatch2 = re.compile(r"^\d{2}-\d{2}-\d{2}(\.\w+)?$", re.ASCII)
         self._last_delete_time = time.time()
@@ -1071,11 +1073,11 @@ class ConcurrentDayRotatingFileHandlerLinux(logging.Handler):
 class ConcurrentSecondRotatingFileHandlerLinux(logging.Handler):
     """ 按秒切割的多进程安全文件日志，方便测试验证"""
 
-    def __init__(self, file_name: str, file_path: str, back_count=10):
+    def __init__(self, file_name: str, file_path: str, back_count=None):
         super().__init__()
         self.file_name = file_name
         self.file_path = file_path
-        self.backupCount = back_count
+        self.backupCount = back_count or nb_log_config_default.LOG_FILE_BACKUP_COUNT
         self.extMatch = re.compile(r"^\d{4}-\d{2}-\d{2}(\.\w+)?$", re.ASCII)
         self.extMatch2 = re.compile(r"^\d{2}-\d{2}-\d{2}(\.\w+)?$", re.ASCII)
         self._last_delete_time = time.time()

@@ -73,7 +73,7 @@ SHOW_PYCHARM_COLOR_SETINGS = True  # 有的人很反感启动代码时候提示�
 
 DEFAULT_ADD_MULTIPROCESSING_SAFE_ROATING_FILE_HANDLER = False  # 是否默认同时将日志记录到记log文件记事本中。
 LOG_FILE_SIZE = 100  # 单位是M,每个文件的切片大小，超过多少后就自动切割
-LOG_FILE_BACKUP_COUNT = 3  # 对同一个日志文件，默认最多备份几个文件，超过就删除了。
+LOG_FILE_BACKUP_COUNT = 14  # 对同一个日志文件，默认最多备份几个文件，超过就删除了。
 
 LOG_PATH = '/pythonlogs'  # 默认的日志文件夹,如果不写明磁盘名，则是项目代码所在磁盘的根目录下的/pythonlogs
 # LOG_PATH = Path(__file__).absolute().parent / Path("pythonlogs")   #这么配置就会自动在你项目的根目录下创建pythonlogs文件夹了并写入。

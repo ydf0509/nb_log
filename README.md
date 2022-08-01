@@ -4,10 +4,9 @@
 
 ![Image text](https://i.niupic.com/images/2020/07/30/8tka.png)
 
-
 ### 屏幕流日志效果图
-![Image text](https://i.ibb.co/VvSSrfq/X-X1-MW4-XJ-PRJVQ3-XZSG9-R.png)
 
+![Image text](https://i.ibb.co/VvSSrfq/X-X1-MW4-XJ-PRJVQ3-XZSG9-R.png)
 
 ```
 要说明的是，即使是同一个颜色代码在pycahrm不同主题都是颜色显示区别很大的，默认的可能很丑或者由于颜色不好导致文字看不清晰
@@ -28,8 +27,11 @@
 
 """
 ```
+
 ### 屏幕流日志效果图，设置不使用背景色块。
+
 ###### 在项目根目录下自动生成的nb_log_config.py配置文件中设置DISPLAY_BACKGROUD_COLOR_IN_CONSOLE = False
+
 ![https://i.niupic.com/images/2022/01/08/9T0T.png](https://i.niupic.com/images/2022/01/08/9T0T.png)
 
 ### 屏幕流日志效果图，设置既不使用背景色块也不使用彩色文字
@@ -37,8 +39,8 @@
 例如只希望使用nb_log的强大多进程文件切片的功能等其他功能，对彩色控制台日志不感冒，则可以设置完全不要彩色。
 
 ###### 在项目根目录下自动生成的nb_log_config.py配置文件中设置 DEFAULUT_USE_COLOR_HANDLER = False
-[![hVTiX4.png](https://z3.ax1x.com/2021/08/25/hVTiX4.png)](https://imgtu.com/i/hVTiX4)
 
+[![hVTiX4.png](https://z3.ax1x.com/2021/08/25/hVTiX4.png)](https://imgtu.com/i/hVTiX4)
 
 ##### 如果不希望每次启动代码显示教你怎么设置pycharm颜色，可以设置 SHOW_PYCHARM_COLOR_SETINGS = False
 
@@ -63,9 +65,11 @@ other handlers includeing dintalk ,email,kafka,elastic and so on
 另外，在正式项目或工具类甚至做得包里面，疯狂print真的很low，可以参考大神的三方包，从来都没直接print的不存在的，
 他们都是用的日志。
 日志比print灵活多了，对命名空间的控制、级别过滤控制、模板自定义、能记录到的地方扩展性很强远强过print的只有控制台。
-
+```
 
 1） 兼容性
+
+```
 使用的是python的内置logging封装的，返回的logger对象的类型是py官方内置日志的Logger类型，兼容性强，
 保证了第三方各种handlers扩展数量多和方便，和一键切换现有项目的日志。
 
@@ -73,32 +77,41 @@ other handlers includeing dintalk ,email,kafka,elastic and so on
 它里面主要被用户使用的logger变量类型不是python内置Logger类型，
 造成logger说拥有的属性和方法有的不存在或者不一致，这样的日志和python内置的经典日志兼容性差，
 只能兼容（一键替换logger类型）一些简单的debug info warning errror等方法，。
+```
 
 2） 日志记录到多个地方
+
+```
 内置了一键入参，每个参数是独立开关，可以把日志同时记录到8个常用的地方的任意几种组合，
 包括 控制台 文件 钉钉 邮件 mongo kafka es 等等 。在第8章介绍实现这种效果的观察者模式。
+```
 
 3） 日志命名空间独立，采用了多实例logger，按日志命名空间区分。
+
+```python
+"""
 命名空间独立意味着每个logger单独的日志界别过滤，单独的控制要记录到哪些地方。
+"""
 
-logger_aa = LogManager('aa').get_logger_and_add_handlers(10，log_filename='aa.log')
-logger_bb = LogManager('bb').get_logger_and_add_handlers(30，is_add_stream_handler=False,
-ding_talk_token='your_dingding_token')
-logger_cc = LogManager('cc').get_logger_and_add_handlers(10，log_filename='cc.log')
+from nb_log import get_logger, LogManager
 
-那么logger_aa.debug('哈哈哈')  
-将会同时记录到控制台和文件aa.log中，只要debug及debug以上级别都会记录。
+logger_aa = LogManager('aa').get_logger_and_add_handlers(10, log_filename='aa.log')
+logger_bb = get_logger("bb", log_level_int=30, is_add_stream_handler=False, ding_talk_token='your_dingding_token')
+logger_cc = get_logger('cc', log_level_int=10, log_filename='cc.log')
 
-logger_bb.warning('嘿嘿嘿')   
-将只会发送到钉钉群消息，并且logger_bb的info debug级别日志不会被记录，
-非常方便测试调试然后稳定了调高界别到生产。
+logger_aa.debug('哈哈哈')
+# 将会同时记录到控制台和文件aa.log中，只要debug及debug以上级别都会记录。
 
-logger_cc的日志会写在cc.log中，和logger_aa的日志是不同的文件。
+logger_bb.warning('嘿嘿嘿')
+# 将只会发送到钉钉群消息，并且logger_bb的info debug级别日志不会被记录，非常方便测试调试然后稳定了调高界别到生产。
 
-4） 对内置looging包打了猴子补丁，使日志永远不会使用同种handler重复记录
+logger_cc.debug('嘻嘻')
+# logger_cc的日志会写在cc.log中，和logger_aa的日志是不同的文件。
+```
 
-例如，原生的  
+4） 对内置looging包打了猴子补丁，使日志永远不会使用同种handler重复记录 ，例如，原生的
 
+```
 from logging import getLogger,StreamHandler
 logger = getLogger('hi')
 getLogger('hi').addHandler(StreamHandler())
@@ -110,9 +123,10 @@ logger.warning('啦啦啦')
 使用nb_log，对同一命名空间的日志，可以无惧反复添加同类型handler，不会重复记录。
 
 关于重复记录的例子，更惨的例子在第9章的，直接把机器cpu性能耗尽，磁盘弄爆炸。
-
+```
 
 5）支持日志自定义，运行此包后，会自动在你的python项目根目录中生成nb_log_config.py文件，按说明修改。
+
 ```
 
 ## 2. 最简单的使用方式,这只是演示控制台日志
@@ -137,8 +151,8 @@ print('print样式被自动发生变化')
 ```
 
 ## 3 文件日志
-###### 3.1）这个文件日志的自定义多进程安全按大小切割，filehandler是python史上性能最强大的支持多进程下日志文件按大小自动切割。
 
+###### 3.1）这个文件日志的自定义多进程安全按大小切割，filehandler是python史上性能最强大的支持多进程下日志文件按大小自动切割。
 
 关于按大小切割的性能可以看第10章的和loggeru的性能对比，nb_log文件日志写入性能快400%。
 
@@ -167,29 +181,29 @@ nb_log是基于自动批量聚合，从而减少写入次数（但文件日志�
 
 ```
 
-
-
 ###### 3.2）演示文件日志，并且直接演示最高实现难度的多进程安全切片文件日志
 
 ```python
 from multiprocessing import Process
-from nb_log import LogManager,get_logger
+from nb_log import LogManager, get_logger
 
-#指定log_filename不为None 就自动写入文件了，并且默认使用的是多进程安全的切割方式的filehandler。
-#默认都添加了控制台日志，如果不想要控制台日志，设置is_add_stream_handler=False
-#为了保持方法入场数量少，具体的切割大小和备份文件个数有默认值，
-#如果需要修改切割大小和文件数量，在当前python项目根目录自动生成的nb_log_config.py文件中指定。
+# 指定log_filename不为None 就自动写入文件了，并且默认使用的是多进程安全的切割方式的filehandler。
+# 默认都添加了控制台日志，如果不想要控制台日志，设置is_add_stream_handler=False
+# 为了保持方法入场数量少，具体的切割大小和备份文件个数有默认值，
+# 如果需要修改切割大小和文件数量，在当前python项目根目录自动生成的nb_log_config.py文件中指定。
 
-#logger = LogManager('ha').get_logger_and_add_handlers(is_add_stream_handler=True,
-#log_filename='ha.log')
-#get_logger这个和上面一句一样。但LogManager不只有get_logger_and_add_handlers一个公有方法。
-logger = get_logger(is_add_stream_handler=True,log_filename='ha.log') 
+# logger = LogManager('ha').get_logger_and_add_handlers(is_add_stream_handler=True,
+# log_filename='ha.log')
+# get_logger这个和上面一句一样。但LogManager不只有get_logger_and_add_handlers一个公有方法。
+logger = get_logger(is_add_stream_handler=True, log_filename='ha.log')
+
 
 def f():
     for i in range(1000000000):
         logger.debug('测试文件写入性能，在满足 1.多进程运行 2.按大小自动切割备份 3切割备份瞬间不出错'
-                    '这3个条件的前提下，验证这是不是python史上文件写入速度遥遥领先 性能最强的python logging handler')
-       
+                     '这3个条件的前提下，验证这是不是python史上文件写入速度遥遥领先 性能最强的python logging handler')
+
+
 if __name__ == '__main__':
     [Process(target=f).start() for _ in range(10)]
 ```
@@ -211,7 +225,6 @@ nb_log是采用的文件锁，文件锁在linux性能比较好，在win很差劲
 在linux上也提高了10倍左右的性能。
 ```
 
-
 ```python
 
 """
@@ -227,18 +240,20 @@ nb_log是采用的文件锁，文件锁在linux性能比较好，在win很差劲
 这里说的是多进程文件日志切割报错即多进程不安全，有的人强奸民意转移话题老说他多线程写日志切割日志很安全，简直是服了。
 面试时候把多进程和多线程区别死记硬背 背的一套一套很溜的，结果实际运用连进程和线程都不分。
 """
-from logging.handlers import  RotatingFileHandler
+from logging.handlers import RotatingFileHandler
 import logging
 from multiprocessing import Process
 from threading import Thread
 
 logger = logging.getLogger('test_raotating_filehandler')
 
-logger.addHandler(RotatingFileHandler(filename='testratationg.log',maxBytes=1000 *100,backupCount=10))
+logger.addHandler(RotatingFileHandler(filename='testratationg.log', maxBytes=1000 * 100, backupCount=10))
+
 
 def f():
     while 1:
-        logger.warning('这个代码会疯狂报错，因为设置了100Kb就切割并且在多进程下写入同一个日志文件'*20)
+        logger.warning('这个代码会疯狂报错，因为设置了100Kb就切割并且在多进程下写入同一个日志文件' * 20)
+
 
 if __name__ == '__main__':
     for _ in range(10):
@@ -248,12 +263,13 @@ if __name__ == '__main__':
 
 [![hVT2CV.png](https://z3.ax1x.com/2021/08/25/hVT2CV.png)](https://imgtu.com/i/hVT2CV)
 
-
 ## 4 钉钉日志
+
 ```python
 from nb_log import get_logger
-logger4 = get_logger("hi",is_add_stream_handler=True,
-    log_filename="hi.log",ding_talk_token='your_dingding_token')
+
+logger4 = get_logger("hi", is_add_stream_handler=True,
+                     log_filename="hi.log", ding_talk_token='your_dingding_token')
 logger4.debug('这条日志会同时出现在控制台 文件 和钉钉群消息')
 ```
 
@@ -267,6 +283,7 @@ logger4.debug('这条日志会同时出现在控制台 文件 和钉钉群消息
 nb_log_config.py的内容如下，默认都是用#注释了，如果放开某项配置则优先使用这里的配置，否则使用nb_log_config_default.py中的配置。
 
 配置示例如下：
+
 ```
 如果反对日志有各种彩色，可以设置 DEFAULUT_USE_COLOR_HANDLER = False
 如果反对日志有块状背景彩色，可以设置 DISPLAY_BACKGROUD_COLOR_IN_CONSOLE = False
@@ -404,9 +421,9 @@ elastic日志
 mongo日志
 
 ![Image text](https://i.niupic.com/images/2020/05/12/7OSL.png)
- 
- 
+
 ## 8 关于日志的观察者模式
+
 不会扩展日志记录到什么地方，主要是不懂什么叫观察者模式
 
 ```python
@@ -416,30 +433,37 @@ mongo日志
 def 记录到控制台(msg):
     """实现把msg记录到控制台"""
 
+
 def 记录到文件(msg):
     """实现把msg记录到文件"""
+
 
 def 记录到钉钉(msg):
     """实现把msg记录到钉钉"""
 
+
 def 记录到控制台和文件(msg):
     """实现把msg记录到控制台和文件"""
+
 
 def 记录到控制台和钉钉(msg):
     """实现把msg记录到控制台和钉钉"""
 
+
 def 记录到文件和钉钉(msg):
     """实现把msg记录到文件和钉钉"""
+
 
 def 记录到控制台和文件和钉钉(msg):
     """实现把msg记录到控制台和文件和钉钉"""
 
-#当需要把msg记录到文件时候，调用函数 记录到文件(msg)
-#当需要把msg记录到控制台时候，调用函数 记录到控制台(msg)
-#当需要把msg记录到钉钉时候，调用函数 记录到钉钉(msg)
-#当需要把msg记录到控制台和文件，调用函数 记录到控制台和文件(msg)
-#当需要把msg记录到控制台和钉钉，调用函数 记录到控制台和钉钉(msg)
-#当需要把msg记录到控制台和文件和钉钉，调用函数 记录到控制台和文件和钉钉(msg)
+
+# 当需要把msg记录到文件时候，调用函数 记录到文件(msg)
+# 当需要把msg记录到控制台时候，调用函数 记录到控制台(msg)
+# 当需要把msg记录到钉钉时候，调用函数 记录到钉钉(msg)
+# 当需要把msg记录到控制台和文件，调用函数 记录到控制台和文件(msg)
+# 当需要把msg记录到控制台和钉钉，调用函数 记录到控制台和钉钉(msg)
+# 当需要把msg记录到控制台和文件和钉钉，调用函数 记录到控制台和文件和钉钉(msg)
 
 """
 这样会造成，仅记录到控制台 文件 钉钉这三种的任意几个，需要写6个函数，调用时候需要调用不同的函数名。
@@ -450,6 +474,7 @@ def 记录到控制台和文件和钉钉(msg):
 ```
 
 ##### 观察者模式图片
+
 ![Image text](https://www.runoob.com/wp-content/uploads/2014/08/observer_pattern_uml_diagram.jpg)
 
 菜鸟教程的观察者模式demo连接
@@ -473,7 +498,6 @@ StreamHandler FileHandler DingTalkHandler类的 emit方法是uml图的doOperatio
 如果不先学习经典设计模式，每次看包的源码，需要多浪费很多时间看他怎么设计实现的，不懂设计模式，会觉得太难了看着就放弃了。
 
 在python日志的理解和使用上，国内能和我打成平手的没有几人。
-
 
 ## 9.1 演示一个由于不好好理解观察者模式，封装的日志类在调用时候十分惨烈的例子，惨烈程度达到10级。
 
@@ -537,7 +561,6 @@ print(time.time() - t1)
 
 ```
 
-
 ## 9.2 使用博客园搜索后排名第一个的python 日志封装，也是严重重复记录。
 
 [博客园 python 日志封装](https://www.cnblogs.com/linuxchao/p/linuxchao-logger.html)
@@ -599,6 +622,8 @@ if __name__ == '__main__':
         # logger.warning('I am a warning message')
         # logger.error('I am a error message')
         logger.critical('I am a critical message')
+
+
     for i in range(10):
         f()
 ```
@@ -625,7 +650,7 @@ if __name__ == '__main__':
 会造成严重的磁盘紧张和cpu飙升。
 """
 
-from  loguru import logger
+from loguru import logger
 import time
 
 
@@ -641,6 +666,7 @@ def f(x):
     logger.error(f'loguru 太惨了重复记录 {x}')
     logger.critical(f'loguru 太惨了重复记录 {x}')
 
+
 for i in range(100):
     time.sleep(1)
     f(i)
@@ -653,14 +679,12 @@ for i in range(100):
 """
 ```
 
-
 ## 10. nb_log对比 loguru，必须对比，如果比不过loguru就不需要弄nb_log浪费精力时间
 
 ### 10.1 先比控制台屏幕流日志颜色，nb_log三胜。
 
 这是loguru 屏幕渲染颜色
 [![hZC2PU.png](https://z3.ax1x.com/2021/08/25/hZC2PU.png)](https://imgtu.com/i/hZC2PU)
-
 
 1）nb_log 颜色更炫
 
@@ -669,6 +693,7 @@ for i in range(100):
 3）nb_log 支持控制台点击日志文件行号自动打开并跳转到精确的文件和行号。
 
 ### 10.2 比文件日志性能，nb_log比loguru快400%。
+
 ```
 nb_log为了保证多进程下按大小安全切割，采用了文件锁 + 自动每隔1秒批量把消息写入到文件，大幅减少了加锁解锁和判断时候需要切割的次数。
 nb_log的file_handler是史上最强的，超过了任何即使不切割文件的内置filehandler,比那些为了维护自动切割的filehandler例如logging内置的
@@ -687,16 +712,17 @@ nb_log的文件日志写入性能是loguru的4倍，但loguru在多进程运行�
 ##### loguru快速文件写入性能，写入200万条代码
 
 这个代码如果rotation设置10000 Kb就切割，那么达到切割会疯狂报错，为了不报错测试性能只能设置为1000000 KB
+
 ```python
 import time
 
-from  loguru import logger
+from loguru import logger
 from concurrent.futures import ProcessPoolExecutor
-
 
 logger.remove(handler_id=None)
 
-logger.add("./log_files/loguru-test1.log",enqueue=True,rotation="10000 KB")
+logger.add("./log_files/loguru-test1.log", enqueue=True, rotation="10000 KB")
+
 
 def f():
     for i in range(200000):
@@ -724,28 +750,30 @@ if __name__ == '__main__':
 ```
 
 ###### nb_log快速文件写入性能，写入200万条代码
+
 ```python
 from nb_log import get_logger
 from concurrent.futures import ProcessPoolExecutor
-logger = get_logger('test_nb_log_conccreent',is_add_stream_handler=False,log_filename='test_nb_log_conccreent.log')
+
+logger = get_logger('test_nb_log_conccreent', is_add_stream_handler=False, log_filename='test_nb_log_conccreent.log')
 
 
 def f(x):
     for i in range(200000):
         logger.warning(f'{x} {i}')
 
+
 if __name__ == '__main__':
     # 200万条 45秒
     pool = ProcessPoolExecutor(10)
     print('开始')
     for i in range(10):
-        pool.submit(f,i)
+        pool.submit(f, i)
     pool.shutdown()
     print('结束')
 ```
 
 ### 10.3 多进程下的文件日志切割，nb_log不出错，loguru出错导致丢失大量日志。
-
 
 ```
 将10.2的代码运行就可以发现，loguru设置了10M大小切割，疯狂报错，因为日志在达到指定大小后切割需要备份重命名，
@@ -776,13 +804,14 @@ python性能要发挥好，必须开多进程。
 ```
 
 ### 10.4 写入不同的文件，nb_log采用经典日志的命名空间区分日志，比loguru更简单
+
 ```python
 from nb_log import get_logger
 from loguru import logger
 
 # nb_log 写入不同的文件是根据日志命名空间 name 来区分的。方便。
-logger_a = get_logger('a',log_filename='a.log',log_path='./log_files')
-logger_b = get_logger('b',log_filename='b.log',log_path='./log_files')
+logger_a = get_logger('a', log_filename='a.log', log_path='./log_files')
+logger_b = get_logger('b', log_filename='b.log', log_path='./log_files')
 logger_a.info("嘻嘻a")
 logger_b.info("嘻嘻b")
 
@@ -790,21 +819,21 @@ logger_b.info("嘻嘻b")
 logger.add('./log_files/c.log', filter=lambda x: '[特殊标志c!]' in x['message'])
 logger.add('./log_files/d.log', filter=lambda x: '[特殊标志d!]' in x['message'])
 logger.add('./log_files/e.log', )
-logger.info('[特殊标志c!] 嘻嘻c') # 出现在c.log和 e.log  消息为了写入不同文件需要带消息标志
-logger.info('[特殊标志d!] 嘻嘻d') # 出现在d.log和 e.log  消息为了写入不同文件需要带消息标志
+logger.info('[特殊标志c!] 嘻嘻c')  # 出现在c.log和 e.log  消息为了写入不同文件需要带消息标志
+logger.info('[特殊标志d!] 嘻嘻d')  # 出现在d.log和 e.log  消息为了写入不同文件需要带消息标志
 ```
-
 
 ### 10.5 按不同功模块能作用的日志设置不同的日志级别。loguru无法做到。
 
 ##### 例如a模块的功能希望控制台日志可以显示debug，b模块的功能只显示info以上级别。
+
 ```python
 import logging
 from nb_log import get_logger
 
 # nb_log 写入不同的文件是根据日志命名空间 name 来区分的。方便。
-logger_a = get_logger('a',log_level_int=logging.DEBUG)
-logger_b = get_logger('b',log_level_int=logging.INFO)
+logger_a = get_logger('a', log_level_int=logging.DEBUG)
+logger_b = get_logger('b', log_level_int=logging.INFO)
 logger_a.debug("嘻嘻a debug会显示")
 logger_a.info("嘻嘻a info会显示")
 logger_b.debug("嘻嘻b debug不会显示")
@@ -812,6 +841,7 @@ logger_b.info("嘻嘻b info会显示")
 ```
 
 ### 10.6 nb_log内置自带的log handler种类远超loguru
+
 ```
 nb_log 内置的handler包括 钉钉 elastic kafka，方便自动一键把日志同时记载到这些地方。
 loguru没有内置，loguru的add方法以文件日志为核心。
@@ -845,6 +875,7 @@ logger.addHandler()
 ```
 
 ### 10.9 易用性对比，nb_log的控制台和文件handler比loguru添加更容易
+
 ```
 loguru哪里好了？
 loguru只是自动有好看的日志formatter显示格式 + 比原生logger更容易添加文件handler。
@@ -854,12 +885,11 @@ nb_log 比loguru添加控制台和文件日志更简单，并且显示格式更�
 ```
 
 ##### 原生日志设置添加控制台和文件日志并设置日志格式是比loguru麻烦点，但这个麻烦的过程被nb_log封装了。
+
 [![hZ2HJg.png](https://z3.ax1x.com/2021/08/25/hZ2HJg.png)](https://imgtu.com/i/hZ2HJg)
 
-
-
-
 ### 10.10 nb_log可以灵活捕获所有第三方python包、库、框架的日志,loguru不行
+
 ```
 不知道大家喜欢看三方包的源码不，或者跳转进去看过三方包源码不，
 95%的第三方包的源码的大量文件中都有写   logger = logging.getLogger(__name__)  这段代码。
@@ -884,10 +914,11 @@ import requests
 get_logger('urllib3')  # 也可以更精确只捕获 urllib3.connectionpool 的日志，不要urllib3包其他模块文件的日志
 requests.get("http://www.baidu.com")
 ```
+
 <a href="https://imgtu.com/i/hJbkrD"><img src="https://z3.ax1x.com/2021/08/30/hJbkrD.png" alt="hJbkrD.png" border="0" /></a>
 
-
 ###### 日志的命名空间意义很重要 ，就是那个logging.getLogger的入参，很多人还不懂。
+
 ```
 如果日志名字是  a.b.c
 那么 logging.getLogger("a")可以捕获a文件夹下的所有子文件夹下的所有模块下的日志，
@@ -896,11 +927,6 @@ logging.getLogger("a.b.c") 可以精确只捕获a/b/c.py 这个模块的日志
 ```
 
 [![hJOYIH.png](https://z3.ax1x.com/2021/08/30/hJOYIH.png)](https://imgtu.com/i/hJOYIH)
-
-
-
-
-
 
 ![](https://visitor-badge.glitch.me/badge?page_id=nb_log)
 
