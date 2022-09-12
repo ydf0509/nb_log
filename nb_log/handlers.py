@@ -1033,7 +1033,8 @@ class ConcurrentDayRotatingFileHandlerLinux(logging.Handler):
         try:
             msg = self.format(record)
             self.fp.write(msg + '\n')
-        except Exception:
+        except Exception as e:
+            print(e)
             self.handleError(record)
         if time.time() - self._last_delete_time > 60:
             self._get_fp()
