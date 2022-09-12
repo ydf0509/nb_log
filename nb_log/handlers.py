@@ -897,6 +897,7 @@ class ConcurrentDayRotatingFileHandlerWin(logging.Handler):
     @classmethod
     def _emit_all_file_handler(cls):
         while True:
+            # print(os.getpid())
             for hr in cls.file_handler_list:
                 # very_nb_print(hr.buffer_msgs_queue.qsize())
                 # noinspection PyProtectedMember
@@ -945,6 +946,9 @@ class ConcurrentDayRotatingFileHandlerWin(logging.Handler):
             try:
                 msg = self.buffer_msgs_queue.get(block=False)
                 buffer_msgs += msg + '\n'
+                if len(buffer_msgs) > 1000*1000*10:
+                    pass
+                    break
             except queue.Empty:
                 break
         if buffer_msgs:
@@ -954,7 +958,7 @@ class ConcurrentDayRotatingFileHandlerWin(logging.Handler):
                 new_file_name = self.file_name + '.' + time_str
                 path_obj = Path(self.file_path) / Path(new_file_name)
                 path_obj.touch(exist_ok=True)
-                with path_obj.open(mode='a',encoding='utf-8') as f:
+                with path_obj.open(mode='a', encoding='utf-8') as f:
                     f.write(buffer_msgs)
                 if time.time() - self._last_delete_time > 60:
                     self._find_and_delete_files()
@@ -1162,4 +1166,3 @@ ConcurrentDayRotatingFileHandler = ConcurrentDayRotatingFileHandlerWin if os_nam
 # ConcurrentDayRotatingFileHandler = ConcurrentSecondRotatingFileHandlerLinux
 #
 # print(ConcurrentDayRotatingFileHandler)
-
