@@ -612,11 +612,11 @@ class ColorHandler(logging.Handler):
     @staticmethod
     def __spilt_msg(log_level, msg: str):
         split_text = '- 级别 -'
-        if log_level == logging.DEBUG:
+        if log_level == 10:
             split_text = '- DEBUG -'
-        elif log_level == logging.INFO:
+        elif log_level == 20:
             split_text = '- INFO -'
-        elif log_level == logging.WARNING:
+        elif log_level == 30:
             split_text = '- WARNING -'
         elif log_level == 40:
             split_text = '- ERROR -'
@@ -1070,7 +1070,7 @@ class ConcurrentDayRotatingFileHandlerLinux(logging.Handler):
 
 
 # noinspection PyPep8Naming
-class _ConcurrentSecondRotatingFileHandlerLinux(logging.Handler):
+class ConcurrentSecondRotatingFileHandlerLinux(logging.Handler):
     """ 按秒切割的多进程安全文件日志，方便测试验证"""
 
     def __init__(self, file_name: str, file_path: str, back_count=None):
@@ -1161,4 +1161,3 @@ ConcurrentDayRotatingFileHandler = ConcurrentDayRotatingFileHandlerWin if os_nam
 # ConcurrentDayRotatingFileHandler = ConcurrentSecondRotatingFileHandlerLinux
 #
 # print(ConcurrentDayRotatingFileHandler)
-
