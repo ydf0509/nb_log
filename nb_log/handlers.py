@@ -692,6 +692,8 @@ class ConcurrentRotatingFileHandlerWithBufferInitiativeWindwos(ConcurrentRotatin
             try:
                 msg = self.buffer_msgs_queue.get(block=False)
                 buffer_msgs += msg + '\n'
+                if len(buffer_msgs) > 10000*1000:
+                    break
             except Empty:
                 break
         if buffer_msgs:
