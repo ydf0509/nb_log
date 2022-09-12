@@ -12,15 +12,15 @@ from concurrent.futures import ProcessPoolExecutor
 from auto_run_on_remote import run_current_script_on_remote
 
 logger = LogManager('test_nb_log_conccreent').get_logger_and_add_handlers(is_add_stream_handler=False,
-                                                                              log_filename='test_nb_log_conccreent55.log', log_file_handler_type=2,
+                                                                              log_filename='test_nb_log_conccreent56.log', log_file_handler_type=2,
                                                                           # log_path='/root/pythonlogs'
                                                                           )
 
-logger.warning('xxxx')
+logger.warning('xxxx'*1000)
 
 def f(x):
-    for i in range(20000):
-        time.sleep(0.01)
+    for i in range(20000000):
+        # time.sleep(0.01)
         logger.warning(f'{os.getpid()} {x} {i}  ')
 
 # logger.warning('aaaaa')
