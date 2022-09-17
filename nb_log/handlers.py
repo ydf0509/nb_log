@@ -954,7 +954,7 @@ class ConcurrentDayRotatingFileHandlerWin(logging.Handler):
                 new_file_name = self.file_name + '.' + time_str
                 path_obj = Path(self.file_path) / Path(new_file_name)
                 path_obj.touch(exist_ok=True)
-                with path_obj.open(mode='a',encoding='utf-8') as f:
+                with path_obj.open(mode='a', encoding='utf-8') as f:
                     f.write(buffer_msgs)
                 if time.time() - self._last_delete_time > 60:
                     self._find_and_delete_files()

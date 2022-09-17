@@ -12,7 +12,7 @@ from concurrent.futures import ProcessPoolExecutor
 from auto_run_on_remote import run_current_script_on_remote
 
 logger = LogManager('test_nb_log_conccreent').get_logger_and_add_handlers(is_add_stream_handler=False,
-                                                                              log_filename='test_nb_log_conccreent55.log', log_file_handler_type=2,
+                                                                              log_filename='test_nb_log_conccreent556c.log', log_file_handler_type=2,
                                                                           # log_path='/root/pythonlogs'
                                                                           )
 
@@ -21,16 +21,19 @@ logger.warning('xxxx')
 def f(x):
     for i in range(20000):
         time.sleep(0.01)
-        logger.warning(f'{os.getpid()} {x} {i}  ')
+        logger.warning(f'{os.getpid()} {x} {i}  哈哈哈')
 
 # logger.warning('aaaaa')
 if __name__ == '__main__':
     # run_current_script_on_remote()
     # 200万条 45秒
+    pass
 
-    pool = ProcessPoolExecutor(5)
-    print('start')
-    for i in range(5):
-        pool.submit(f,i)
-    pool.shutdown()
-    print('end')
+    # pool = ProcessPoolExecutor(5)
+    # print('start')
+    # for i in range(5):
+    #     pool.submit(f,i)
+    # pool.shutdown()
+    # print('end')
+
+    # time.sleep(2)
