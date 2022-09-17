@@ -434,7 +434,7 @@ def get_logger(name: typing.Union[str, None], *, log_level_int: int = None, is_a
                mongo_url=None, is_add_elastic_handler=False, is_add_kafka_handler=False,
                ding_talk_token=None, ding_talk_time_interval=60,
                mail_handler_config: MailHandlerConfig = MailHandlerConfig(), is_add_mail_handler=False,
-               formatter_template: int = None) -> logging.Logger:
+               formatter_template: typing.Union[int, logging.Formatter] = None) -> logging.Logger:
     """
     重写一遍，是为了更好的pycharm自动补全，所以不用**kwargs的写法。
     如果太喜欢函数调用了，可以使用这种.

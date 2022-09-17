@@ -1,5 +1,13 @@
 ## 1. pip install nb_log
 
+logger = nb_log.get_logger("logger_namespace") 得到的是原生内置logging.getLogger() 类型的日志，与各种三方包兼容性100%。
+loguru是独立的日志系统，不兼容第三方包的日志。
+
+使用nb_log,无需用户配置 log_config来设置一个超长的日志配置字典，nb_log内置了各种formator和handler，用户只需要在get_logger传递相应入参，
+生成的日志就能记录到各种地方包括 控制台/文件/邮件/钉钉/企业微信/elastic等等中的任意几个地方的组合;nb_log内置10种日志模板，总有一个模板适合用户。
+
+nb_log有原生日志logging对各种第三方包的100%兼容性，同时无需配置log_config字典，也无需手动add handler，set formator，比loguru更简易。
+
 ### 解释一下什么叫pycharm下的点击自动跳转功能
 
 ![Image text](https://i.niupic.com/images/2020/07/30/8tka.png)

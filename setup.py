@@ -17,7 +17,6 @@ install_requires = [
     'elasticsearch',
     'kafka-python==2.0.2',
     'requests',
-    'pika',
     'flask',
     'python-json-logger==0.1.10',
     'nb_filelock',
@@ -29,7 +28,7 @@ if os.name == 'nt':
 
 setup(
     name='nb_log',  #
-    version="7.6",
+    version="7.7",
     description=(
         'very sharp color display,monkey patch bulitin print  and high-performance multiprocess safe roating file handler,other handlers includeing dintalk ,email,kafka,elastic and so on '
     ),
@@ -66,7 +65,7 @@ python setup.py sdist upload -r pypi
 
 
 python setup.py sdist & twine upload dist/nb_log-6.0.tar.gz
-python setup.py sdist & python -m  twine upload dist/nb_log-7.6.tar.gz
+python setup.py sdist & python -m  twine upload dist/nb_log-7.7.tar.gz
 
 twine upload dist/*
 
