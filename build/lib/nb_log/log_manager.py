@@ -309,7 +309,6 @@ class LogManager(object):
                 self.logger.removeHandler(handler)  # noqa
 
     def __add_a_hanlder(self, handlerx: logging.Handler):
-        handlerx.setLevel(10)
         handlerx.setFormatter(self._formatter)
         self.logger.addHandler(handlerx)
 
