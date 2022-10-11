@@ -599,7 +599,7 @@ class ColorHandler(logging.Handler):
         level = logging.getLevelName(self.level)
         name = getattr(self.stream, 'name', '')
         if name:
-            name += ' '
+            name = str(name) + ' '
         return '<%s %s(%s)>' % (self.__class__.__name__, name, level)
 
 
