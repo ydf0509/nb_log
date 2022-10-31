@@ -3,8 +3,8 @@
 logger = nb_log.get_logger("logger_namespace") 得到的是原生内置logging.getLogger() 类型的日志，与各种三方包兼容性100%。
 loguru是独立的日志系统，不兼容第三方包的日志。
 
-使用nb_log,无需用户配置 log_config来设置一个超长的日志配置字典，nb_log内置了各种formator和handler，用户只需要在get_logger传递相应入参，
-生成的日志就能记录到各种地方包括 控制台/文件/邮件/钉钉/企业微信/elastic等等中的任意几个地方的组合;nb_log内置10种日志模板，总有一个模板适合用户。
+使用nb_log，无需用户配置 log_config来设置一个超长的日志配置字典，nb_log内置了各种formator和handler，用户只需要在get_logger传递相应入参，
+生成的日志就能记录到各种地方包括 控制台/文件/邮件/钉钉/企业微信/elastic等等中的任意几个地方的组合；nb_log内置10种日志模板，总有一个模板适合用户。
 
 nb_log有原生日志logging对各种第三方包的100%兼容性，同时无需配置log_config字典，也无需手动add handler，set formator，比loguru更简易。
 
@@ -16,51 +16,44 @@ nb_log有原生日志logging对各种第三方包的100%兼容性，同时无需
 
 ![Image text](https://i.ibb.co/VvSSrfq/X-X1-MW4-XJ-PRJVQ3-XZSG9-R.png)
 
-```
-要说明的是，即使是同一个颜色代码在pycahrm不同主题都是颜色显示区别很大的，默认的可能很丑或者由于颜色不好导致文字看不清晰
-为了达到我这种色彩效果需要重新设置主题颜色，在控制台输出的第一行就教大家怎么设置颜色了。
+要说明的是，即使是同一个颜色代码在pycharm不同主题都是颜色显示区别很大的，默认的可能很丑或者由于颜色不好导致文字看不清晰，为了达到我这种色彩效果需要重新设置主题颜色，在控制台输出的第一行就教大家怎么设置颜色了。
+
 也可以按下面设置，需要花30秒设置。
 
-"""
-1)使用pycharm时候，建议重新自定义设置pycharm的console里面的主题颜色。
-设置方式为 打开pycharm的 file -> settings -> Editor -> Color Scheme -> Console Colors 选择monokai，
-并重新修改自定义7个颜色，设置Blue为 0454F3 ，Cyan为 04DCF8 ，Green 为 13FC02 ，Magenta为 ff1cd5 ,red为 F80606 ，yellow为 EAFA04 ，gray 为 FFFFFF ，white 为 FFFFFF 。
-如果设置为显示背景色快，由于不同版本的pycahrm或主题，可以根据控制台实际显示设置 White 为 1F1F1F， Black 为 FFFFFF，因为背景色是深色，前景色的文字设置为白色比黑色好。
+1. 使用pycharm时候，建议重新自定义设置pycharm的console里面的主题颜色。
+  设置方式为 打开pycharm的 file -> settings -> Editor -> Color Scheme -> Console Colors 选择monokai，并重新修改自定义7个颜色，设置Blue为 0454F3 ，Cyan为 04DCF8 ，Green 为 13FC02 ，Magenta为 ff1cd5 ,red为 F80606 ，yellow为 EAFA04 ，gray 为 FFFFFF ，white 为 FFFFFF 。如果设置为显示背景色块，由于不同版本的pycharm或主题，可以根据控制台实际显示设置 White 为 1F1F1F， Black 为 FFFFFF，因为背景色是深色，前景色的文字设置为白色比黑色好。
 
-2)使用xshell或finashell工具连接linux也可以自定义主题颜色，默认使用shell连接工具的颜色也可以。
+2. 使用xshell或finashell工具连接linux也可以自定义主题颜色，默认使用shell连接工具的颜色也可以。
 
-颜色效果如连接 https://i.ibb.co/VvSSrfq/X-X1-MW4-XJ-PRJVQ3-XZSG9-R.png
+   颜色效果如连接 https://i.ibb.co/VvSSrfq/X-X1-MW4-XJ-PRJVQ3-XZSG9-R.png
 
 在当前项目根目录的 nb_log_config.py 中可以修改当get_logger方法不传参时后的默认日志行为。
 
-"""
-```
-
 ### 屏幕流日志效果图，设置不使用背景色块。
 
-###### 在项目根目录下自动生成的nb_log_config.py配置文件中设置DISPLAY_BACKGROUD_COLOR_IN_CONSOLE = False
+#### 在项目根目录下自动生成的nb_log_config.py配置文件中设置DISPLAY_BACKGROUD_COLOR_IN_CONSOLE = False
 
 ![https://i.niupic.com/images/2022/01/08/9T0T.png](https://i.niupic.com/images/2022/01/08/9T0T.png)
 
-### 屏幕流日志效果图，设置既不使用背景色块也不使用彩色文字
+#### 屏幕流日志效果图，设置既不使用背景色块也不使用彩色文字
 
 例如只希望使用nb_log的强大多进程文件切片的功能等其他功能，对彩色控制台日志不感冒，则可以设置完全不要彩色。
 
-###### 在项目根目录下自动生成的nb_log_config.py配置文件中设置 DEFAULUT_USE_COLOR_HANDLER = False
+#### 在项目根目录下自动生成的nb_log_config.py配置文件中设置 DEFAULUT_USE_COLOR_HANDLER = False
 
 [![hVTiX4.png](https://z3.ax1x.com/2021/08/25/hVTiX4.png)](https://imgtu.com/i/hVTiX4)
 
-##### 如果不希望每次启动代码显示教你怎么设置pycharm颜色，可以设置 SHOW_PYCHARM_COLOR_SETINGS = False
+### 如果不希望每次启动代码显示教你怎么设置pycharm颜色，可以设置 SHOW_PYCHARM_COLOR_SETINGS = False
 
 ```
-
 nb_log 五彩日志根据日志级别渲染，对python内置的print打了猴子补丁，使用户知道是在哪里print的。
 nb_log的文件日志，多进程安全切割(注意是多进程 并且对日志进行大小或时间切割)
 nb_log 支持控制台、文件、钉钉、邮件、kafka、elastic、mongo中的任意几个地方的组合进行日志记录。
+```
 
-0) 自动转换print效果，再也不怕有人在项目中随意print，导致很难找到是从哪里冒出来的print。
-只要import nb_log，项目所有地方的print自动现型并在控制台可点击几精确跳转到print的地方。
+0） 自动转换print效果，再也不怕有人在项目中随意`print`，导致很难找到是从哪里冒出来的`print`。只要`import nb_log`，项目所有地方的`print`自动现型并在控制台可点击几精确跳转到`print`的地方。
 
+```
 在项目里面的几百个文件中疯狂print真的让人很生气，一个run.py运行起来几百个py文件，
 每个文件print 七八次，到底自己想看想关心的print是在控制台的哪一行呢，找到老眼昏花都找不到。
 比如打印x变量的值，有人是为了省代码直接 print(x)，而没有多打几个字母使用print("x的值是：",x)，
@@ -136,15 +129,13 @@ logger.warning('啦啦啦')
 
 5）支持日志自定义，运行此包后，会自动在你的python项目根目录中生成nb_log_config.py文件，按说明修改。
 
-```
-
 ## 2. 最简单的使用方式,这只是演示控制台日志
-###### 2.0）自动拦截改变项目中所有地方的print效果。（支持配置文件自定义关闭转化print）
-###### 2.1）控制台日志变成可点击，精确跳转。（支持配置文件自定义修改或增加模板，内置了7种模板，部分模板生成的日志可以在pycharm控制台点击跳转）
-###### 2.2）控制台日志根据日志级别自动变色。（支持配置文件关闭彩色或者关闭背景色块）
+### 2.0）自动拦截改变项目中所有地方的print效果。（支持配置文件自定义关闭转化print）
+### 2.1）控制台日志变成可点击，精确跳转。（支持配置文件自定义修改或增加模板，内置了7种模板，部分模板生成的日志可以在pycharm控制台点击跳转）
+### 2.2）控制台日志根据日志级别自动变色。（支持配置文件关闭彩色或者关闭背景色块）
 
 
-### 使用之前先学习 PYTHONPATH的概念  [https://github.com/ydf0509/pythonpathdemo](https://github.com/ydf0509/pythonpathdemo)
+> 使用之前先学习 PYTHONPATH的概念  [https://github.com/ydf0509/pythonpathdemo](https://github.com/ydf0509/pythonpathdemo)
 ```python
 from nb_log import LogManager,get_logger
 
@@ -161,7 +152,7 @@ print('print样式被自动发生变化')
 
 ## 3 文件日志
 
-###### 3.1）这个文件日志的自定义多进程安全按大小切割，filehandler是python史上性能最强大的支持多进程下日志文件按大小自动切割。
+### 3.1）这个文件日志的自定义多进程安全按大小切割，filehandler是python史上性能最强大的支持多进程下日志文件按大小自动切割。
 
 关于按大小切割的性能可以看第10章的和loggeru的性能对比，nb_log文件日志写入性能快400%。
 
@@ -190,7 +181,7 @@ nb_log是基于自动批量聚合，从而减少写入次数（但文件日志�
 
 ```
 
-###### 3.2）演示文件日志，并且直接演示最高实现难度的多进程安全切片文件日志
+### 3.2）演示文件日志，并且直接演示最高实现难度的多进程安全切片文件日志
 
 ```python
 from multiprocessing import Process
@@ -217,7 +208,7 @@ if __name__ == '__main__':
     [Process(target=f).start() for _ in range(10)]
 ```
 
-## 3.3 演示文件大小切割在多进程下的错误例子,
+### 3.3） 演示文件大小切割在多进程下的错误例子,
 
 ```
 注意说的是多进程，任何handlers在多线程下都没有问题，任何handlers在记录时候都加了线程锁了，完全不用考虑多线程。
@@ -482,7 +473,7 @@ def 记录到控制台和文件和钉钉(msg):
 """
 ```
 
-##### 观察者模式图片
+### 观察者模式图片
 
 ![Image text](https://www.runoob.com/wp-content/uploads/2014/08/observer_pattern_uml_diagram.jpg)
 
@@ -718,7 +709,7 @@ nb_log的多进程文件日志不仅是解决了文件切割不出错，而且�
 nb_log的文件日志写入性能是loguru的4倍，但loguru在多进程运行下切割出错。
 ```
 
-##### loguru快速文件写入性能，写入200万条代码
+#### loguru快速文件写入性能，写入200万条代码
 
 这个代码如果rotation设置10000 Kb就切割，那么达到切割会疯狂报错，为了不报错测试性能只能设置为1000000 KB
 
@@ -758,7 +749,7 @@ if __name__ == '__main__':
     print(time.strftime("%H:%M:%S"))
 ```
 
-###### nb_log快速文件写入性能，写入200万条代码
+#### nb_log快速文件写入性能，写入200万条代码
 
 ```python
 from nb_log import get_logger
@@ -834,7 +825,7 @@ logger.info('[特殊标志d!] 嘻嘻d')  # 出现在d.log和 e.log  消息为了
 
 ### 10.5 按不同功模块能作用的日志设置不同的日志级别。loguru无法做到。
 
-##### 例如a模块的功能希望控制台日志可以显示debug，b模块的功能只显示info以上级别。
+#### 例如a模块的功能希望控制台日志可以显示debug，b模块的功能只显示info以上级别。
 
 ```python
 import logging
@@ -893,7 +884,7 @@ loguru比原生logging也只是好在这两点而已，其他方面这不如原�
 nb_log 比loguru添加控制台和文件日志更简单，并且显示格式更炫。loguru对比原生logging的两个优势在nb_log面前没有了。
 ```
 
-##### 原生日志设置添加控制台和文件日志并设置日志格式是比loguru麻烦点，但这个麻烦的过程被nb_log封装了。
+#### 原生日志设置添加控制台和文件日志并设置日志格式是比loguru麻烦点，但这个麻烦的过程被nb_log封装了。
 
 [![hZ2HJg.png](https://z3.ax1x.com/2021/08/25/hZ2HJg.png)](https://imgtu.com/i/hZ2HJg)
 
@@ -926,7 +917,7 @@ requests.get("http://www.baidu.com")
 
 <a href="https://imgtu.com/i/hJbkrD"><img src="https://z3.ax1x.com/2021/08/30/hJbkrD.png" alt="hJbkrD.png" border="0" /></a>
 
-###### 日志的命名空间意义很重要 ，就是那个logging.getLogger的入参，很多人还不懂。
+#### 日志的命名空间意义很重要 ，就是那个logging.getLogger的入参，很多人还不懂。
 
 ```
 如果日志名字是  a.b.c
