@@ -1,19 +1,40 @@
-# import time
+
 #
+#
+# import flask
 # from nb_log import get_logger
 #
 #
-# logger = get_logger('test_time_raote',log_filename='test_roat_file_log3.log',log_file_handler_type=2)
+# # get_logger('flask',)
+# # get_logger('werkzeug')
 #
-# # for i in range(10):
-# #     time.sleep(0.001)
-# #     logger.warning('hhh')
+# app = flask.Flask(__name__)
 #
+# @app.get('/')
+# def index():
+#     print('hi')
+#     return 'hi'
 #
-# logger.warning('dddd')
+# app.run()
 
 
 
-d1 = {'a':1}
+import  logging
+import nb_log
 
-print(d1.get('b'))
+logger = logging.getLogger('a.b.c')
+
+logger.info('不会自动打印的')
+
+nb_log.get_logger(None)
+
+logger.info('这行会自动打印了，因为根命名空间加了handler')
+
+
+logger1 = logging.getLogger('aaa')
+
+logger2 = logging.getLogger('aaa')
+
+logger3 = logging.getLogger('bbb')
+
+print('logger1 id: ',id(logger1),'logger2 id: ',id(logger2),'logger3 id: ',id(logger3))
