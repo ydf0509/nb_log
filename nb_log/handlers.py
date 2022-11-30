@@ -834,6 +834,7 @@ class CompatibleSMTPSSLHandler(handlers.SMTPHandler):
                 f'[log_manager.py]   {time.strftime("%H:%M:%S", time.localtime())}  \033[0;31m !!!!!! 邮件发送失败,原因是： {e} \033[0m')
 
 
+
 class DingTalkHandler(logging.Handler):
     _lock_for_remove_handlers = Lock()
 
