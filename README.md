@@ -456,7 +456,9 @@ print('logger1 id: ',id(logger1),'logger2 id: ',id(logger2),'logger3 id: ',id(lo
 有的人到现在还是不知道日志命名空间的作用，对一个大项目的所有的日志只会处理成一种表现行为，悲了个剧。
 
 
+## 1.10 nb_log比logurur有10胜
 
+[nb_log比logurur有10个优点方面](https://nb-log-doc.readthedocs.io/zh_CN/latest/articles/c6.html)
 
 ## 1.20 完整readthedocs文档地址
 
