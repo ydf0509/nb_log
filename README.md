@@ -5,6 +5,7 @@
 
 [nb_log 源码](https://github.com/ydf0509/nb_log)
 
+
 文中文档较长，但其中大部分不是 讲解nb_log 的用法，是复习内置logging的概念。
 是由于python人员不懂logging包的日志命名空间和python日志树形命名空间结构，不懂handlers和logger的关系是什么。
 所以需要很长的篇幅。
