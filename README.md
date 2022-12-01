@@ -1,11 +1,13 @@
 
 # 1.nb_log 简介
 
-[nb_log readthedocs文档](https://nb-log-doc.readthedocs.io/zh_CN/latest)
+[nb_log readthedocs文档链接](https://nb-log-doc.readthedocs.io/zh_CN/latest)
 
-[nb_log 源码](https://github.com/ydf0509/nb_log)
+[nb_log 源码链接](https://github.com/ydf0509/nb_log)
 
-![nb_log五彩可点击控制台精确跳转到文件和行号](https://i.ibb.co/VvSSrfq/X-X1-MW4-XJ-PRJVQ3-XZSG9-R.png)
+[![image.png](https://i.postimg.cc/ydqgWDRW/image.png)](https://postimg.cc/HJ2shsBC)
+
+
 
 文中文档较长，但其中大部分不是 讲解nb_log 的用法，是复习内置logging的概念。
 是由于python人员不懂logging包的日志命名空间和python日志树形命名空间结构，不懂handlers和logger的关系是什么。
@@ -26,7 +28,9 @@ print('导入nb_log之前的print是普通的')
 
 from nb_log import get_logger
 
-logger = get_logger('lalala',log_filename='lalala.log',formatter_template=5,log_file_handler_type=2)
+logger = get_logger('lalala',)   # get_logger 只有一个name是必传递的，其他的参数不是必传。
+# logger = get_logger('lalala',log_filename='lalala.log',formatter_template=5,log_file_handler_type=2) # get_logger有很多其他入参可以自由定制logger。
+
 
 logger.debug(f'debug是绿色，说明是调试的，代码ok ')
 logger.info('info是天蓝色，日志正常 ')
@@ -221,12 +225,12 @@ python在控制台可以同时显示7种颜色，但是同时显示不出来6553
 
 ### 1.2.2c nb_log 五彩日志的效果截图
 
-![](https://i.ibb.co/VvSSrfq/X-X1-MW4-XJ-PRJVQ3-XZSG9-R.png)
+[![image.png](https://i.postimg.cc/ydqgWDRW/image.png)](https://postimg.cc/HJ2shsBC)
 
 
 ## 1.3 nb_log 支持pycharm控制台点击日志精确跳转到打印日志的文件和行号
 
-![](https://i.ibb.co/12DQ7ym/8tka3.png)
+[![8tka3.png](https://i.postimg.cc/GhRFq5H9/8tka3.png)](https://postimg.cc/w3WRBF5d)
 
 ## 1.4 nb_log是原生logging类型，兼容性 扩展性非常好。
 
@@ -464,9 +468,9 @@ print('logger1 id: ',id(logger1),'logger2 id: ',id(logger2),'logger3 id: ',id(lo
 
 ## 1.20 完整readthedocs文档地址
 
-[nb_log readthedocs文档](https://nb-log-doc.readthedocs.io/zh_CN/latest)
+[nb_log readthedocs文档链接](https://nb-log-doc.readthedocs.io/zh_CN/latest)
 
-[nb_log 源码](https://github.com/ydf0509/nb_log)
+[nb_log 源码链接](https://github.com/ydf0509/nb_log)
 
 
 <div> </div>
