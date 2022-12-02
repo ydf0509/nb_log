@@ -86,6 +86,8 @@ logger和handler是观察者模式，日志记录到哪些地方，是由添加�
 
 如果是 cmd或者linux运行不是pycharm，需要 设置 PYTHONPATH为项目根目录，这样就能自动在当前项目根目录下生成或者找到 nb_log_config.py了。
 
+用户可以print(sys.path)  print(sys.path[1]) 来查看 sys.path[1]的值是什么就知道了。
+
 连PYTHONPATH作用是什么都不知道的python小白，一定要看下面文章 。
 
 [pythonpath作用介绍的文章](https://github.com/ydf0509/pythonpathdemo)
