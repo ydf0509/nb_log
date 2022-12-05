@@ -474,5 +474,6 @@ print('logger1 id: ',id(logger1),'logger2 id: ',id(logger2),'logger3 id: ',id(lo
 
 [nb_log 源码链接](https://github.com/ydf0509/nb_log)
 
+![](https://visitor-badge.glitch.me/badge?page_id=nb_log)
 
 <div> </div>
