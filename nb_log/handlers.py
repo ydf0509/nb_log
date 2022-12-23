@@ -942,7 +942,7 @@ class ConcurrentDayRotatingFileHandlerWin(logging.Handler):
         except Exception:
             self.handleError(record)
 
-    def _write_to_file(self):
+    def _write_to_file(self):  # 也可以重写 close方法，来处理末尾。
         buffer_msgs = ''
         while True:
             # print(self.buffer_msgs_queue.qsize())
@@ -1040,6 +1040,7 @@ class ConcurrentDayRotatingFileHandlerLinux(logging.Handler):
         try:
             msg = self.format(record)
             self.fp.write(msg + '\n')
+            # self.fp.flush() # 需要flush才能及时写入。重写close可以写入程序结束前的缓冲。
         except Exception as e:
             print(e)
             self.handleError(record)
@@ -1047,6 +1048,14 @@ class ConcurrentDayRotatingFileHandlerLinux(logging.Handler):
             self._get_fp()
             self._find_and_delete_files()
             self._last_delete_time = time.time()
+
+    def close(self):
+        with self._lock:
+            try:
+                self.fp.flush()
+                self.fp.close()
+            except Exception as e:
+                print(e)
 
     def _find_and_delete_files(self):
         """

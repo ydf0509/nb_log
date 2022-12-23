@@ -276,7 +276,7 @@ class LogManager(object):
         self._log_filename = log_filename
         self._log_file_size = log_file_size
         if log_file_handler_type not in (None, 1, 2, 3, 4, 5):
-            raise ValueError("log_file_handler_type的值必须设置为 1 2 3 4这四个数字")
+            raise ValueError("log_file_handler_type的值必须设置为 1 2 3 4 5这5个数字")
         self._log_file_handler_type = log_file_handler_type or nb_log_config_default.LOG_FILE_HANDLER_TYPE
         self._mongo_url = mongo_url
         self._is_add_elastic_handler = is_add_elastic_handler
