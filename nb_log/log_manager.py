@@ -357,7 +357,7 @@ class LogManager(object):
                 self._judge_logger_has_handler_type(ConcurrentRotatingFileHandler)
         ) and all([self._log_path, self._log_filename]):
             if not os.path.exists(self._log_path):
-                os.makedirs(self._log_path)
+                os.makedirs(self._log_path,exist_ok=True)
             log_file = os.path.join(self._log_path, self._log_filename)
             file_handler = None
             if self._log_file_handler_type == 1:
