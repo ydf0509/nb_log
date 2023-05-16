@@ -105,6 +105,6 @@ def auto_creat_config_file_to_project_root_path():
     # with (Path(sys.path[1]) / Path('nb_log_config.py')).open(mode='w', encoding='utf8') as f:
     #     f.write(config_file_content)
     copyfile(Path(__file__).parent / Path('nb_log_config_default.py'), Path(sys.path[1]) / Path('nb_log_config.py'))
-
+    nb_print(f'''在  {Path(sys.path[1])} 目录下自动生成了一个文件， 请刷新文件夹查看或修改 \n "{Path(sys.path[1]) / Path('nb_log_config.py')}:1" 文件''')
 
 use_config_form_nb_log_config_module()

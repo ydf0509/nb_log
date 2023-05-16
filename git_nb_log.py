@@ -33,11 +33,11 @@ do_cmd('git pull')
 
 do_cmd('git diff')
 
-do_cmd('git add ../.')
+do_cmd('git add ./')
 
 do_cmd('git commit -m commit')
 
-do_cmd('git push github')
+do_cmd('git push origin')
 
 # print(subprocess.getstatusoutput('git push github'))
 print(f'{time.strftime("%H:%M:%S")}  spend_time {time.time() - t0}')

@@ -12,12 +12,13 @@ import socket
 import datetime
 import json
 import time
+
 from collections import OrderedDict
 from pathlib import Path
 from queue import Queue, Empty
 # noinspection PyPackageRequirements
 from kafka import KafkaProducer
-from elasticsearch import Elasticsearch, helpers
+# from elasticsearch import Elasticsearch, helpers  # 性能导入时间消耗2秒,实例化时候再导入。
 from threading import Lock, Thread
 import pymongo
 import requests
@@ -35,6 +36,7 @@ from nb_log import nb_print
 very_nb_print = nb_print
 os_name = os.name
 
+host_name = socket.gethostname()
 
 class MongoHandler(logging.Handler):
     """
@@ -100,7 +102,7 @@ class KafkaHandler(logging.Handler):
     """
     ES_INTERVAL_SECONDS = 0.5
 
-    host_name = socket.gethostname()
+    host_name = host_name
     host_process = f'{host_name} -- {os.getpid()}'
 
     script_name = sys.argv[0].split('/')[-1]
@@ -223,7 +225,7 @@ class ElasticHandler000(logging.Handler):
     日志批量写入es中。
     """
     ES_INTERVAL_SECONDS = 2
-    host_name = socket.gethostname()
+    host_name = host_name
 
     def __init__(self, elastic_hosts: list, elastic_port, index_prefix='pylog-'):
         """
@@ -231,6 +233,8 @@ class ElasticHandler000(logging.Handler):
         :param elastic_port：  es端口
         :param index_prefix: index名字前缀。
         """
+        from elasticsearch import Elasticsearch, helpers
+        self._helpers = helpers
         logging.Handler.__init__(self)
         self._es_client = Elasticsearch(elastic_hosts, port=elastic_port)
         self._index_prefix = index_prefix
@@ -258,7 +262,7 @@ class ElasticHandler000(logging.Handler):
                 # noinspection PyUnresolvedReferences
                 tasks = list(self._task_queue.queue)
                 self.__clear_bulk_task()
-                helpers.bulk(self._es_client, tasks)
+                self._helpers.bulk(self._es_client, tasks)
 
                 self._last_es_op_time = time.time()
             except Exception as e:
@@ -310,7 +314,7 @@ class ElasticHandler(logging.Handler):
     """
     ES_INTERVAL_SECONDS = 0.5
 
-    host_name = socket.gethostname()
+    host_name = host_name
     host_process = f'{host_name} -- {os.getpid()}'
 
     script_name = sys.argv[0]
@@ -692,7 +696,7 @@ class ConcurrentRotatingFileHandlerWithBufferInitiativeWindwos(ConcurrentRotatin
             try:
                 msg = self.buffer_msgs_queue.get(block=False)
                 buffer_msgs += msg + '\n'
-                if len(buffer_msgs) > 10000*1000:
+                if len(buffer_msgs) > 10000 * 1000:
                     break
             except Empty:
                 break
@@ -834,7 +838,6 @@ class CompatibleSMTPSSLHandler(handlers.SMTPHandler):
                 f'[log_manager.py]   {time.strftime("%H:%M:%S", time.localtime())}  \033[0;31m !!!!!! 邮件发送失败,原因是： {e} \033[0m')
 
 
-
 class DingTalkHandler(logging.Handler):
     _lock_for_remove_handlers = Lock()
 
@@ -920,7 +923,7 @@ class ConcurrentDayRotatingFileHandlerWin(logging.Handler):
         self.backupCount = back_count or nb_log_config_default.LOG_FILE_BACKUP_COUNT
         self.extMatch = re.compile(r"^\d{4}-\d{2}-\d{2}(\.\w+)?$", re.ASCII)
         self.extMatch2 = re.compile(r"^\d{2}-\d{2}-\d{2}(\.\w+)?$", re.ASCII)
-        self._last_delete_time = time.time()
+        self._last_delete_time = 0
 
         self.buffer_msgs_queue = queue.Queue()
         atexit.register(self._write_to_file)  # 如果程序属于立马就能结束的，需要在程序结束前执行这个钩子，防止不到最后一秒的日志没记录到。
@@ -949,7 +952,7 @@ class ConcurrentDayRotatingFileHandlerWin(logging.Handler):
             try:
                 msg = self.buffer_msgs_queue.get(block=False)
                 buffer_msgs += msg + '\n'
-                if len(buffer_msgs) > 1000*1000*10:
+                if len(buffer_msgs) > 1000 * 1000 * 10:
                     pass
                     break
             except queue.Empty:
@@ -963,6 +966,7 @@ class ConcurrentDayRotatingFileHandlerWin(logging.Handler):
                 path_obj.touch(exist_ok=True)
                 with path_obj.open(mode='a', encoding='utf-8') as f:
                     f.write(buffer_msgs)
+                    f.flush()
                 if time.time() - self._last_delete_time > 60:
                     self._find_and_delete_files()
                     self._last_delete_time = time.time()
@@ -1040,7 +1044,7 @@ class ConcurrentDayRotatingFileHandlerLinux(logging.Handler):
         try:
             msg = self.format(record)
             self.fp.write(msg + '\n')
-            # self.fp.flush() # 需要flush才能及时写入。重写close可以写入程序结束前的缓冲。
+            self.fp.flush()  # 需要flush才能及时写入。重写close可以写入程序结束前的缓冲。
         except Exception as e:
             print(e)
             self.handleError(record)
@@ -1097,7 +1101,7 @@ class _ConcurrentSecondRotatingFileHandlerLinux(logging.Handler):
         self.backupCount = back_count or nb_log_config_default.LOG_FILE_BACKUP_COUNT
         self.extMatch = re.compile(r"^\d{4}-\d{2}-\d{2}(\.\w+)?$", re.ASCII)
         self.extMatch2 = re.compile(r"^\d{2}-\d{2}-\d{2}(\.\w+)?$", re.ASCII)
-        self._last_delete_time = time.time()
+        self._last_delete_time = 0
 
         time_str = time.strftime('%H-%M-%S')  # 方便测试用的，方便观察。
         new_file_name = self.file_name + '.' + time_str
@@ -1131,11 +1135,11 @@ class _ConcurrentSecondRotatingFileHandlerLinux(logging.Handler):
         # noinspection PyBroadException
         try:
             msg = self.format(record)
-            self.fp.write(msg + '\n')
             if time.time() - self._last_delete_time > 0.5:
                 self._get_fp()
                 self._find_and_delete_files()
                 self._last_delete_time = time.time()
+            self.fp.write(msg + '\n')
         except Exception as e:
             print(e)
             self.handleError(record)

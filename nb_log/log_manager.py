@@ -19,12 +19,14 @@ concurrent_log_handler的ConcurrentRotatingFileHandler解决了logging模块自�
 使极限多进程安全切片的文件日志写入性能在win下提高100倍，linux下提高10倍。
 
 """
+import logging
 import multiprocessing
 import typing
 from functools import lru_cache
-from logging import FileHandler
+from logging import FileHandler, _checkLevel  # noqa
 from nb_log import nb_log_config_default  # noqa
 from nb_log.handlers import *
+import deprecated
 
 
 # noinspection DuplicatedCode
@@ -118,8 +120,21 @@ def revision_add_handler(self, hdlr):  # 从添加源头阻止同一个logger添
         logging._releaseLock()  # noqa
 
 
+def revision_setLevel(self, level):
+    """
+    Set the logging level of this logger.  level must be an int or a str.
+    """
+    level2 = LogManager.preset_name__level_map.get(self.name, level)
+    if level2 != level:
+        very_nb_print(f'日志命名空间 {self.name} 已经锁定了为了 {level2} 级别 ,后续不可以更改为 {level} 级别')
+    self.level = _checkLevel(level2)
+    if sys.version_info.minor >= 7:  # python3.6 没有 _clear_cache 方法
+        self.manager._clear_cache()
+
+
 logging.Logger.callHandlers = revision_call_handlers  # 打猴子补丁。
 logging.Logger.addHandler = revision_add_handler  # 打猴子补丁。
+logging.Logger.setLevel = revision_setLevel  # 打猴子补丁。
 
 
 # noinspection PyShadowingBuiltins
@@ -180,6 +195,14 @@ class MailHandlerConfig(DataClassBase):
     mail_time_interval = 60
 
 
+LOG_LEVEL_LIST = [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL]  # 就是 10 20 30 40 50
+
+
+def check_log_level(log_level: int):
+    if log_level not in LOG_LEVEL_LIST:
+        raise ValueError(f'你设置的日志级别不正确,你设置的级别是 {log_level} ，日志级别必须是 {LOG_LEVEL_LIST} 其中之一')
+
+
 # noinspection PyMissingOrEmptyDocstring,PyPep8
 class LogManager(object):
     """
@@ -193,8 +216,8 @@ class LogManager(object):
         """
         :param logger_name: 日志名称，当为None时候创建root命名空间的日志，一般情况下千万不要传None，除非你确定需要这么做和是在做什么.这个命名空间是双刃剑
         """
-        if logger_name in (None, '', 'root') and multiprocessing.process.current_process().name == 'MainProcess':
-            very_nb_print('logger_name 设置为None和root和空字符串都是一个意义，在操作根日志命名空间，任何其他日志的行为将会发生变化，'
+        if logger_name in (None, '',) and multiprocessing.process.current_process().name == 'MainProcess':
+            very_nb_print('logger_name 设置为None和空字符串都是一个意义，在操作根日志命名空间，任何其他日志的行为将会发生变化，'
                           '一定要弄清楚原生logging包的日志name的意思。这个命名空间是双刃剑')
         self._logger_name = logger_name
         self.logger = logging.getLogger(logger_name)
@@ -203,9 +226,10 @@ class LogManager(object):
         """
         提前设置锁定日志级别，当之后再设置该命名空间日志的级别的时候，按照提前预设的级别，无视之后设定的级别。
         主要是针对动态初始化的日志，在生成日志之后再去设置日志级别不方便。
-        :param log_level_int:
+        :param log_level_int:logging.DEBUG LOGGING.INFO 等
         :return:
         """
+        check_log_level(log_level_int)
         self.preset_name__level_map[self._logger_name] = log_level_int
 
     # 加*是为了强制在调用此方法时候使用关键字传参，如果以位置传参强制报错，因为此方法后面的参数中间可能以后随时会增加更多参数，造成之前的使用位置传参的代码参数意义不匹配。
@@ -264,12 +288,13 @@ class LogManager(object):
         if formatter_template is None:
             formatter_template = nb_log_config_default.FORMATTER_KIND
 
-        self._logger_level = log_level_int * 10 if log_level_int < 10 else log_level_int
-        if self._logger_name in self.preset_name__level_map:
-            # print(self.preset_name__level_map)
-            self._logger_level2 = (self.preset_name__level_map[self._logger_name])
-        else:
-            self._logger_level2 = self._logger_level
+        check_log_level(log_level_int)
+        self._logger_level = log_level_int
+        # if self._logger_name in self.preset_name__level_map:
+        #     # print(self.preset_name__level_map)
+        #     self._logger_level = (self.preset_name__level_map[self._logger_name])
+        # else:
+        #     self._logger_level = self._logger_level
         self._is_add_stream_handler = is_add_stream_handler
         self._do_not_use_color_handler = do_not_use_color_handler
         self._log_path = log_path
@@ -293,7 +318,7 @@ class LogManager(object):
         else:
             raise ValueError('设置的 formatter_template 不正确')
 
-        self.logger.setLevel(self._logger_level2)
+        self.logger.setLevel(self._logger_level)
         self.__add_handlers()
         # self.logger_name_list.append(self._logger_name)
         # self.logger_list.append(self.logger)
@@ -345,7 +370,7 @@ class LogManager(object):
             logging.StreamHandler)) and self._is_add_stream_handler:
             handler = ColorHandler() if not self._do_not_use_color_handler else logging.StreamHandler()  # 不使用streamhandler，使用自定义的彩色日志
             # handler = logging.StreamHandler()
-            handler.setLevel(self._logger_level2)
+            handler.setLevel(self._logger_level)
             self.__add_a_hanlder(handler)
 
         # REMIND 添加多进程安全切片的文件日志
@@ -357,7 +382,7 @@ class LogManager(object):
                 self._judge_logger_has_handler_type(ConcurrentRotatingFileHandler)
         ) and all([self._log_path, self._log_filename]):
             if not os.path.exists(self._log_path):
-                os.makedirs(self._log_path,exist_ok=True)
+                os.makedirs(self._log_path, exist_ok=True)
             log_file = os.path.join(self._log_path, self._log_filename)
             file_handler = None
             if self._log_file_handler_type == 1:
@@ -387,13 +412,13 @@ class LogManager(object):
                                                              maxBytes=self._log_file_size * 1024 * 1024,
                                                              backupCount=nb_log_config_default.LOG_FILE_BACKUP_COUNT,
                                                              encoding="utf-8")
-            file_handler.setLevel(self._logger_level2)
+            file_handler.setLevel(self._logger_level)
             self.__add_a_hanlder(file_handler)
 
         # REMIND 添加mongo日志。
         if not self._judge_logger_has_handler_type(MongoHandler) and self._mongo_url:
             handler = MongoHandler(self._mongo_url)
-            handler.setLevel(self._logger_level2)
+            handler.setLevel(self._logger_level)
             self.__add_a_hanlder(handler)
 
         if not self._judge_logger_has_handler_type(
@@ -402,7 +427,7 @@ class LogManager(object):
             生产环境使用阿里云 oss日志，不使用这个。
             """
             handler = ElasticHandler([nb_log_config_default.ELASTIC_HOST], nb_log_config_default.ELASTIC_PORT)
-            handler.setLevel(self._logger_level2)
+            handler.setLevel(self._logger_level)
             self.__add_a_hanlder(handler)
 
         # REMIND 添加kafka日志。
@@ -411,18 +436,18 @@ class LogManager(object):
             KafkaHandler) and nb_log_config_default.RUN_ENV == 'test' \
             and nb_log_config_default.ALWAYS_ADD_KAFKA_HANDLER_IN_TEST_ENVIRONENT:
             handler = KafkaHandler(nb_log_config_default.KAFKA_BOOTSTRAP_SERVERS, )
-            handler.setLevel(self._logger_level2)
+            handler.setLevel(self._logger_level)
             self.__add_a_hanlder(handler)
 
         # REMIND 添加钉钉日志。
         if not self._judge_logger_has_handler_type(DingTalkHandler) and self._ding_talk_token:
             handler = DingTalkHandler(self._ding_talk_token, self._ding_talk_time_interval)
-            handler.setLevel(self._logger_level2)
+            handler.setLevel(self._logger_level)
             self.__add_a_hanlder(handler)
 
         if not self._judge_logger_has_handler_type(CompatibleSMTPSSLHandler) and self._is_add_mail_handler:
             handler = CompatibleSMTPSSLHandler(**self._mail_handler_config.get_dict())
-            handler.setLevel(self._logger_level2)
+            handler.setLevel(self._logger_level)
             self.__add_a_hanlder(handler)
 
 
