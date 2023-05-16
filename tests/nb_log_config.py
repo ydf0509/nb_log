@@ -80,7 +80,7 @@ LOG_PATH = '/pythonlogs'  # 默认的日志文件夹,如果不写明磁盘名，
 if os.name == 'posix':  # linux非root用户和mac用户无法操作 /pythonlogs 文件夹，没有权限，默认修改为   home/[username]  下面了。例如你的linux用户名是  xiaomin，那么默认会创建并在 /home/xiaomin/pythonlogs文件夹下写入日志文件。
     home_path = os.environ.get("HOME", '/')  # 这个是获取linux系统的当前用户的主目录，不需要亲自设置
     LOG_PATH = Path(home_path) / Path('pythonlogs')  # linux mac 权限很严格，非root权限不能在/pythonlogs写入，修改一下默认值。
-
+print(LOG_PATH)
 LOG_FILE_HANDLER_TYPE = 1  # 1 2 3 4 5
 """
 LOG_FILE_HANDLER_TYPE 这个值可以设置为 1 2 3 4 5 四种值，
@@ -93,6 +93,7 @@ LOG_FILE_HANDLER_TYPE 这个值可以设置为 1 2 3 4 5 四种值，
 """
 
 LOG_LEVEL_FILTER = logging.DEBUG  # 默认日志级别，低于此级别的日志不记录了。例如设置为INFO，那么logger.debug的不会记录，只会记录logger.info以上级别的。
+FILTER_WORDS_PRINT = ["测试过滤字符串的呀", "阿弥陀佛", "善哉善哉"]
 
 RUN_ENV = 'test'
 
@@ -128,3 +129,5 @@ FORMATTER_DICT = {
 }
 
 FORMATTER_KIND = 5  # 如果get_logger不指定日志模板，则默认选择第几个模板
+
+
