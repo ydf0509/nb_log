@@ -11,16 +11,17 @@ filepath = 'README.md'
 print(filepath)
 
 install_requires = [
-    'pymongo==4.0.2',
+    'pymongo==4.3.3',
     'tomorrow3==1.1.0',
-    'concurrent-log-handler==0.9.19',
+    'concurrent-log-handler==0.9.23',
     'elasticsearch',
     'kafka-python==2.0.2',
     'requests',
     'flask',
     'python-json-logger==0.1.10',
     'nb_filelock',
-    'service-identity'
+    'service-identity',
+    'deprecated',
 ]
 
 if os.name == 'nt':
@@ -28,7 +29,7 @@ if os.name == 'nt':
 
 setup(
     name='nb_log',  #
-    version="7.8",
+    version="8.6",
     description=(
         'very sharp color display,monkey patch bulitin print  and high-performance multiprocess safe roating file handler,other handlers includeing dintalk ,email,kafka,elastic and so on '
     ),
@@ -65,7 +66,7 @@ python setup.py sdist upload -r pypi
 
 
 python setup.py sdist & twine upload dist/nb_log-6.0.tar.gz
-python setup.py sdist & python -m  twine upload dist/nb_log-7.8.tar.gz
+python setup.py sdist & python -m  twine upload dist/nb_log-8.6.tar.gz
 
 twine upload dist/*
 
