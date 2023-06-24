@@ -94,6 +94,7 @@ LOG_FILE_HANDLER_TYPE 这个值可以设置为 1 2 3 4 5 四种值，
 
 LOG_LEVEL_FILTER = logging.DEBUG  # 默认日志级别，低于此级别的日志不记录了。例如设置为INFO，那么logger.debug的不会记录，只会记录logger.info以上级别的。
 
+
 RUN_ENV = 'test'
 
 FORMATTER_DICT = {
