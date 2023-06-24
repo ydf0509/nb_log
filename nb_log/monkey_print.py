@@ -10,10 +10,30 @@ import sys
 import time
 import traceback
 from nb_log import nb_log_config_default
+from nb_log.helper import _need_filter_print
 
 print_raw = print
+sys_stdout_write_raw = sys.stdout.write
+sys_stderr_write_raw = sys.stderr.write
 
 WORD_COLOR = 37
+
+
+def _sys_stdout_write_monkey(msg: str):
+    if _need_filter_print(msg):
+        return
+    else:
+        sys_stdout_write_raw(msg)
+
+def _sys_stderr_write_monkey(msg: str):
+    if _need_filter_print(msg):
+        return
+    else:
+        sys_stderr_write_raw(msg)
+
+
+sys.stdout.write = _sys_stdout_write_monkey  # 对 sys.stdout.write 打了猴子补丁。使得可以过滤包含指定字符串的消息。
+sys.stderr.write = _sys_stderr_write_monkey
 
 
 def stdout_write(msg: str):
@@ -33,6 +53,7 @@ def nb_print(*args, sep=' ', end='\n', file=None, flush=True):
     :param x:
     :return:
     """
+
     args = (str(arg) for arg in args)  # REMIND 防止是数字不能被join
     if file == sys.stderr:
         stderr_write(sep.join(args))  # 如 threading 模块第926行，打印线程错误，希望保持原始的红色错误方式，不希望转成蓝色。
