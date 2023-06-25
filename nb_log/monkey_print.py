@@ -25,6 +25,7 @@ def _sys_stdout_write_monkey(msg: str):
     else:
         sys_stdout_write_raw(msg)
 
+
 def _sys_stderr_write_monkey(msg: str):
     if _need_filter_print(msg):
         return
