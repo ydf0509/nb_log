@@ -24,7 +24,7 @@ import multiprocessing
 import typing
 from functools import lru_cache
 from logging import FileHandler, _checkLevel  # noqa
-from nb_log import nb_log_config_default  # noqa
+from nb_log import nb_log_config_default, nb_logger  # noqa
 from nb_log.handlers import *
 import deprecated
 
@@ -203,6 +203,8 @@ def check_log_level(log_level: int):
         raise ValueError(f'你设置的日志级别不正确,你设置的级别是 {log_level} ，日志级别必须是 {LOG_LEVEL_LIST} 其中之一')
 
 
+
+
 # noinspection PyMissingOrEmptyDocstring,PyPep8
 class LogManager(object):
     """
@@ -212,6 +214,9 @@ class LogManager(object):
     logger_list = []
     preset_name__level_map = dict()
 
+    # logger_cls = logging.Logger
+    logger_cls = nb_logger.NbLogger
+
     def __init__(self, logger_name: typing.Union[str, None] = 'nb_log_default_namespace'):
         """
         :param logger_name: 日志名称，当为None时候创建root命名空间的日志，一般情况下千万不要传None，除非你确定需要这么做和是在做什么.这个命名空间是双刃剑
@@ -220,7 +225,10 @@ class LogManager(object):
             very_nb_print('logger_name 设置为None和空字符串都是一个意义，在操作根日志命名空间，任何其他日志的行为将会发生变化，'
                           '一定要弄清楚原生logging包的日志name的意思。这个命名空间是双刃剑')
         self._logger_name = logger_name
-        self.logger = logging.getLogger(logger_name)
+        if self.logger_cls == nb_logger.NbLogger:
+            self.logger = nb_logger.NbLogger(logger_name)
+        else:
+            self.logger = logging.getLogger(logger_name)
 
     def preset_log_level(self, log_level_int=20):
         """
