@@ -17,4 +17,7 @@ print('导入nb_log之后的print是强化版的可点击跳转的')
 
 
 
+def f(x):
+    print(x)
 
+f('哈哈哈哈哈')
