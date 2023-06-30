@@ -28,7 +28,7 @@ class Print2File:
                     self._close_file()
                     self._open_file()
                     self._last_write_ts = time.time()
-                self._f.write(msg + '\n')
+                self._f.write(msg)
                 self._f.flush()
 
 
