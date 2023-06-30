@@ -11,6 +11,7 @@ import time
 import traceback
 from nb_log import nb_log_config_default
 from nb_log.helper import _need_filter_print
+from nb_log.print_to_file import Print2File
 
 print_raw = print
 sys_stdout_write_raw = sys.stdout.write
@@ -47,6 +48,9 @@ def stderr_write(msg: str):
     sys.stderr.flush()
 
 
+p2f = Print2File()
+
+
 # noinspection PyProtectedMember,PyUnusedLocal,PyIncorrectDocstring,DuplicatedCode
 def nb_print(*args, sep=' ', end='\n', file=None, flush=True):
     """
@@ -56,8 +60,10 @@ def nb_print(*args, sep=' ', end='\n', file=None, flush=True):
     """
 
     args = (str(arg) for arg in args)  # REMIND 防止是数字不能被join
+    args_str = sep.join(args)
     if file == sys.stderr:
-        stderr_write(sep.join(args))  # 如 threading 模块第926行，打印线程错误，希望保持原始的红色错误方式，不希望转成蓝色。
+        stderr_write(args_str)  # 如 threading 模块第926行，打印线程错误，希望保持原始的红色错误方式，不希望转成蓝色。
+        p2f.write_2_file(args_str)
     elif file in [sys.stdout, None]:
         # 获取被调用函数在被调用时所处代码行数
         line = sys._getframe().f_back.f_lineno
@@ -67,16 +73,18 @@ def nb_print(*args, sep=' ', end='\n', file=None, flush=True):
         if nb_log_config_default.DEFAULUT_USE_COLOR_HANDLER:
             if nb_log_config_default.DISPLAY_BACKGROUD_COLOR_IN_CONSOLE:
                 stdout_write(
-                    f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   \033[0;{WORD_COLOR};44m{sep.join(args)}\033[0m{end} \033[0m')  # 36  93 96 94
+                    f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   \033[0;{WORD_COLOR};44m{args_str}\033[0m{end} \033[0m')  # 36  93 96 94
             else:
                 stdout_write(
-                    f'\033[0;{WORD_COLOR};34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {sep.join(args)} {end} \033[0m')  # 36  93 96 94
+                    f'\033[0;{WORD_COLOR};34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {args_str} {end} \033[0m')  # 36  93 96 94
             # sys.stdout.write(f'\033[0;30;44m"{file_name}:{line}"  {time.strftime("%H:%M:%S")}  {"".join(args)}\033[0m\n')
         else:
             stdout_write(
-                f'{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {sep.join(args)} {end}')  # 36  93 96 94
+                f'{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {args_str} {end}')
+        p2f.write_2_file(f'{time.strftime("%H:%M:%S")}  "{file_name}:{line}"  {args_str} {end}')  # 36  93 96 94
     else:  # 例如traceback模块的print_exception函数 file的入参是   <_io.StringIO object at 0x00000264F2F065E8>，必须把内容重定向到这个对象里面，否则exception日志记录不了错误堆栈。
         print_raw(*args, sep=sep, end=end, file=file)
+        p2f.write_2_file(args_str)
 
 
 # noinspection PyPep8,PyUnusedLocal
@@ -84,6 +92,8 @@ def print_exception(etype, value, tb, limit=None, file=None, chain=True):
     """
     避免每行有两个可跳转的，导致第二个可跳转的不被ide识别。
     主要是针对print_exception，logging.exception里面会调用这个函数。
+
+    # traceback.print_exception = print_exception  # file类型为 <_io.StringIO object at 0x00000264F2F065E8> 单独判断sys.stderr sys.stdout 以外的情况了，解决了，不需要用到p rint_exception。
 
     :param etype:
     :param value:
@@ -169,8 +179,10 @@ def only_print_on_main_process(*args, sep=' ', end='\n', file=None, flush=True):
     # 获取被调用函数在被调用时所处代码行数
     if is_main_process():
         args = (str(arg) for arg in args)  # REMIND 防止是数字不能被join
+        args_str = sep.join(args)
         if file == sys.stderr:
-            stderr_write(sep.join(args))  # 如 threading 模块第926行，打印线程错误，希望保持原始的红色错误方式，不希望转成蓝色。
+            stderr_write(args_str)  # 如 threading 模块第926行，打印线程错误，希望保持原始的红色错误方式，不希望转成蓝色。
+            p2f.write_2_file(args_str)
         elif file in [sys.stdout, None]:
             # 获取被调用函数在被调用时所处代码行数
             line = sys._getframe().f_back.f_lineno
@@ -180,16 +192,18 @@ def only_print_on_main_process(*args, sep=' ', end='\n', file=None, flush=True):
             if nb_log_config_default.DEFAULUT_USE_COLOR_HANDLER:
                 if nb_log_config_default.DISPLAY_BACKGROUD_COLOR_IN_CONSOLE:
                     stdout_write(
-                        f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   \033[0;{WORD_COLOR};44m{sep.join(args)}\033[0m{end} \033[0m')  # 36  93 96 94
+                        f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   \033[0;{WORD_COLOR};44m{args_str}\033[0m{end} \033[0m')  # 36  93 96 94
                 else:
                     stdout_write(
-                        f'\033[0;{WORD_COLOR};34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {sep.join(args)} {end} \033[0m')  # 36  93 96 94
+                        f'\033[0;{WORD_COLOR};34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {args_str} {end} \033[0m')  # 36  93 96 94
                 # sys.stdout.write(f'\033[0;30;44m"{file_name}:{line}"  {time.strftime("%H:%M:%S")}  {"".join(args)}\033[0m\n')
             else:
                 stdout_write(
-                    f'{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {sep.join(args)} {end}')  # 36  93 96 94
+                    f'{time.strftime("%H:%M:%S")}  "{file_name}:{line}"   {args_str} {end}')
+            p2f.write_2_file(f'{time.strftime("%H:%M:%S")}  "{file_name}:{line}"  {args_str} {end}')  # 36  93 96 94
         else:  # 例如traceback模块的print_exception函数 file的入参是   <_io.StringIO object at 0x00000264F2F065E8>，必须把内容重定向到这个对象里面，否则exception日志记录不了错误堆栈。
             print_raw(*args, sep=sep, end=end, file=file)
+            p2f.write_2_file(args_str)
 
 
 if __name__ == '__main__':
