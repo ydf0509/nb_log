@@ -10,6 +10,13 @@ speed
 slant
 roman
 doh
+larry3d
+ogre
+smisome1
+isometric1
+isometric2
+isometric3
+isometric4
 '''
 
 # for font in FigletFont().getFonts():
@@ -18,11 +25,11 @@ for font in  fonts_str.split('\n'):
     font = font.replace(' ', '')
     if font == '':
         continue
-    print('font:',font)
-    f =  Figlet(font=font, width=1000,)  # 字体和宽度，可以为空即默认
+    # print('font:',font)
+    f =  Figlet(font=font, width=1080,)  # 字体和宽度，可以为空即默认
 
     # print(f.renderText("FUNBOOST"))
-    nb_log.defaul_logger.warning(f.renderText("FUNBOOST"))
+    nb_log.defaul_logger.warning(f'{font}  \n\n' + f.renderText("funboost") + '\n\n')
 """
   _______________________
  /_  __/ ____/ ___/_  __/

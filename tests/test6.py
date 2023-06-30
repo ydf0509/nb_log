@@ -101,20 +101,43 @@ import nb_log
 import logging
 import nb_log
 
+#
+# nb_log.LogManager('name1').preset_log_level(20)
+#
+# logger = nb_log.get_logger('name1',log_level_int=10)
+# # logger.setLevel(10)
+# logger.debug('啊啊啊')
+#
+#
+# import celery
+#
+# import flask
+#
+# import fastapi
+# nb_log.get_logger('')
+# logging.getLogger('b6').debug(666)
+#
+# print(logging.Manager(logging.root).loggerDict)
 
-nb_log.LogManager('name1').preset_log_level(20)
+from nb_log import get_logger
 
-logger = nb_log.get_logger('name1',log_level_int=10)
-# logger.setLevel(10)
-logger.debug('啊啊啊')
+from nb_log import get_logger
 
 
-import celery
+class 废物日志类:
+    def __init__(self,name):
+        self.logger = get_logger(name, log_filename='废物日志.log')
 
-import flask
+    def debug(self, msg):
+        self.logger.debug(msg, extra={'sys_getframe_n': 3})  # 第 x1 行
 
-import fastapi
-nb_log.get_logger('')
-logging.getLogger('b6').debug(666)
+    def info(self, msg):
+        self.logger.info(msg, extra={'sys_getframe_n': 3})  # 第 x2 行
 
-print(logging.Manager(logging.root).loggerDict)
+    def critical(self, msg):
+        self.logger.critical(msg, extra={'sys_getframe_n': 3},exc_info=True)  # 第 x2 行
+
+try:
+    1/0
+except Exception as e:
+    废物日志类('命名空间1').critical('啊啊啊啊')  # 第y行

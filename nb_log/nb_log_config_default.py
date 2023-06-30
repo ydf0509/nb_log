@@ -12,7 +12,7 @@
 如果想改变日志模板，可以设置 FORMATTER_KIND 参数，只带了7种模板，可以自定义添加喜欢的模板
 LOG_PATH 配置文件日志的保存路径的文件夹。
 """
-
+import sys
 # noinspection PyUnresolvedReferences
 import logging
 import os
@@ -65,6 +65,8 @@ KAFKA_BOOTSTRAP_SERVERS = ['192.168.199.202:9092']
 ALWAYS_ADD_KAFKA_HANDLER_IN_TEST_ENVIRONENT = False
 
 MONGO_URL = 'mongodb://myUserAdmin:mimamiama@127.0.0.1:27016/admin'
+
+PRINT_WRTIE_FILE_NAME = Path(sys.path[1]).name + '.out' # 项目中的print是否自动写入到文件中。值为None则不重定向标准输出到文件中。 自动每天一个文件， 2023-06-30.my_proj.out,文件位置在定义的LOG_PATH
 
 DEFAULUT_USE_COLOR_HANDLER = True  # 是否默认使用有彩的日志。
 DISPLAY_BACKGROUD_COLOR_IN_CONSOLE = True  # 在控制台是否显示彩色块状的日志。为False则不使用大块的背景颜色。
