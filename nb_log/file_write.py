@@ -1,12 +1,29 @@
 import threading
+from functools import wraps
 from pathlib import Path
 from nb_log import nb_log_config_default
 import time
 
 need_write_2_file = False if nb_log_config_default.PRINT_WRTIE_FILE_NAME in (None, '') else True
 
+def singleton(cls):
+    """
+    单例模式装饰器,新加入线程锁，更牢固的单例模式，主要解决多线程如100线程同时实例化情况下可能会出现三例四例的情况,实测。
+    """
+    _instance = {}
+    singleton.__lock = threading.Lock()  # 这里直接演示了线程安全版单例模式
 
-class Print2File:
+    @wraps(cls)
+    def _singleton(*args, **kwargs):
+        with singleton.__lock:
+            if cls not in _instance:
+                _instance[cls] = cls(*args, **kwargs)
+            return _instance[cls]
+
+    return _singleton
+
+@singleton
+class FileWritter:
     lock = threading.Lock()
 
     def __init__(self):
@@ -33,4 +50,4 @@ class Print2File:
 
 
 if __name__ == '__main__':
-    Print2File().write_2_file('哈哈哈')
+    FileWritter().write_2_file('哈哈哈')

@@ -11,7 +11,7 @@ import time
 import traceback
 from nb_log import nb_log_config_default
 from nb_log.helper import _need_filter_print
-from nb_log.print_to_file import Print2File
+from nb_log.file_write import FileWritter
 
 print_raw = print
 sys_stdout_write_raw = sys.stdout.write
@@ -48,15 +48,16 @@ def stderr_write(msg: str):
     sys.stderr.flush()
 
 
-p2f = Print2File()
+file_writter = FileWritter()
 
-def _print_with_file_line(*args, sep=' ', end='\n', file=None, flush=True,sys_getframe_n=2):
+
+def _print_with_file_line(*args, sep=' ', end='\n', file=None, flush=True, sys_getframe_n=2):
     args = (str(arg) for arg in args)  # REMIND 防止是数字不能被join
     args_str = sep.join(args)
     stdout_write(f'56:{file}')
     if file == sys.stderr:
         stderr_write(args_str)  # 如 threading 模块第926行，打印线程错误，希望保持原始的红色错误方式，不希望转成蓝色。
-        p2f.write_2_file(args_str)
+        file_writter.write_2_file(args_str)
     elif file in [sys.stdout, None]:
         # 获取被调用函数在被调用时所处代码行数
         fra = sys._getframe(sys_getframe_n)
@@ -75,10 +76,10 @@ def _print_with_file_line(*args, sep=' ', end='\n', file=None, flush=True,sys_ge
         else:
             stdout_write(
                 f'{time.strftime("%H:%M:%S")}  "{file_name}:{line}"  {fun} {args_str} {end}')
-        p2f.write_2_file(f'{time.strftime("%H:%M:%S")}  "{file_name}:{line}" {fun} {args_str} {end}')  # 36  93 96 94
+        file_writter.write_2_file(f'{time.strftime("%H:%M:%S")}  "{file_name}:{line}" {fun} {args_str} {end}')  # 36  93 96 94
     else:  # 例如traceback模块的print_exception函数 file的入参是   <_io.StringIO object at 0x00000264F2F065E8>，必须把内容重定向到这个对象里面，否则exception日志记录不了错误堆栈。
         print_raw(args_str, sep=sep, end=end, file=file)
-        p2f.write_2_file(args_str)
+        file_writter.write_2_file(args_str)
 
 
 # noinspection PyProtectedMember,PyUnusedLocal,PyIncorrectDocstring,DuplicatedCode
@@ -88,9 +89,7 @@ def nb_print(*args, sep=' ', end='\n', file=None, flush=True):
     :param x:
     :return:
     """
-    _print_with_file_line(*args, sep=sep, end=end, file=file, flush=flush,sys_getframe_n=2)
-
-
+    _print_with_file_line(*args, sep=sep, end=end, file=file, flush=flush, sys_getframe_n=2)
 
 
 # noinspection PyPep8,PyUnusedLocal
@@ -184,7 +183,7 @@ def is_main_process():
 def only_print_on_main_process(*args, sep=' ', end='\n', file=None, flush=True):
     # 获取被调用函数在被调用时所处代码行数
     if is_main_process():
-        _print_with_file_line(*args, sep=sep, end=end, file=file, flush=flush,sys_getframe_n=2)
+        _print_with_file_line(*args, sep=sep, end=end, file=file, flush=flush, sys_getframe_n=2)
 
 
 if __name__ == '__main__':
