@@ -25,3 +25,5 @@ dist/
 *.egg-info/
 distributed_frame_config.py
 /auto_run_on_remote_config.py
+build/
+
