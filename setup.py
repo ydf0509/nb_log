@@ -22,6 +22,7 @@ install_requires = [
     'nb_filelock',
     'service-identity',
     'deprecated',
+    'chained_mode_time_tool',
 ]
 
 if os.name == 'nt':
