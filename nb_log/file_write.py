@@ -4,7 +4,8 @@ from pathlib import Path
 from nb_log import nb_log_config_default
 import time
 
-need_write_2_file = False if nb_log_config_default.PRINT_WRTIE_FILE_NAME in (None, '') else True
+
+
 
 def singleton(cls):
     """
@@ -22,25 +23,27 @@ def singleton(cls):
 
     return _singleton
 
-@singleton
-class FileWritter:
-    lock = threading.Lock()
 
-    def __init__(self):
-        if need_write_2_file:
+# @singleton
+class FileWritter:
+    _lock = threading.Lock()
+    need_write_2_file = False
+
+    def __init__(self, file_name):
+        if self.need_write_2_file:
+            self.file_path = Path(nb_log_config_default.LOG_PATH) / (time.strftime('%Y-%m-%d', time.localtime()) + '.' + file_name)
             self._open_file()
             self._last_write_ts = time.time()
 
     def _open_file(self):
-        self.print_file_path = Path(nb_log_config_default.LOG_PATH) / (time.strftime('%Y-%m-%d',time.localtime()) + '.' + nb_log_config_default.PRINT_WRTIE_FILE_NAME)
-        self._f = open(self.print_file_path, encoding='utf8', mode='a')
+        self._f = open(self.file_path, encoding='utf8', mode='a')
 
     def _close_file(self):
         self._f.close()
 
     def write_2_file(self, msg):
-        if need_write_2_file:
-            with self.lock:
+        if self.need_write_2_file:
+            with self._lock:
                 if time.time() - self._last_write_ts > 5:
                     self._close_file()
                     self._open_file()
@@ -49,5 +52,14 @@ class FileWritter:
                 self._f.flush()
 
 
+class PrintFileWritter(FileWritter):
+    _lock = threading.Lock()
+    need_write_2_file = False if nb_log_config_default.PRINT_WRTIE_FILE_NAME in (None, '') else True
+
+class StdFileWritter(FileWritter):
+    _lock = threading.Lock()
+    need_write_2_file = False if nb_log_config_default.SYS_STD_FILE_NAME in (None, '') else True
+
+
 if __name__ == '__main__':
-    FileWritter().write_2_file('哈哈哈')
+    FileWritter(nb_log_config_default.PRINT_WRTIE_FILE_NAME).write_2_file('哈哈哈')
