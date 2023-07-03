@@ -21,6 +21,14 @@
 
 pip install nb_log
 
+## 1.0.1 nb_log不仅是日志，还对print以及sys.stdout(sys.stderr) 打了强力的猴子补丁
+
+对代码里面的print打了猴子补丁，自动显示print所在地方的文件名和精确行号，不怕有人胡乱print，找不到在哪里print的了。
+
+对代码里面的 print 以及 streamHanlder日志调用的sys.stdout/stderr 打了猴子补丁，能支持所有标准输出自动写入到文件中,每天生成一个文件。
+(见1.1.d配置文件说明的 SYS_STD_FILE_NAME 和 PRINT_WRTIE_FILE_NAME)。
+
+
 ## 1.1 nb_log 简单使用例子
 
 ```python
@@ -96,6 +104,15 @@ logger和handler是观察者模式，日志记录到哪些地方，是由添加�
 ### 1.1.d nb_log配置文件的一些参数说明。
 
 ```doctest
+
+# 项目中的print是否自动写入到文件中。值为None则不重定向print到文件中。 自动每天一个文件， 2023-06-30.my_proj.out,生成的文件位置在定义的LOG_PATH
+# 如果你设置了环境变量，export PRINT_WRTIE_FILE_NAME="my_proj.print" (linux临时环境变量语法，windows语法自己百度这里不举例),那就优先使用环境变量中设置的文件名字，而不是nb_log_config.py中设置的名字
+PRINT_WRTIE_FILE_NAME = Path(sys.path[1]).name + '.print' 
+
+# 项目中的所有标准输出（不仅包括print，还包括了streamHandler日志）都写入到这个文件。自动每天一个文件， 2023-06-30.my_proj.std,生成的文件位置在定义的LOG_PATH
+# 如果你设置了环境变量，export SYS_STD_FILE_NAME="my_proj.std"  (linux临时环境变量语法，windows语法自己百度这里不举例),那就优先使用环境变量中设置的文件名字，，而不是nb_log_config.py中设置的名字
+SYS_STD_FILE_NAME = Path(sys.path[1]).name + '.std'   
+
 DEFAULUT_USE_COLOR_HANDLER = True  # 是否默认使用有彩的日志。
 DISPLAY_BACKGROUD_COLOR_IN_CONSOLE = True  # 在控制台是否显示彩色块状的日志。为False则不使用大块的背景颜色。
 AUTO_PATCH_PRINT = True  # 是否自动打print的猴子补丁，如果打了猴子补丁，print自动变色和可点击跳转。
@@ -121,6 +138,8 @@ LOG_FILE_HANDLER_TYPE 这个值可以设置为 1 2 3 4 5 四种值，
 5 为第三方的concurrent_log_handler.ConcurrentRotatingFileHandler按日志文件大小切割的文件日志，
    这个是采用了文件锁，多进程安全切割，文件锁在linux上使用fcntl性能还行，win上使用win32con性能非常惨。按大小切割建议不要选第5个个filehandler而是选择第1个。
 """
+
+FILTER_WORDS_PRINT = []  # 例如， 你希望消息中包括阿弥陀佛 或者 包括善哉善哉 就不打印，那么可以设置  FILTER_WORDS_PRINT = ['阿弥陀佛','善哉善哉']
 ```
 
 以上只是部分配置的例子，其他配置在你项目根目录下的 nb_log_config.py中都有默认值，自己按需修改设置。
@@ -461,12 +480,25 @@ print('logger1 id: ',id(logger1),'logger2 id: ',id(logger2),'logger3 id: ',id(lo
 运行上面可以发现 logger1和logger2对象是同一个id，logger3对象是另外一个id。
 通过不同的日志命名空间，可以设置不同级别的日志显示，设置不同类型的日志记录到不同的文件，是否打印控制台，是否发送邮件 钉钉消息。
 
+<pre style="font-size: large;color: #FFFF66;background-color: #0c1119">
 有的人到现在还是不知道日志命名空间的作用，对一个大项目的所有的日志只会处理成一种表现行为，悲了个剧。
+如果有人说某部分的日志打印啰嗦了，会说把日志级别调高，这是很外行的说法，请问你如何调高日志级别？有的人不懂日志命名空间，那是完全无法调日志界别，
+比如1.9中的代码，有的笨瓜把 logger3的 logger3.s
+
+你把日志界别调高了，另一个模块或类或函数里面的日志你希望需要显示debug日志呢，
+你只是要屏蔽某些debug日志，
+</pre>
 
 
 ## 1.10 nb_log比logurur有10胜
 
 [nb_log比logurur有10个优点方面](https://nb-log-doc.readthedocs.io/zh_CN/latest/articles/c6.html)
+
+## 1.11 关于nb_log日志级别设置，看文档9.5 章节。
+
+要精通python logging.getLogger第一个入参意义，非常非常重要。
+
+[关于nb_log日志级别设置](https://nb-log-doc.readthedocs.io/zh_CN/latest/articles/c9.html#id2)
 
 ## 1.20 完整readthedocs文档地址
 
