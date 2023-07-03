@@ -21,6 +21,7 @@ from kafka import KafkaProducer
 # from elasticsearch import Elasticsearch, helpers  # 性能导入时间消耗2秒,实例化时候再导入。
 from threading import Lock, Thread
 import pymongo
+from elasticsearch import Elasticsearch
 import requests
 import logging
 from logging import handlers
@@ -330,7 +331,7 @@ class ElasticHandler(logging.Handler):
         :param index_prefix: index名字前缀。
         """
         logging.Handler.__init__(self)
-        self._es_client = Elasticsearch(elastic_hosts, port=elastic_port)
+        self._es_client = Elasticsearch(elastic_hosts,)
         self._index_prefix = index_prefix
         t = Thread(target=self._do_bulk_op)
         t.setDaemon(True)

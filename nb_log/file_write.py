@@ -6,6 +6,7 @@ import time
 from chained_mode_time_tool import DatetimeConverter
 from nb_log.simple_print import sprint
 
+
 def singleton(cls):
     """
     单例模式装饰器,新加入线程锁，更牢固的单例模式，主要解决多线程如100线程同时实例化情况下可能会出现三例四例的情况,实测。
@@ -35,12 +36,12 @@ class FileWritter:
             if not Path(self.log_path).exists():
                 sprint(f'自动创建日志文件夹 {log_path}')
                 Path(self.log_path).mkdir(exist_ok=True)
-            self.file_path = Path(log_path) / Path(DatetimeConverter().date_str + '.' + file_name)
             self._open_file()
             self._last_write_ts = time.time()
             self._last_del_old_files_ts = time.time()
 
     def _open_file(self):
+        self.file_path = Path(self.log_path) / Path(DatetimeConverter().date_str + '.' + self._file_name)
         self._f = open(self.file_path, encoding='utf8', mode='a')
 
     def _close_file(self):

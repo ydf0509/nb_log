@@ -1,7 +1,8 @@
 # coding=utf8
 """
 此文件nb_log_config.py是自动生成到python项目的根目录的。
-在这里面写的变量会覆盖此文件nb_log_config_default中的值。对nb_log包进行默认的配置。
+在这里面写的变量会覆盖此文件nb_log_config_default中的值。对nb_log包进行默认的配置。用户是无需修改nb_log安装包位置里面的配置文件的。
+
 但最终配置方式是由get_logger_and_add_handlers方法的各种传参决定，如果方法相应的传参为None则使用这里面的配置。
 """
 
@@ -66,7 +67,7 @@ ALWAYS_ADD_KAFKA_HANDLER_IN_TEST_ENVIRONENT = False
 
 MONGO_URL = 'mongodb://myUserAdmin:mimamiama@127.0.0.1:27016/admin'
 
-# 项目中的print是否自动写入到文件中。值为None则不重定向标准输出到文件中。 自动每天一个文件， 2023-06-30.my_proj.out,生成的文件位置在定义的LOG_PATH
+# 项目中的print是否自动写入到文件中。值为None则不重定向print到文件中。 自动每天一个文件， 2023-06-30.my_proj.print,生成的文件位置在定义的LOG_PATH
 # 如果你设置了环境变量，export PRINT_WRTIE_FILE_NAME="my_proj.print" (linux临时环境变量语法，windows语法自己百度这里不举例),那就优先使用环境变量中设置的文件名字，而不是nb_log_config.py中设置的名字
 PRINT_WRTIE_FILE_NAME = Path(sys.path[1]).name + '.print'
 
