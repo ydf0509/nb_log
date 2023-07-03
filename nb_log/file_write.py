@@ -81,4 +81,4 @@ class StdFileWritter(FileWritter):
 
 
 if __name__ == '__main__':
-    FileWritter('test_file', '/test_dir2').write_2_file('哈哈哈')
+    FileWritter('test_file', '/test_dir3').write_2_file('哈哈哈')
