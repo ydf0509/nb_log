@@ -4,7 +4,7 @@ from pathlib import Path
 from nb_log import nb_log_config_default
 import time
 from chained_mode_time_tool import DatetimeConverter
-
+from nb_log.simple_print import sprint
 
 def singleton(cls):
     """
@@ -33,6 +33,7 @@ class FileWritter:
             self._file_name = file_name
             self.log_path = log_path
             if not Path(self.log_path).exists():
+                sprint(f'自动创建日志文件夹 {log_path}')
                 Path(self.log_path).mkdir(exist_ok=True)
             self.file_path = Path(log_path) / Path(DatetimeConverter().date_str + '.' + file_name)
             self._open_file()
@@ -79,4 +80,4 @@ class StdFileWritter(FileWritter):
 
 
 if __name__ == '__main__':
-    FileWritter('test_file', '/test_dir').write_2_file('哈哈哈')
+    FileWritter('test_file', '/test_dir2').write_2_file('哈哈哈')
