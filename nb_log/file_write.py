@@ -4,6 +4,7 @@ from pathlib import Path
 from nb_log import nb_log_config_default
 import time
 from chained_mode_time_tool import DatetimeConverter
+from nb_log.simple_print import sprint
 
 
 def singleton(cls):
@@ -26,18 +27,21 @@ def singleton(cls):
 # @singleton
 class FileWritter:
     _lock = threading.Lock()
-    need_write_2_file = False
+    need_write_2_file = True
 
     def __init__(self, file_name: str, log_path=nb_log_config_default.LOG_PATH):
         if self.need_write_2_file:
             self._file_name = file_name
-            Path(log_path).mkdir(exist_ok=True)
-            self.file_path = Path(log_path) / Path(DatetimeConverter().date_str + '.' + file_name)
+            self.log_path = log_path
+            if not Path(self.log_path).exists():
+                sprint(f'自动创建日志文件夹 {log_path}')
+                Path(self.log_path).mkdir(exist_ok=True)
             self._open_file()
             self._last_write_ts = time.time()
             self._last_del_old_files_ts = time.time()
 
     def _open_file(self):
+        self.file_path = Path(self.log_path) / Path(DatetimeConverter().date_str + '.' + self._file_name)
         self._f = open(self.file_path, encoding='utf8', mode='a')
 
     def _close_file(self):
@@ -59,9 +63,9 @@ class FileWritter:
 
     def _delete_old_files(self):
         for i in range(10, 100):
-            file_path = Path(nb_log_config_default.LOG_PATH) / Path(DatetimeConverter(time.time() - 86400 * i).date_str + '.' + self._file_name)
+            file_path = Path(self.log_path) / Path(DatetimeConverter(time.time() - 86400 * i).date_str + '.' + self._file_name)
             try:
-                file_path.unlink()  # 低版本python 没有missing_ok入参。
+                file_path.unlink()
             except FileNotFoundError:
                 pass
 
@@ -77,6 +81,4 @@ class StdFileWritter(FileWritter):
 
 
 if __name__ == '__main__':
-    fw = StdFileWritter('testfile', log_path='/pythonlogs333')
-    fw.write_2_file('哈哈哈')
-    fw._delete_old_files()
+    FileWritter('test_file', '/test_dir2').write_2_file('哈哈哈')
