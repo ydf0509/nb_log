@@ -21,7 +21,6 @@ from kafka import KafkaProducer
 # from elasticsearch import Elasticsearch, helpers  # 性能导入时间消耗2秒,实例化时候再导入。
 from threading import Lock, Thread
 import pymongo
-from elasticsearch import Elasticsearch
 import requests
 import logging
 from logging import handlers
@@ -32,12 +31,13 @@ from logging.handlers import WatchedFileHandler
 from nb_filelock import FileLock
 from pythonjsonlogger.jsonlogger import JsonFormatter
 from nb_log import nb_log_config_default
-from nb_log import nb_print
+from nb_log.monkey_print import nb_print
 
 very_nb_print = nb_print
 os_name = os.name
 
 host_name = socket.gethostname()
+
 
 class MongoHandler(logging.Handler):
     """
@@ -331,7 +331,9 @@ class ElasticHandler(logging.Handler):
         :param index_prefix: index名字前缀。
         """
         logging.Handler.__init__(self)
-        self._es_client = Elasticsearch(elastic_hosts,)
+        from elasticsearch import Elasticsearch, helpers
+        self._helpers = helpers
+        self._es_client = Elasticsearch(elastic_hosts, )
         self._index_prefix = index_prefix
         t = Thread(target=self._do_bulk_op)
         t.setDaemon(True)
@@ -358,7 +360,7 @@ class ElasticHandler(logging.Handler):
                     return
                 tasks = list(self.__class__.task_queue.queue)
                 self.__clear_bulk_task()
-                helpers.bulk(self._es_client, tasks)
+                self._helpers.bulk(self._es_client, tasks)
                 self.__class__.last_es_op_time = time.time()
             except Exception as e:
                 very_nb_print(e)
