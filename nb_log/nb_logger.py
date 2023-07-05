@@ -36,6 +36,19 @@ class 废物日志类:
 '''
 
 class NbLogger(logging.Logger):
+
+    """
+    写 NbLogger 实在python3.7测试的，python3.9以后官方已经加了stacklevel入参。
+    20230705 现在经过github cpython的源码核实，在python3.9版本中
+    def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False,
+             stacklevel=1):
+
+    def findCaller(self, stack_info=False, stacklevel=1):
+
+    用户可以传递 stacklevel 了，本NbLogger是适配python3.6 3.7 3.8版本, Nblogger 的 sys_getframe_n 入参就是 stacklevel的意义。
+    说明我的思维和python官方人员想到一起去了，3.9以后的logging包debug ingo error等 支持修改查找调用堆栈的深度层级，防止用户封装了debug info warnring 等后，日志模板获取的 文件名 行号是错误深度层级的。。
+
+    """
     def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False):
         """
         Low-level logging routine which creates a LogRecord and then calls
