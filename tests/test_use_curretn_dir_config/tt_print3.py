@@ -1,3 +1,4 @@
+import queue
 import sys
 import threading
 import time
@@ -37,7 +38,7 @@ class FileWritter:
                     self._close_file()
                     self._open_file()
                 self._f.write(msg)
-                # self._f.flush()
+                self._f.flush()
                 if now_ts - self._last_del_old_files_ts > 300:
                     self._last_del_old_files_ts = time.time()
                     self._delete_old_files()
@@ -49,6 +50,43 @@ class FileWritter:
                 file_path.unlink()
             except FileNotFoundError:
                 pass
+
+    def start_bulk_write(self):
+        pass
+
+
+class BulkFileWrite(FileWritter):
+
+    q =queue.SimpleQueue()
+
+    def write_2_file(self, msg):
+        if self.need_write_2_file:
+            with self._lock:
+                self.q.put(msg)
+
+    def _bulk_write(self):
+        while 1:
+            with self._lock:
+                msg_list = []
+                while 1:
+                    if not self.q.empty():
+                        msg_list.append(self.q.get())
+                    else:
+                        break
+                if msg_list:
+                    self._close_file()
+                    self._open_file()
+                    self._f.write('\n'.join(msg_list))
+                    self._f.flush()
+            time.sleep(0.1)
+
+
+
+    def start_bulk_write(self):
+        threading.Thread(target=self._bulk_write).start()
+
+
+
 
 print_raw = print
 WORD_COLOR = 37
@@ -63,7 +101,9 @@ def stderr_write(msg: str):
     sys.stderr.write(msg)
     sys.stderr.flush()
 
-print_file_writter = FileWritter('xx3.test')
+# print_file_writter = FileWritter('xx3.test')
+print_file_writter = BulkFileWrite('xx3.test')
+print_file_writter.start_bulk_write()
 print_file_writter.need_write_2_file=True
 print(print_file_writter.need_write_2_file)
 def _print_with_file_line(*args, sep=' ', end='\n', file=None, flush=True, sys_getframe_n=2):
@@ -80,7 +120,7 @@ def _print_with_file_line(*args, sep=' ', end='\n', file=None, flush=True, sys_g
         file_name = fra.f_code.co_filename
         fun = fra.f_code.co_name
         now = None
-        for i in range(2):
+        for i in range(0):
             now = time.strftime("%H:%M:%S")
 
         # line = None
@@ -112,8 +152,9 @@ def tt1():
     def f():
         # import nb_log
         for i in range(10000):
-            nb_print('hh'*190)
-            print_file_writter.write_2_file('hh'*190)
+            msg = f'{i} hh'*19
+            nb_print(msg)
+            print_file_writter.write_2_file(msg)
 
     f()
 
@@ -139,5 +180,5 @@ def tt2():
     print(time.time() - t1)
 
 if __name__ == '__main__':
-    tt2()
+    tt1()
 
