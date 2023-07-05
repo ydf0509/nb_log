@@ -1,5 +1,54 @@
 import sys
+import threading
 import time
+from pathlib import Path
+
+from chained_mode_time_tool import DatetimeConverter
+
+
+class FileWritter:
+    _lock = threading.Lock()
+    need_write_2_file = True
+
+    def __init__(self, file_name: str, log_path='/pythonlogs'):
+        if self.need_write_2_file:
+            self._file_name = file_name
+            self.log_path = log_path
+            if not Path(self.log_path).exists():
+                # sprint(f'自动创建日志文件夹 {log_path}')
+                Path(self.log_path).mkdir(exist_ok=True)
+            self._open_file()
+            self._last_write_ts = time.time()
+            self._last_del_old_files_ts = time.time()
+
+    def _open_file(self):
+        self.file_path = Path(self.log_path) / Path(DatetimeConverter().date_str + '.' + self._file_name)
+        self._f = open(self.file_path, encoding='utf8', mode='a')
+
+    def _close_file(self):
+        self._f.close()
+
+    def write_2_file(self, msg):
+        if self.need_write_2_file:
+            with self._lock:
+                now_ts = time.time()
+                if now_ts - self._last_write_ts > 5:
+                    self._last_write_ts = time.time()
+                    self._close_file()
+                    self._open_file()
+                self._f.write(msg)
+                # self._f.flush()
+                if now_ts - self._last_del_old_files_ts > 300:
+                    self._last_del_old_files_ts = time.time()
+                    self._delete_old_files()
+
+    def _delete_old_files(self):
+        for i in range(10, 100):
+            file_path = Path(self.log_path) / Path(DatetimeConverter(time.time() - 86400 * i).date_str + '.' + self._file_name)
+            try:
+                file_path.unlink()
+            except FileNotFoundError:
+                pass
 
 print_raw = print
 WORD_COLOR = 37
@@ -14,6 +63,9 @@ def stderr_write(msg: str):
     sys.stderr.write(msg)
     sys.stderr.flush()
 
+print_file_writter = FileWritter('xx3.test')
+print_file_writter.need_write_2_file=True
+print(print_file_writter.need_write_2_file)
 def _print_with_file_line(*args, sep=' ', end='\n', file=None, flush=True, sys_getframe_n=2):
     args = (str(arg) for arg in args)  # REMIND 防止是数字不能被join
     args_str = sep.join(args) + end
@@ -27,10 +79,20 @@ def _print_with_file_line(*args, sep=' ', end='\n', file=None, flush=True, sys_g
         line = fra.f_lineno
         file_name = fra.f_code.co_filename
         fun = fra.f_code.co_name
+        now = None
+        for i in range(2):
+            now = time.strftime("%H:%M:%S")
+
+        # line = None
+        # file_name = None
+        # fun =None
+        # now = None
+
         # sys.stdout.write(f'"{__file__}:{sys._getframe().f_lineno}"    {x}\n')
 
         stdout_write(
-            f'{time.strftime("%H:%M:%S")}  "{file_name}:{line}"  {fun} {args_str} ')
+            f'{now}  "{file_name}:{line}"  {fun} {args_str} ')
+        # print_file_writter.write_2_file(f'{now}  "{file_name}:{line}" {fun} {args_str} ')
 
     else:  # 例如traceback模块的print_exception函数 file的入参是   <_io.StringIO object at 0x00000264F2F065E8>，必须把内容重定向到这个对象里面，否则exception日志记录不了错误堆栈。
         pass
@@ -45,15 +107,37 @@ def nb_print(*args, sep=' ', end='\n', file=None, flush=True):
     """
     _print_with_file_line(*args, sep=sep, end=end, file=file, flush=flush, sys_getframe_n=2)
 
+def tt1():
+    t1 = time.time()
+    def f():
+        # import nb_log
+        for i in range(10000):
+            nb_print('hh'*190)
+            print_file_writter.write_2_file('hh'*190)
 
-t1 = time.time()
-def f():
+    f()
+
+    print(time.time() -t1)
+
+def tt2():
+    import logging
+    logger = logging.getLogger('abcd')
+
+    fmt = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s - "%(filename)s %(lineno)d -" ', "%Y-%m-%d %H:%M:%S")
+
+    sh = logging.StreamHandler()
+    sh.setFormatter(fmt)
+    logger.addHandler(sh)
+
+    fh = logging.FileHandler('testlog3.log')
+    fh.setFormatter(fmt)
+    logger.addHandler(fh)
+
+    t1 = time.time()
     for i in range(10000):
-        nb_print('hh'*190)
+        logger.error(f'xxxxxx{i}'*20)
+    print(time.time() - t1)
 
+if __name__ == '__main__':
+    tt2()
 
-
-
-f()
-
-print(time.time() -t1)
