@@ -1,3 +1,4 @@
+import atexit
 import queue
 import sys
 import threading
@@ -59,31 +60,41 @@ class BulkFileWrite(FileWritter):
 
     q =queue.SimpleQueue()
 
+    def __init__(self, file_name: str, log_path='/pythonlogs'):
+        super().__init__(file_name,log_path)
+        atexit.register(self._bulk_write0)
+
+
     def write_2_file(self, msg):
         if self.need_write_2_file:
             with self._lock:
                 self.q.put(msg)
 
+
     def _bulk_write(self):
         while 1:
-            with self._lock:
-                msg_list = []
-                while 1:
-                    if not self.q.empty():
-                        msg_list.append(self.q.get())
-                    else:
-                        break
-                if msg_list:
-                    self._close_file()
-                    self._open_file()
-                    self._f.write('\n'.join(msg_list))
-                    self._f.flush()
-            time.sleep(0.1)
+            self._bulk_write0()
+            time.sleep(1)
+
+
+    def _bulk_write0(self):
+        with self._lock:
+            msg_list = []
+            while 1:
+                if not self.q.empty():
+                    msg_list.append(self.q.get())
+                else:
+                    break
+            if msg_list:
+                self._close_file()
+                self._open_file()
+                self._f.write('\n'.join(msg_list))
+                self._f.flush()
 
 
 
     def start_bulk_write(self):
-        threading.Thread(target=self._bulk_write).start()
+        threading.Thread(target=self._bulk_write,daemon=True).start()
 
 
 
