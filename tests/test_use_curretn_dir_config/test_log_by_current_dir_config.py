@@ -21,3 +21,8 @@ print('导入nb_log之后的print是强化版的可点击跳转的')
 
 
 
+import time
+t1 = time.time()
+for i in range(100000):
+    print(i)
+print(time.time()-t1)
