@@ -74,7 +74,7 @@ class BulkFileWrite(FileWritter):
     def _bulk_write(self):
         while 1:
             self._bulk_write0()
-            time.sleep(1)
+            time.sleep(0.1)
 
 
     def _bulk_write0(self):
@@ -112,8 +112,8 @@ def stderr_write(msg: str):
     sys.stderr.write(msg)
     sys.stderr.flush()
 
-# print_file_writter = FileWritter('xx3.test')
-print_file_writter = BulkFileWrite('xx3.test')
+print_file_writter = FileWritter('xx3.test')
+# print_file_writter = BulkFileWrite('xx3.test')
 print_file_writter.start_bulk_write()
 print_file_writter.need_write_2_file=True
 print(print_file_writter.need_write_2_file)
@@ -131,7 +131,7 @@ def _print_with_file_line(*args, sep=' ', end='\n', file=None, flush=True, sys_g
         file_name = fra.f_code.co_filename
         fun = fra.f_code.co_name
         now = None
-        for i in range(0):
+        for i in range(1):
             now = time.strftime("%H:%M:%S")
 
         # line = None
@@ -163,11 +163,12 @@ def tt1():
     def f():
         # import nb_log
         for i in range(10000):
-            msg = f'{i} hh'*19
+            msg = f'{i} hh'*1
             nb_print(msg)
-            print_file_writter.write_2_file(msg)
+            print_file_writter.write_2_file(msg*50)
 
     f()
+
 
     print(time.time() -t1)
 
@@ -191,5 +192,7 @@ def tt2():
     print(time.time() - t1)
 
 if __name__ == '__main__':
+    # from auto_run_on_remote import run_current_script_on_remote
+    # run_current_script_on_remote()
     tt1()
 

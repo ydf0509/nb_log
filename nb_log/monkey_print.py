@@ -45,19 +45,20 @@ def _print_with_file_line(*args, sep=' ', end='\n', file=None, flush=True, sys_g
         line = fra.f_lineno
         file_name = fra.f_code.co_filename
         fun = fra.f_code.co_name
+        now_str= time.strftime("%H:%M:%S")
         # sys.stdout.write(f'"{__file__}:{sys._getframe().f_lineno}"    {x}\n')
         if nb_log_config_default.DEFAULUT_USE_COLOR_HANDLER:
             if nb_log_config_default.DISPLAY_BACKGROUD_COLOR_IN_CONSOLE:
                 stdout_write(
-                    f'\033[0;34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}" {fun}  \033[0;{WORD_COLOR};44m{args_str}\033[0m \033[0m')  # 36  93 96 94
+                    f'\033[0;34m{now_str}  "{file_name}:{line}" {fun}  \033[0;{WORD_COLOR};44m{args_str}\033[0m \033[0m')  # 36  93 96 94
             else:
                 stdout_write(
-                    f'\033[0;{WORD_COLOR};34m{time.strftime("%H:%M:%S")}  "{file_name}:{line}" {fun}  {args_str}  \033[0m')  # 36  93 96 94
+                    f'\033[0;{WORD_COLOR};34m{now_str}  "{file_name}:{line}" {fun}  {args_str}  \033[0m')  # 36  93 96 94
             # sys.stdout.write(f'\033[0;30;44m"{file_name}:{line}"  {time.strftime("%H:%M:%S")}  {"".join(args)}\033[0m\n')
         else:
             stdout_write(
-                f'{time.strftime("%H:%M:%S")}  "{file_name}:{line}"  {fun} {args_str} ')
-        print_file_writter.write_2_file(f'{time.strftime("%H:%M:%S")}  "{file_name}:{line}" {fun} {args_str} ')  # 36  93 96 94
+                f'{now_str}  "{file_name}:{line}"  {fun} {args_str} ')
+        print_file_writter.write_2_file(f'{now_str}  "{file_name}:{line}" {fun} {args_str} ')  # 36  93 96 94
     else:  # 例如traceback模块的print_exception函数 file的入参是   <_io.StringIO object at 0x00000264F2F065E8>，必须把内容重定向到这个对象里面，否则exception日志记录不了错误堆栈。
         print_raw(args_str, sep=sep, end=end, file=file)
         print_file_writter.write_2_file(args_str)
