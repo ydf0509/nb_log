@@ -6,6 +6,8 @@ import typing
 from pathlib import Path
 import time
 import os
+
+
 # from nb_log.simple_print import sprint as print  # 在此模块中不能print，print会写入文件，文件中print又写入文件，无限懵逼死循环。
 
 
@@ -15,7 +17,6 @@ def build_current_date_str():
 
 class FileWritter:
     _lock = threading.RLock()
-
 
     def __init__(self, file_name: str, log_path='/pythonlogs', max_bytes=1000 * 1000 * 1000, back_count=10):
         self._max_bytes = max_bytes
@@ -157,6 +158,7 @@ class BulkFileWritter:
 atexit.register(BulkFileWritter._when_exit)
 
 OsFileWritter = FileWritter if os.name == 'posix' else BulkFileWritter
+
 
 def tt():
     fw = OsFileWritter('test_file6.log', '/test_dir2', max_bytes=1000 * 100)

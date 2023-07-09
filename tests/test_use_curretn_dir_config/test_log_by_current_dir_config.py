@@ -23,7 +23,7 @@ print('导入nb_log之后的print是强化版的可点击跳转的')
 
 import time
 t1 = time.time()
-for i in range(10000):
+for i in range(100000):
     print(i)
     logger.debug(f'debug是绿色，说明是调试的，代码ok')
     logger.info('info是天蓝色，日志正常')
