@@ -81,4 +81,9 @@ class StdFileWritter(FileWritter):
 
 
 if __name__ == '__main__':
-    FileWritter('test_file', '/test_dir3').write_2_file('哈哈哈')
+    fw = FileWritter('test_file3', '/test_dir2')
+    t1 = time.time()
+    for i in range(10000):
+        fw.write_2_file(''' 11:18:13  "D:\codes\nb_log\tests\test_use_curretn_dir_config\test_s_print2.py:9"  <module>  2023-07-05 10:48:35 - lalala - "D:/codes/funboost/test_frame/test_nb_log/log_example.py:15" - <module> - ERROR - 粉红色说明代码有错误。 粉红色说明代码有错误。 粉红色说明代码有错误。 粉红色说明代码有错误。
+  ''')
+    print(time.time()-t1)

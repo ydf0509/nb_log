@@ -17,6 +17,7 @@ def monkey_sys_stdout(msg):
     stdout_raw(msg)
     msg_delete_color = dele_color_pattern.sub('', msg)
     std_writter.write_2_file(msg_delete_color)
+    # std_writter.write_2_file(msg)
 
 
 def monkey_sys_stderr(msg):

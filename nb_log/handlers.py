@@ -669,8 +669,9 @@ class ConcurrentRotatingFileHandlerWithBufferInitiativeWindwos(ConcurrentRotatin
         atexit.register(self._when_exit)  # 如果程序属于立马就能结束的，需要在程序结束前执行这个钩子，防止不到最后一秒的日志没记录到。
         self.file_handler_list.append(self)
         if not self.has_start_emit_all_file_handler:
-            self.start_emit_all_file_handler()
             self.__class__.has_start_emit_all_file_handler = True
+            self.start_emit_all_file_handler()
+
 
     def _when_exit(self):
         pass

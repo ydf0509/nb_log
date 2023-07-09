@@ -43,4 +43,9 @@ def sprint(*args, sep=' ', end='\n', file=None, flush=True, sys_getframe_n=1, on
 
 
 if __name__ == '__main__':
-    sprint('欢欢')
+    str1 = 'O(∩_∩)O哈哈'*40
+    t1 = time.time()
+    for i in range(10000):
+        sprint(str1)
+
+    print(time.time() - t1)
