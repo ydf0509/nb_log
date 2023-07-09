@@ -1,4 +1,8 @@
+import atexit
+import os
+import queue
 import sys
+import threading
 import time
 import multiprocessing
 
@@ -16,6 +20,7 @@ def stderr_write(msg: str):
     sys.stderr.flush()
 
 
+
 def _sprint(*args, sep=' ', end='\n', file=None, flush=True, sys_getframe_n=2, ):
     args = (str(arg) for arg in args)  # REMIND 防止是数字不能被join
     args_str = sep.join(args) + end
@@ -29,21 +34,22 @@ def _sprint(*args, sep=' ', end='\n', file=None, flush=True, sys_getframe_n=2, )
         file_name = fra.f_code.co_filename
         fun = fra.f_code.co_name
         # sys.stdout.write(f'"{__file__}:{sys._getframe().f_lineno}"    {x}\n')
-        stdout_write(f'{time.strftime("%H:%M:%S")}  "{file_name}:{line}"  {fun} {args_str} ')
+        msg = f'{time.strftime("%H:%M:%S")}  "{file_name}:{line}"  - {fun} - {args_str}'
+        stdout_write(msg)
     else:  # 例如traceback模块的print_exception函数 file的入参是   <_io.StringIO object at 0x00000264F2F065E8>，必须把内容重定向到这个对象里面，否则exception日志记录不了错误堆栈。
         print_raw(args_str, sep=sep, end=end, file=file)
 
 
-def sprint(*args, sep=' ', end='\n', file=None, flush=True, sys_getframe_n=1, only_print_on_main_process=False):
+def sprint(*args, sep=' ', end='\n', file=None, flush=True, sys_getframe_n=2, only_print_on_main_process=False):
     if only_print_on_main_process:
         if multiprocessing.process.current_process().name == 'MainProcess':
             _sprint(*args, sep=sep, end=end, file=file, flush=flush, sys_getframe_n=2)
     else:
-        _sprint(*args, sep=sep, end=end, file=file, flush=flush, sys_getframe_n=2)
+        _sprint(*args, sep=sep, end=end, file=file, flush=flush, sys_getframe_n=sys_getframe_n)
 
 
 if __name__ == '__main__':
-    str1 = 'O(∩_∩)O哈哈'*40
+    str1 = 'O(∩_∩)O哈哈' * 40
     t1 = time.time()
     for i in range(10000):
         sprint(str1)

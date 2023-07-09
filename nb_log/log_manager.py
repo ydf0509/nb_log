@@ -203,8 +203,6 @@ def check_log_level(log_level: int):
         raise ValueError(f'你设置的日志级别不正确,你设置的级别是 {log_level} ，日志级别必须是 {LOG_LEVEL_LIST} 其中之一')
 
 
-
-
 # noinspection PyMissingOrEmptyDocstring,PyPep8
 class LogManager(object):
     """
@@ -308,8 +306,8 @@ class LogManager(object):
         self._log_path = log_path
         self._log_filename = log_filename
         self._log_file_size = log_file_size
-        if log_file_handler_type not in (None, 1, 2, 3, 4, 5):
-            raise ValueError("log_file_handler_type的值必须设置为 1 2 3 4 5这5个数字")
+        if log_file_handler_type not in (None, 1, 2, 3, 4, 5,6):
+            raise ValueError("log_file_handler_type的值必须设置为 1 2 3 4 5 6 这几个数字")
         self._log_file_handler_type = log_file_handler_type or nb_log_config_default.LOG_FILE_HANDLER_TYPE
         self._mongo_url = mongo_url
         self._is_add_elastic_handler = is_add_elastic_handler
@@ -387,7 +385,8 @@ class LogManager(object):
                 self._judge_logger_has_handler_type(ConcurrentRotatingFileHandlerWithBufferInitiativeLinux) or
                 self._judge_logger_has_handler_type(ConcurrentDayRotatingFileHandler) or
                 self._judge_logger_has_handler_type(FileHandler) or
-                self._judge_logger_has_handler_type(ConcurrentRotatingFileHandler)
+                self._judge_logger_has_handler_type(ConcurrentRotatingFileHandler) or
+                self._judge_logger_has_handler_type(BothDayAndSizeRotatingFileHandler)
         ) and all([self._log_path, self._log_filename]):
             if not os.path.exists(self._log_path):
                 os.makedirs(self._log_path, exist_ok=True)
@@ -420,6 +419,9 @@ class LogManager(object):
                                                              maxBytes=self._log_file_size * 1024 * 1024,
                                                              backupCount=nb_log_config_default.LOG_FILE_BACKUP_COUNT,
                                                              encoding="utf-8")
+            elif self._log_file_handler_type == 6:
+                file_handler = BothDayAndSizeRotatingFileHandler(file_name=self._log_filename, log_path=self._log_path,
+                                                                 back_count=nb_log_config_default.LOG_FILE_BACKUP_COUNT, max_bytes=self._log_file_size * 1024 * 1024)
             file_handler.setLevel(self._logger_level)
             self.__add_a_hanlder(file_handler)
 

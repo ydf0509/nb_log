@@ -12,6 +12,7 @@ import socket
 import datetime
 import json
 import time
+import typing
 
 from collections import OrderedDict
 from pathlib import Path
@@ -32,6 +33,7 @@ from nb_filelock import FileLock
 from pythonjsonlogger.jsonlogger import JsonFormatter
 from nb_log import nb_log_config_default
 from nb_log.monkey_print import nb_print
+from nb_log.rotate_file_writter import OsFileWritter
 
 very_nb_print = nb_print
 os_name = os.name
@@ -656,7 +658,7 @@ class ConcurrentRotatingFileHandlerWithBufferInitiativeWindwos(ConcurrentRotatin
             for hr in cls.file_handler_list:
                 # very_nb_print(hr.buffer_msgs_queue.qsize())
                 hr.rollover_and_do_write()
-            time.sleep(1)
+            time.sleep(0.1)
 
     @classmethod
     def start_emit_all_file_handler(cls):
@@ -665,13 +667,12 @@ class ConcurrentRotatingFileHandlerWithBufferInitiativeWindwos(ConcurrentRotatin
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.buffer_msgs_queue = Queue()
+        self.buffer_msgs_queue = queue.SimpleQueue()
         atexit.register(self._when_exit)  # 如果程序属于立马就能结束的，需要在程序结束前执行这个钩子，防止不到最后一秒的日志没记录到。
         self.file_handler_list.append(self)
         if not self.has_start_emit_all_file_handler:
             self.__class__.has_start_emit_all_file_handler = True
             self.start_emit_all_file_handler()
-
 
     def _when_exit(self):
         pass
@@ -700,8 +701,8 @@ class ConcurrentRotatingFileHandlerWithBufferInitiativeWindwos(ConcurrentRotatin
             try:
                 msg = self.buffer_msgs_queue.get(block=False)
                 buffer_msgs += msg + '\n'
-                if len(buffer_msgs) > 10000 * 1000:
-                    break
+                # if len(buffer_msgs) > 1000 * 1000 * 100:
+                #     break
             except Empty:
                 break
         if buffer_msgs:
@@ -732,7 +733,7 @@ class ConcurrentRotatingFileHandlerWithBufferInitiativeLinux00000000(ConcurrentR
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.buffer_msgs_queue = Queue()
-        atexit.register(self._when_exit)  # 如果程序属于立马就能结束的，需要在程序结束前执行这个钩子，防止不到最后一秒的日志没记录到。
+        atexit.register(self._when_exit)  # 如果程序属于立马就能结束的，需要在程序结束前执行这个钩子，防止不到最后一秒的日志没记录到。   有个弊端 at_exit 不能在子进程生效，所以不用这个类
         self.file_handler_list.append(self)
         if os.getpid() not in self.has_start_emit_all_file_handler_process_id_set:
             self.start_emit_all_file_handler()
@@ -1183,6 +1184,20 @@ class _ConcurrentSecondRotatingFileHandlerLinux(logging.Handler):
 
 ConcurrentDayRotatingFileHandler = ConcurrentDayRotatingFileHandlerWin if os_name == 'nt' else ConcurrentDayRotatingFileHandlerLinux
 
+
 # ConcurrentDayRotatingFileHandler = ConcurrentSecondRotatingFileHandlerLinux
 #
 # print(ConcurrentDayRotatingFileHandler)
+
+
+class BothDayAndSizeRotatingFileHandler(logging.Handler):
+    def __init__(self, file_name: typing.Optional[str], log_path='/pythonlogs', max_bytes=1000 * 1000 * 1000, back_count=10):
+        init_kwargs = copy.copy(locals())
+        init_kwargs.pop('self')
+        init_kwargs.pop('__class__')
+        super().__init__()
+        self.os_file_writter = OsFileWritter(**init_kwargs)
+
+    def emit(self, record: logging.LogRecord) -> None:
+        msg = self.format(record)
+        self.os_file_writter.write_2_file(msg + '\n')

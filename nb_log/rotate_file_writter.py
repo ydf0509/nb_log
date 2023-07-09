@@ -2,23 +2,25 @@ import atexit
 import multiprocessing
 import queue
 import threading
+import typing
 from pathlib import Path
 import time
+import os
+# from nb_log.simple_print import sprint as print  # 在此模块中不能print，print会写入文件，文件中print又写入文件，无限懵逼死循环。
 
-
-# from simple_print import sprint
 
 def build_current_date_str():
     return time.strftime('%Y-%m-%d')
 
 
 class FileWritter:
-    _lock = threading.Lock()
-    need_write_2_file = True
+    _lock = threading.RLock()
+
 
     def __init__(self, file_name: str, log_path='/pythonlogs', max_bytes=1000 * 1000 * 1000, back_count=10):
         self._max_bytes = max_bytes
         self._back_count = back_count
+        self.need_write_2_file = True if file_name else False
         if self.need_write_2_file:
             self._file_name = file_name
             self.log_path = log_path
@@ -78,32 +80,14 @@ class FileWritter:
         f_list.sort(key=lambda f: f.name, reverse=True)
         for f in f_list[self._back_count:]:
             try:
-                print(f'删除 {f}')
+                # print(f'删除 {f} ') # 这里不能print， stdout写入文件，写入文件时候print，死循环
                 f.unlink()
             except FileNotFoundError:
                 pass
 
-        # for i in range(10, 100):
-        #     file_path = Path(self.log_path) / Path(DatetimeConverter(time.time() - 86400 * i).date_str + '.' + self._file_name)
-        #     try:
-        #         file_path.unlink()
-        #     except FileNotFoundError:
-        #         pass
-
-
-# class PrintFileWritter(FileWritter):
-#     _lock = threading.Lock()
-#     need_write_2_file = False if nb_log_config_default.PRINT_WRTIE_FILE_NAME in (None, '') else True
-#
-#
-# class StdFileWritter(FileWritter):
-#     _lock = threading.Lock()
-#     need_write_2_file = False if nb_log_config_default.SYS_STD_FILE_NAME in (None, '') else True
-
 
 class BulkFileWritter:
     _lock = threading.Lock()
-    need_write_2_file = True
 
     filename__queue_map = {}
     filename__options_map = {}
@@ -115,10 +99,9 @@ class BulkFileWritter:
 
     @classmethod
     def _get_queue(cls, file_name):
-        with cls._get_queue_lock:
-            if file_name not in cls.filename__queue_map:
-                cls.filename__queue_map[file_name] = queue.SimpleQueue()
-            return cls.filename__queue_map[file_name]
+        if file_name not in cls.filename__queue_map:
+            cls.filename__queue_map[file_name] = queue.SimpleQueue()
+        return cls.filename__queue_map[file_name]
 
     @classmethod
     def _get_file_writter(cls, file_name):
@@ -127,7 +110,8 @@ class BulkFileWritter:
             cls.filename__file_writter_map[file_name] = fw
         return cls.filename__file_writter_map[file_name]
 
-    def __init__(self, file_name: str, log_path='/pythonlogs', max_bytes=1000 * 1000 * 1000, back_count=10):
+    def __init__(self, file_name: typing.Optional[str], log_path='/pythonlogs', max_bytes=1000 * 1000 * 1000, back_count=10):
+        self.need_write_2_file = True if file_name else False
         self._file_name = file_name
         if file_name:
             self.__class__.filename__options_map[file_name] = {
@@ -155,7 +139,7 @@ class BulkFileWritter:
 
     @classmethod
     def _when_exit(cls):
-        print('结束')
+        # print('结束')
         return cls._bulk_real_write()
 
     @classmethod
@@ -172,13 +156,14 @@ class BulkFileWritter:
 
 atexit.register(BulkFileWritter._when_exit)
 
+OsFileWritter = FileWritter if os.name == 'posix' else BulkFileWritter
 
 def tt():
-    fw = FileWritter('test_file6.log', '/test_dir2', max_bytes=1000 * 1000 * 10)
+    fw = OsFileWritter('test_file6.log', '/test_dir2', max_bytes=1000 * 100)
     t1 = time.time()
     for i in range(10000):
         # time.sleep(0.001)
-        msg = f'yyy{str(i).zfill(5)}' * 40
+        msg = f'yyy{str(i).zfill(5)}' * 4
         print(msg)
         fw.write_2_file(msg + '\n')
     print(time.time() - t1)
