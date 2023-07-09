@@ -75,7 +75,7 @@ PRINT_WRTIE_FILE_NAME = Path(sys.path[1]).name + '.print'
 # 如果你设置了环境变量，export SYS_STD_FILE_NAME="my_proj.std"  (linux临时环境变量语法，windows语法自己百度这里不举例),那就优先使用环境变量中设置的文件名字，，而不是nb_log_config.py中设置的名字
 SYS_STD_FILE_NAME = Path(sys.path[1]).name + '.std'
 
-USE_BULK_STDOUT_ON_WINDOWS = True
+USE_BULK_STDOUT_ON_WINDOWS = True # 在win上是否批量stdout
 
 DEFAULUT_USE_COLOR_HANDLER = True  # 是否默认使用有彩的日志。
 DISPLAY_BACKGROUD_COLOR_IN_CONSOLE = True  # 在控制台是否显示彩色块状的日志。为False则不使用大块的背景颜色。
@@ -147,5 +147,3 @@ FORMATTER_DICT = {
 }
 
 FORMATTER_KIND = 5  # 如果get_logger不指定日志模板，则默认选择第几个模板
-
-

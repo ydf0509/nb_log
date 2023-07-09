@@ -20,7 +20,7 @@ def do_cmd(cmd_strx):
     print(retx[0])
     # if retx[0] !=0:
     #     raise ValueError('要检查git提交')
-    print(retx[1], '\n') 
+    print(retx[1], '\n')
     return retx
 
 t0 = time.time()
