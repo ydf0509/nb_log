@@ -83,7 +83,7 @@ class FileWritter:
             try:
                 # print(f'删除 {f} ') # 这里不能print， stdout写入文件，写入文件时候print，死循环
                 f.unlink()
-            except FileNotFoundError:
+            except (FileNotFoundError, PermissionError):
                 pass
 
 
