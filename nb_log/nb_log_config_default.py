@@ -1,6 +1,6 @@
 # coding=utf8
 """
-此文件nb_log_config.py是自动生成到python项目的根目录的。
+此文件nb_log_config.py是自动生成到python项目的根目录的,因为是自动生成到 sys.path[1]。
 在这里面写的变量会覆盖此文件nb_log_config_default中的值。对nb_log包进行默认的配置。用户是无需修改nb_log安装包位置里面的配置文件的。
 
 但最终配置方式是由get_logger_and_add_handlers方法的各种传参决定，如果方法相应的传参为None则使用这里面的配置。

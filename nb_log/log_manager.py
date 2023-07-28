@@ -24,7 +24,8 @@ import multiprocessing
 import typing
 from functools import lru_cache
 from logging import FileHandler, _checkLevel  # noqa
-from nb_log import nb_log_config_default, nb_logger  # noqa
+from nb_log import nb_log_config_default, compatible_logger  # noqa
+from nb_log.compatible_logger import CompatibleLogger
 from nb_log.handlers import *
 import deprecated
 
@@ -213,7 +214,7 @@ class LogManager(object):
     preset_name__level_map = dict()
 
     # logger_cls = logging.Logger
-    logger_cls = nb_logger.NbLogger
+    logger_cls = CompatibleLogger
 
     def __init__(self, logger_name: typing.Union[str, None] = 'nb_log_default_namespace'):
         """
@@ -223,8 +224,8 @@ class LogManager(object):
             very_nb_print('logger_name 设置为None和空字符串都是一个意义，在操作根日志命名空间，任何其他日志的行为将会发生变化，'
                           '一定要弄清楚原生logging包的日志name的意思。这个命名空间是双刃剑')
         self._logger_name = logger_name
-        if self.logger_cls == nb_logger.NbLogger:
-            self.logger = nb_logger.NbLogger(logger_name)
+        if self.logger_cls == CompatibleLogger:
+            self.logger = CompatibleLogger(logger_name)
         else:
             self.logger = logging.getLogger(logger_name)
 
@@ -306,7 +307,7 @@ class LogManager(object):
         self._log_path = log_path
         self._log_filename = log_filename
         self._log_file_size = log_file_size
-        if log_file_handler_type not in (None, 1, 2, 3, 4, 5,6):
+        if log_file_handler_type not in (None, 1, 2, 3, 4, 5, 6):
             raise ValueError("log_file_handler_type的值必须设置为 1 2 3 4 5 6 这几个数字")
         self._log_file_handler_type = log_file_handler_type or nb_log_config_default.LOG_FILE_HANDLER_TYPE
         self._mongo_url = mongo_url
