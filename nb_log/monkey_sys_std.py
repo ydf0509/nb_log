@@ -15,7 +15,8 @@ stderr_raw = sys.stderr.write
 dele_color_pattern = re.compile('\\033\[.+?m')
 
 sys_std_file_name = os.environ.get('SYS_STD_FILE_NAME', None) or nb_log_config_default.SYS_STD_FILE_NAME
-std_writter = OsFileWritter(sys_std_file_name,back_count=nb_log_config_default.LOG_FILE_BACKUP_COUNT,max_bytes=nb_log_config_default.LOG_FILE_SIZE * 1024 * 1024)
+std_writter = OsFileWritter(sys_std_file_name,log_path=nb_log_config_default.LOG_PATH,
+                            back_count=nb_log_config_default.LOG_FILE_BACKUP_COUNT,max_bytes=nb_log_config_default.LOG_FILE_SIZE * 1024 * 1024)
 
 is_win = True if os.name == 'nt' else False
 

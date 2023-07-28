@@ -83,7 +83,7 @@ AUTO_PATCH_PRINT = True  # 是否自动打print的猴子补丁，如果打了猴
 SHOW_PYCHARM_COLOR_SETINGS = True  # 有的人很反感启动代码时候提示教你怎么优化pycahrm控制台颜色，可以把这里设置为False
 
 DEFAULT_ADD_MULTIPROCESSING_SAFE_ROATING_FILE_HANDLER = False  # 是否默认同时将日志记录到记log文件记事本中，就是用户不指定 log_filename的值，会自动写入日志命名空间.log文件中。
-LOG_FILE_SIZE = 1  # 单位是M,每个文件的切片大小，超过多少后就自动切割
+LOG_FILE_SIZE = 100  # 单位是M,每个文件的切片大小，超过多少后就自动切割
 LOG_FILE_BACKUP_COUNT = 2  # 对同一个日志文件，默认最多备份几个文件，超过就删除了。
 
 LOG_PATH = '/pythonlogs'  # 默认的日志文件夹,如果不写明磁盘名，则是项目代码所在磁盘的根目录下的/pythonlogs

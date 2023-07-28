@@ -30,7 +30,8 @@ def stderr_write(msg: str):
 
 print_wrtie_file_name = os.environ.get('PRINT_WRTIE_FILE_NAME', None) or nb_log_config_default.PRINT_WRTIE_FILE_NAME
 
-print_file_writter = OsFileWritter(print_wrtie_file_name, back_count=nb_log_config_default.LOG_FILE_BACKUP_COUNT, max_bytes=nb_log_config_default.LOG_FILE_SIZE * 1024 * 1024)
+print_file_writter = OsFileWritter(print_wrtie_file_name, log_path=nb_log_config_default.LOG_PATH,
+                                   back_count=nb_log_config_default.LOG_FILE_BACKUP_COUNT, max_bytes=nb_log_config_default.LOG_FILE_SIZE * 1024 * 1024)
 
 
 def _print_with_file_line(*args, sep=' ', end='\n', file=None, flush=True, sys_getframe_n=2):
