@@ -4,6 +4,7 @@
 在这里面写的变量会覆盖此文件nb_log_config_default中的值。对nb_log包进行默认的配置。
 但最终配置方式是由get_logger_and_add_handlers方法的各种传参决定，如果方法相应的传参为None则使用这里面的配置。
 """
+import json
 
 """
 如果反对日志有各种彩色，可以设置 DEFAULUT_USE_COLOR_HANDLER = False
@@ -39,8 +40,33 @@ def get_host_ip():
 
 computer_ip, computer_name = get_host_ip()
 
+def _json_translate(obj):
+    print(obj)
+    if isinstance(obj, dict):
+        return obj
 
 class JsonFormatterJumpAble(JsonFormatter):
+    def add_fields000(self, log_record, record, message_dict):
+        print(1,log_record,2,record,3,message_dict)
+        # log_record['jump_click'] = f"{record.__dict__.get('pathname')}:{record.__dict__.get('lineno')}"
+        log_record[f"{record.__dict__.get('pathname')}:{record.__dict__.get('lineno')}"] = ''  # 加个能点击跳转的字段。
+        log_record['ip'] = computer_ip
+        log_record['host_name'] = computer_name
+        print(type(record.msg),repr(record.msg),type(record.message),record.message)
+        # msg_dict = None
+        # if record.msg.startswith('{'):
+        #     try:
+        #         msg_dict = json.loads(record.msg)
+        #     except Exception:
+        #         pass
+        raw_no_color_msg = getattr(record,'raw_no_color_msg')
+        print(raw_no_color_msg)
+        if isinstance(raw_no_color_msg,dict):
+            log_record['msg_dict'] = record.msg
+        super().add_fields(log_record, record, message_dict)
+        if 'for_segmentation_color' in log_record:
+            del log_record['for_segmentation_color']
+
     def add_fields(self, log_record, record, message_dict):
         # log_record['jump_click']   = f"""File '{record.__dict__.get('pathname')}', line {record.__dict__.get('lineno')}"""
         log_record[f"{record.__dict__.get('pathname')}:{record.__dict__.get('lineno')}"] = ''  # 加个能点击跳转的字段。
@@ -118,7 +144,7 @@ FORMATTER_DICT = {
                          "%Y-%m-%d %H:%M:%S"),
     7: logging.Formatter('%(asctime)s - %(name)s - "%(filename)s:%(lineno)d" - %(levelname)s - %(message)s', "%Y-%m-%d %H:%M:%S"),  # 一个只显示简短文件名和所处行数的日志模板
 
-    8: JsonFormatterJumpAble('%(asctime)s - %(name)s - %(levelname)s - %(message)s - "%(filename)s %(lineno)d -" ', "%Y-%m-%d %H:%M:%S", json_ensure_ascii=False),  # 这个是json日志，方便分析.
+    8: JsonFormatterJumpAble('%(asctime)s %(name)s  %(levelname)s %(message)s  %(pathname)s %(lineno)d %(funcName)s %(process)d %(thread)d', "%Y-%m-%d %H:%M:%S", json_ensure_ascii=False,json_default=_json_translate),  # 这个是json日志，方便分析.
 
     9: logging.Formatter(
         '[p%(process)d_t%(thread)d] %(asctime)s - %(name)s - "%(pathname)s:%(lineno)d" - %(funcName)s - %(levelname)s - %(message)s',

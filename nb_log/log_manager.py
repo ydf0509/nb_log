@@ -213,10 +213,8 @@ class LogManager(object):
     logger_list = []
     preset_name__level_map = dict()
 
-    # logger_cls = logging.Logger
-    logger_cls = CompatibleLogger
 
-    def __init__(self, logger_name: typing.Union[str, None] = 'nb_log_default_namespace'):
+    def __init__(self, logger_name: typing.Union[str, None] = 'nb_log_default_namespace',logger_cls = logging.Logger):
         """
         :param logger_name: 日志名称，当为None时候创建root命名空间的日志，一般情况下千万不要传None，除非你确定需要这么做和是在做什么.这个命名空间是双刃剑
         """
@@ -224,10 +222,10 @@ class LogManager(object):
             very_nb_print('logger_name 设置为None和空字符串都是一个意义，在操作根日志命名空间，任何其他日志的行为将会发生变化，'
                           '一定要弄清楚原生logging包的日志name的意思。这个命名空间是双刃剑')
         self._logger_name = logger_name
-        if self.logger_cls == CompatibleLogger:
-            self.logger = CompatibleLogger(logger_name)
-        else:
+        if logger_cls == logging.Logger:
             self.logger = logging.getLogger(logger_name)
+        else:
+            self.logger = logger_cls(logger_name)
 
     def preset_log_level(self, log_level_int=20):
         """

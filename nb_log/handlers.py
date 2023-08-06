@@ -604,6 +604,7 @@ class ColorHandler(logging.Handler):
             stream = self.stream
             # print(assist_msg)
             # print(effective_information_msg)
+            # record.raw_no_color_msg = record.msg
             if nb_log_config_default.DISPLAY_BACKGROUD_COLOR_IN_CONSOLE:
                 msg_color = self.__build_color_msg_with_backgroud_color(record.levelno, copy.copy(record))
             else:
