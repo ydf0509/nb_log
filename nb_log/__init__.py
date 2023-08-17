@@ -18,7 +18,7 @@ if nb_log_config_default.AUTO_PATCH_PRINT:
 
 from nb_log import handlers
 from nb_log.log_manager import LogManager, LoggerLevelSetterMixin, LoggerMixin, LoggerMixinDefaultWithFileHandler, get_logger, get_logger_with_filehanlder
-
+from nb_log.compatible_logger import CompatibleLogger
 
 simple_logger = get_logger('simple')
 defaul_logger = LogManager('defaul').get_logger_and_add_handlers(do_not_use_color_handler=True, formatter_template=7)

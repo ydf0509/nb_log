@@ -1,8 +1,7 @@
 import logging
 
 import nb_log
-from nb_log.log_manager import get_logger
-from nb_log.compatible_logger import CompatibleLogger
+
 '''
 
 有的笨瓜总是不能理解 logging.getLogger第一个入参name的作用和巨大好处，老是觉得需要实例化生成 logger 对象觉得麻烦，想开箱即用，那就满足这种人。
@@ -29,7 +28,7 @@ nb_log.debug(msg)
 nb_log比loguru少了 from import那不是更简洁了吗？满足这种只知道追求简单的笨瓜。
 '''
 
-direct_logger = nb_log.LogManager('direct', logger_cls=CompatibleLogger).get_logger_and_add_handlers(log_filename='direct.log')
+direct_logger = nb_log.LogManager('direct', logger_cls=nb_log.CompatibleLogger).get_logger_and_add_handlers(log_filename='direct.log')
 
 
 def _convert_extra(kwargs: dict):
