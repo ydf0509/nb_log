@@ -213,8 +213,7 @@ class LogManager(object):
     logger_list = []
     preset_name__level_map = dict()
 
-
-    def __init__(self, logger_name: typing.Union[str, None] = 'nb_log_default_namespace',logger_cls = logging.Logger):
+    def __init__(self, logger_name: typing.Union[str, None] = 'nb_log_default_namespace', logger_cls=logging.Logger):
         """
         :param logger_name: 日志名称，当为None时候创建root命名空间的日志，一般情况下千万不要传None，除非你确定需要这么做和是在做什么.这个命名空间是双刃剑
         """

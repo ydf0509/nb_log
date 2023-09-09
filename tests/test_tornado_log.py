@@ -3,7 +3,7 @@ import nb_log
 import tornado.ioloop
 import tornado.web
 
-nb_log.get_logger(None)
+nb_log.get_logger('tornado',log_filename='tornado.log')
 
 # nb_log.get_logger('tornado')
 #
@@ -16,12 +16,14 @@ nb_log.get_logger(None)
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
         print('hw')
+        # self.set_status(434)
         self.write("Hello world")
+
 
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
-            (r'/', MainHandler),
+            (r'/index', MainHandler),
         ]
         tornado.web.Application.__init__(self, handlers)
 
