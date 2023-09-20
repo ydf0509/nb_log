@@ -1,0 +1,6 @@
+2023-0919 10:44:25.744 | B | INFO     | __main__:task_B:27 - Starting task B
+2023-0919 10:44:25.744 | B | SUCCESS  | __main__:task_B:28 - End of task B
+2023-0919 11:24:36.038 | B | INFO     | __main__:task_B:34 - Starting task B
+2023-0919 11:24:36.038 | B | SUCCESS  | __main__:task_B:35 - End of task B
+2023-0919 11:24:46.474 | B | INFO     | __main__:task_B:34 - Starting task B
+2023-0919 11:24:46.475 | B | SUCCESS  | __main__:task_B:35 - End of task B
