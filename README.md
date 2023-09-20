@@ -575,7 +575,7 @@ logger.add('mylog.log')
 
 @app.route('/')
 def hello():
-    logger.info('Received request: %s %s %s', request.method, request.path, request.remote_addr)
+    logger.info('Received request: %s %s %s', request.method, request.path, request.remote_addr) # 写这行拖了裤子放屁
     return 'Hello World!'
 
 
@@ -586,7 +586,7 @@ def api2():
         1 / 0  # 故意1/0 报错
         return '2222'
     except Exception as e:
-        logger.info(f'e {traceback.format_exc()}')
+        logger.error(f'e {traceback.format_exc()}')  # 写这行拖了裤子放屁
 
 
 if __name__ == '__main__':
