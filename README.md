@@ -620,11 +620,13 @@ nb_log.get_logger('myapp', log_filename='myapp.log')
 
 @app.route('/')
 def hello():
+    # 接口中无需写日志记录请求了什么url和入参
     return 'Hello World!'
 
 
 @app.route('/api2')
 def api2():
+    # 接口中无需写日志记录报什么错了
     1 / 0
     return '2222'
 
