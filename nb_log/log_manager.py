@@ -196,6 +196,11 @@ class MailHandlerConfig(DataClassBase):
     mail_time_interval = 60
 
 
+def get_all_logging_name():
+    logger_names = logging.Logger.manager.loggerDict.keys()
+    return logger_names
+
+
 LOG_LEVEL_LIST = [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL]  # 就是 10 20 30 40 50
 
 
@@ -212,6 +217,10 @@ class LogManager(object):
     logger_name_list = []
     logger_list = []
     preset_name__level_map = dict()
+
+    @staticmethod
+    def get_all_logging_name():
+        return get_all_logging_name()
 
     def __init__(self, logger_name: typing.Union[str, None] = 'nb_log_default_namespace', logger_cls=logging.Logger):
         """
