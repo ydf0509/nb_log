@@ -25,13 +25,13 @@ install_requires = [
     'chained_mode_time_tool',
 ]
 
-if os.name == 'nt':
-    install_requires.append('pywin32')
+# if os.name == 'nt':
+#     install_requires.append('pywin32')
 
 print(f'nb_log install_requires:{install_requires}')
 setup(
     name='nb_log',  #
-    version="10.5",
+    version="10.6",
     description=(
         'very sharp color display,monkey patch bulitin print  and high-performance multiprocess safe roating file handler,other handlers includeing dintalk ,email,kafka,elastic and so on '
     ),
