@@ -1,0 +1,31 @@
+[1mNAME[0m
+    __main__.py --project_root_path=D:/codes/funboost
+
+[1mSYNOPSIS[0m
+    __main__.py --project_root_path=D:/codes/funboost - [4mCOMMAND[0m | [4mVALUE[0m
+
+[1mCOMMANDS[0m
+    [1m[4mCOMMAND[0m[0m is one of the following:
+
+     clear
+       清空多个queue ; 例子: clear test_cli1_queue1  test_cli1_queue2   # 清空2个消息队列消息队列
+
+     consume
+       启动多个消息队列名的消费; 例子: consume queue1 queue2
+
+     m_consume
+       使用多进程启动消费,每个队列开启多个单独的进程消费; 例子:  m_consume --queue1=2 --queue2=3    # queue1启动两个单独进程消费  queue2 启动3个单独进程消费
+
+     multi_process_consume
+       使用多进程启动消费,每个队列开启多个单独的进程消费; 例子:  m_consume --queue1=2 --queue2=3    # queue1启动两个单独进程消费  queue2 启动3个单独进程消费
+
+     publish
+       publish发布消息到消息队列; 假设函数是 def  add(x,y)  队列名是 add_queue , 发布 1 + 2求和; publish add_queue "{'x':1,'y':2}"
+
+     push
+       push发布消息到消息队列 ; 例子: 假设函数是 def  add(x,y)  队列名是 add_queue , 发布 1 + 2求和; push add_queue 1 2; 或者 push add_queue --x=1 --y=2; 或者 push add_queue -x 1 -y 2;
+
+[1mVALUES[0m
+    [1m[4mVALUE[0m[0m is one of the following:
+
+     import_modules_str
