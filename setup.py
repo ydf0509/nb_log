@@ -30,7 +30,7 @@ if os.name == 'nt':
 
 setup(
     name='nb_log',  #
-    version="10.2",
+    version="10.6",
     description=(
         'very sharp color display,monkey patch bulitin print  and high-performance multiprocess safe roating file handler,other handlers includeing dintalk ,email,kafka,elastic and so on '
     ),

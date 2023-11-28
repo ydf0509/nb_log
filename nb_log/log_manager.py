@@ -264,7 +264,7 @@ class LogManager(object):
               非windwos下要注意账号权限问题(如果python没权限在根目录建/pythonlogs，则需要手动先创建好)
        :param log_filename: 日志的名字，仅当log_path和log_filename都不为None时候才写入到日志文件。
        :param log_file_size :日志大小，单位M，默认100M
-       :param log_file_handler_type :这个值可以设置为1 2 3 4 四种值，1为使用多进程安全按日志文件大小切割的文件日志
+       :param log_file_handler_type :这个值可以设置为1 2 3 4 5 6，1为使用多进程安全按日志文件大小切割的文件日志
               2为多进程安全按天自动切割的文件日志，同一个文件，每天生成一个日志
               3为不自动切割的单个文件的日志(不切割文件就不会出现所谓进程安不安全的问题)
               4为 WatchedFileHandler，这个是需要在linux下才能使用，需要借助lograte外力进行日志文件的切割，多进程安全。
@@ -492,7 +492,7 @@ def get_logger(name: typing.Union[str, None], *, log_level_int: int = None, is_a
               非windwos下要注意账号权限问题(如果python没权限在根目录建/pythonlogs，则需要手动先创建好)
        :param log_filename: 日志的名字，仅当log_path和log_filename都不为None时候才写入到日志文件。
        :param log_file_size :日志大小，单位M，默认100M
-       :param log_file_handler_type :这个值可以设置为1 2 3 4 5 五种值，1为使用多进程安全按日志文件大小切割的文件日志，
+       :param log_file_handler_type :这个值可以设置为1 2 3 4 5 6 ，1为使用多进程安全按日志文件大小切割的文件日志，
               2为多进程安全按天自动切割的文件日志，同一个文件，每天生成一个日志
               3为不自动切割的单个文件的日志(不切割文件就不会出现所谓进程安不安全的问题)
               4为 WatchedFileHandler，这个是需要在linux下才能使用，需要借助lograte外力进行日志文件的切割，多进程安全。
@@ -530,8 +530,17 @@ def get_logger_with_filehanlder(name: str) -> logging.Logger:
     """
     return LogManager(name).get_logger_and_add_handlers(log_filename=name + '.log')
 
+class LoggerLevelSetterMixin:
+    # noinspection PyUnresolvedReferences
+    def set_log_level(self, log_level=10):
+        try:
+            self.logger.setLevel(log_level)
+        except AttributeError as e:
+            very_nb_print(e)
 
-class LoggerMixin(object):
+        return self
+
+class LoggerMixin(LoggerLevelSetterMixin):
     """
     主要是生成把类名作为日志命名空间的logger，方便被混入类直接使用self.logger，不需要手动实例化get_logger。
     """
@@ -581,13 +590,19 @@ class LoggerMixinDefaultWithFileHandler(LoggerMixin):
         else:
             return self.subclass_logger_dict[logger_name_key]
 
+FileLoggerMixin = LoggerMixinDefaultWithFileHandler
 
-class LoggerLevelSetterMixin:
-    # noinspection PyUnresolvedReferences
-    def set_log_level(self, log_level=10):
-        try:
-            self.logger.setLevel(log_level)
-        except AttributeError as e:
-            very_nb_print(e)
 
-        return self
+
+class MetaTypeLogger(type):
+    def __init__(cls, name, bases, attrs):
+        super().__init__(name, bases, attrs)
+        cls.logger = get_logger(name)
+
+
+class MetaTypeFileLogger(type):
+    def __init__(cls, name, bases, attrs):
+        super().__init__(name, bases, attrs)
+        cls.logger = get_logger(name,log_filename=f'{name}.log')
+
+
