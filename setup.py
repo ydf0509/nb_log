@@ -25,9 +25,10 @@ install_requires = [
     'chained_mode_time_tool',
 ]
 
-if os.name == 'nt':
-    install_requires.append('pywin32')
+# if os.name == 'nt':
+#     install_requires.append('pywin32')
 
+print(f'nb_log install_requires:{install_requires}')
 setup(
     name='nb_log',  #
     version="10.6",
@@ -67,7 +68,7 @@ python setup.py sdist upload -r pypi
 
 
 python setup.py sdist & twine upload dist/nb_log-6.0.tar.gz
-python setup.py sdist & python -m  twine upload dist/nb_log-10.2.tar.gz
+python setup.py sdist & python -m  twine upload dist/nb_log-10.3.tar.gz
 
 twine upload dist/*
 
