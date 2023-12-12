@@ -8,6 +8,7 @@ import shutil
 
 # Delete previous build
 import time
+import git_nb_log_github
 
 shutil.rmtree("dist", ignore_errors=True)
 

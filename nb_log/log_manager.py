@@ -569,7 +569,7 @@ class LoggerMixin(LoggerLevelSetterMixin):
         logger_name_key = self.logger_full_name + '2'
         if logger_name_key not in self.subclass_logger_dict:
             logger_var = LogManager(self.logger_full_name).get_logger_and_add_handlers(
-                log_filename=self.logger_full_name + '.log', log_file_size=50)
+                log_filename=self.logger_full_name + '.log', )
             self.subclass_logger_dict[logger_name_key] = logger_var
             return logger_var
         else:
@@ -584,7 +584,7 @@ class LoggerMixinDefaultWithFileHandler(LoggerMixin):
         logger_name_key = self.logger_full_name + '3'
         if logger_name_key not in self.subclass_logger_dict:
             logger_var = LogManager(self.logger_full_name).get_logger_and_add_handlers(
-                log_filename=self.logger_full_name + '.log', log_file_size=50)
+                log_filename=self.logger_full_name + '.log', )
             self.subclass_logger_dict[logger_name_key] = logger_var
             return logger_var
         else:

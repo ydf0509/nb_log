@@ -34,16 +34,17 @@ logger_dingtalk_common = LogManager('钉钉通用报警提示').get_logger_and_a
 
 from nb_log.direct_logger import debug,info,warning,error,exception,critical
 
-only_print_on_main_process('\033[0m' + r"""
-
-.__   __. .______           __        ______     _______ 
-|  \ |  | |   _  \         |  |      /  __  \   /  _____|
-|   \|  | |  |_)  |  ______|  |     |  |  |  | |  |  __  
-|  . `  | |   _  <  |______|  |     |  |  |  | |  | |_ | 
-|  |\   | |  |_)  |        |  `----.|  `--'  | |  |__| | 
-|__| \__| |______/         |_______| \______/   \______|      
-
-     """ + '\033[0m')
+if nb_log_config_default.SHOW_NB_LOG_LOGO:
+    only_print_on_main_process('\033[0m' + r"""
+    
+    .__   __. .______           __        ______     _______ 
+    |  \ |  | |   _  \         |  |      /  __  \   /  _____|
+    |   \|  | |  |_)  |  ______|  |     |  |  |  | |  |  __  
+    |  . `  | |   _  <  |______|  |     |  |  |  | |  | |_ | 
+    |  |\   | |  |_)  |        |  `----.|  `--'  | |  |__| | 
+    |__| \__| |______/         |_______| \______/   \______|      
+    
+         """ + '\033[0m')
 
 if nb_log_config_default.SHOW_PYCHARM_COLOR_SETINGS:
     only_print_on_main_process(
