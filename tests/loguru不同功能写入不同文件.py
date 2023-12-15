@@ -6,12 +6,12 @@ format = ("<green>{time:YYYY-MMDD HH:mm:ss.SSS}</green> | {extra[namespace]} | "
           "<level>{level: <8}</level> | "
           "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>")
 
-logger.remove()
+# logger.remove()
 logger.add("file_A.log", filter=lambda record: record["extra"]["namespace"] == "A", format=format)
-logger.add(sys.stdout, filter=lambda record: record["extra"]["namespace"] == "A", format=format)
+# logger.add(sys.stdout, filter=lambda record: record["extra"]["namespace"] == "A", format=format)
 
 logger.add("file_B.log", filter=lambda record: record["extra"]["namespace"] == "B", format=format)
-logger.add(sys.stdout, filter=lambda record: record["extra"]["namespace"] == "B", format=format)
+# logger.add(sys.stdout, filter=lambda record: record["extra"]["namespace"] == "B", format=format)
 
 logger_a = logger.bind(namespace="A")
 logger_b = logger.bind(namespace="B")

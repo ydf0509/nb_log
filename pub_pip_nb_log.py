@@ -1,3 +1,4 @@
+
 import os
 import sys
 import shutil
@@ -7,6 +8,7 @@ import shutil
 
 # Delete previous build
 import time
+import git_nb_log_github
 
 shutil.rmtree("dist", ignore_errors=True)
 
@@ -18,4 +20,7 @@ os.system(f"{sys.executable} -m twine upload dist/*")
 
 shutil.rmtree("build", ignore_errors=True)
 
-time.sleep(1000000)
+
+
+time.sleep(100000)
+

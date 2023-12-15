@@ -62,7 +62,7 @@ def _print_with_file_line(*args, sep=' ', end='\n', file=None, flush=True, sys_g
         else:
             stdout_write(
                 f'{now_str}  "{file_name}:{line}"  -{fun}-[print]- {args_str} ')
-        print_file_writter.write_2_file(f'{now_str}  "{file_name}:{line}" -{fun}-[print]- {args_str} ')  # 36  93 96 94
+        print_file_writter.write_2_file(f'{now_str}  "{file_name}:{line}" -[print]-{fun}- {args_str} ')  # 36  93 96 94
     else:  # 例如traceback模块的print_exception函数 file的入参是   <_io.StringIO object at 0x00000264F2F065E8>，必须把内容重定向到这个对象里面，否则exception日志记录不了错误堆栈。
         print_raw(args_str, sep=sep, end=end, file=file)
         print_file_writter.write_2_file(args_str)
