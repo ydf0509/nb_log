@@ -224,6 +224,8 @@ class LogManager(object):
     logger_list = []
     preset_name__level_map = dict()
 
+
+
     @staticmethod
     def get_all_logging_name():
         return get_all_logging_name()
@@ -240,6 +242,15 @@ class LogManager(object):
             self.logger = logging.getLogger(logger_name)
         else:
             self.logger = logger_cls(logger_name)
+
+    @staticmethod
+    def generate_error_file_name(log_filename:str):
+        if log_filename is None:
+            return None
+        arr = log_filename.split('.')
+        part1 = '.'.join(arr[:-1])
+        part2 = arr[-1]
+        return f'{part1}_error.{part2}'
 
     def preset_log_level(self, log_level_int=20):
         """
@@ -320,7 +331,7 @@ class LogManager(object):
         self._do_not_use_color_handler = do_not_use_color_handler
         self._log_path = log_path
         self._log_filename = log_filename
-        self._error_log_filename = error_log_filename
+        self._error_log_filename = error_log_filename or self.generate_error_file_name(log_filename)
         self._log_file_size = log_file_size
         if log_file_handler_type not in (None, 1, 2, 3, 4, 5, 6):
             raise ValueError("log_file_handler_type的值必须设置为 1 2 3 4 5 6 这几个数字")
