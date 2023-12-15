@@ -32,7 +32,7 @@ class BulkStdout:
         with cls._lock:
             msg_str_all = ''
             while not cls.q.empty():
-                msg_str_all += cls.q.get()
+                msg_str_all += str(cls.q.get())
             if msg_str_all:
                 stdout_raw(msg_str_all)
 

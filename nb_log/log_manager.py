@@ -356,10 +356,10 @@ class LogManager(object):
         :param handler_class:logging.StreamHandler,ColorHandler,MongoHandler,ConcurrentRotatingFileHandler,MongoHandler,CompatibleSMTPSSLHandler的一种
         :return:
         """
-        if handler_class not in (
-            logging.StreamHandler, ColorHandler, MongoHandler, ConcurrentRotatingFileHandler, MongoHandler,
-            CompatibleSMTPSSLHandler, ElasticHandler, DingTalkHandler, KafkaHandler):
-            raise TypeError('设置的handler类型不正确')
+        # if handler_class not in (
+        #     logging.StreamHandler, ColorHandler, MongoHandler, ConcurrentRotatingFileHandler, MongoHandler,
+        #     CompatibleSMTPSSLHandler, ElasticHandler, DingTalkHandler, KafkaHandler):
+        #     raise TypeError('设置的handler类型不正确')
         all_handlers = copy.copy(self.logger.handlers)
         for handler in all_handlers:
             if isinstance(handler, handler_class):
@@ -433,28 +433,32 @@ class LogManager(object):
             self.__add_a_hanlder(file_handler)
 
         # REMIND 添加mongo日志。
-        if not self._judge_logger_has_handler_type(MongoHandler) and self._mongo_url:
-            handler = MongoHandler(self._mongo_url)
-            handler.setLevel(self._logger_level)
-            self.__add_a_hanlder(handler)
+        # if not self._judge_logger_has_handler_type(MongoHandler) and self._mongo_url:
+        if self._mongo_url:
+            from nb_log.more_handlers import MongoHandler
+            if not self._judge_logger_has_handler_type(MongoHandler):
+                handler = MongoHandler(self._mongo_url)
+                handler.setLevel(self._logger_level)
+                self.__add_a_hanlder(handler)
 
-        if not self._judge_logger_has_handler_type(
-            ElasticHandler) and self._is_add_elastic_handler and nb_log_config_default.RUN_ENV == 'test':  # 使用kafka。不直接es。
+        if self._is_add_elastic_handler:
             """
             生产环境使用阿里云 oss日志，不使用这个。
             """
-            handler = ElasticHandler([nb_log_config_default.ELASTIC_HOST], nb_log_config_default.ELASTIC_PORT)
-            handler.setLevel(self._logger_level)
-            self.__add_a_hanlder(handler)
+            from nb_log.more_handlers import ElasticHandler
+            if not self._judge_logger_has_handler_type(ElasticHandler):
+                handler = ElasticHandler([nb_log_config_default.ELASTIC_HOST], nb_log_config_default.ELASTIC_PORT)
+                handler.setLevel(self._logger_level)
+                self.__add_a_hanlder(handler)
 
         # REMIND 添加kafka日志。
         # if self._is_add_kafka_handler:
-        if not self._judge_logger_has_handler_type(
-            KafkaHandler) and nb_log_config_default.RUN_ENV == 'test' \
-            and nb_log_config_default.ALWAYS_ADD_KAFKA_HANDLER_IN_TEST_ENVIRONENT:
-            handler = KafkaHandler(nb_log_config_default.KAFKA_BOOTSTRAP_SERVERS, )
-            handler.setLevel(self._logger_level)
-            self.__add_a_hanlder(handler)
+        if nb_log_config_default.RUN_ENV == 'test' and nb_log_config_default.ALWAYS_ADD_KAFKA_HANDLER_IN_TEST_ENVIRONENT:
+            from nb_log.more_handlers import KafkaHandler
+            if not self._judge_logger_has_handler_type(KafkaHandler):
+                handler = KafkaHandler(nb_log_config_default.KAFKA_BOOTSTRAP_SERVERS, )
+                handler.setLevel(self._logger_level)
+                self.__add_a_hanlder(handler)
 
         # REMIND 添加钉钉日志。
         if not self._judge_logger_has_handler_type(DingTalkHandler) and self._ding_talk_token:

@@ -10,12 +10,13 @@ import os
 filepath = 'README.md'
 print(filepath)
 
+extra_requires = {'all': ['pymongo==4.3.3', 'elasticsearch', 'kafka-python==2.0.2', ], }
+
 install_requires = [
-    'pymongo==4.3.3',
+
     'tomorrow3==1.1.0',
     'concurrent-log-handler==0.9.23',
-    'elasticsearch',
-    'kafka-python==2.0.2',
+
     'requests',
     'flask',
     'python-json-logger==0.1.10',
@@ -56,10 +57,11 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Programming Language :: Python',
         'Programming Language :: Python :: Implementation',
-        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3',
         'Topic :: Software Development :: Libraries'
     ],
-    install_requires=install_requires
+    install_requires=install_requires,
+    extras_require = extra_requires
 )
 """
 打包上传
