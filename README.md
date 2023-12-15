@@ -15,21 +15,7 @@
 
 很多pythoner到现在都不知道python的 logging.getLogger() 第一个入参的意义和作用，造成nb_log也不知道怎么使用多命名空间。
 
-## tips: 要想更简单简化使用日志,请安装kuai_log
 
-pip install kuai_log
-
-```
-kuai_log 是没有基于logging封装,但kuai_log是100%兼容logging包的方法名和入参.
-kuai_log的KuaiLogger方法和入参在logging的Logger一定存在且相同, 但是logging包有的小众方法,kuai_log不存在
-
-kuai_log比logging和loguru快30倍,比nb_log快4倍.
-
-kuai_log 不需要配置文件,全部用入参
-
-kuai_log 没有依赖任何三方包,nb_log依赖某些三方包
-
-```
 
 ## 1.0 nb_log 安装
 
@@ -44,6 +30,8 @@ pip install nb_log
 
 
 ## 1.1 nb_log 简单使用例子
+
+控制台打印日志：
 
 ```python
 print('导入nb_log之前的print是普通的')
@@ -62,6 +50,33 @@ logger.critical('血红色，说明发生了严重错误 ')
 
 print('导入nb_log之后的print是强化版的可点击跳转的')
 ```
+### 1.1.a nb_log 写入日志文件
+
+nb_log默认是只打印到控制台，不会把日志写入到文件、kafka、mongo、es、发邮件和钉钉的，nb_log 记录到每一种地方都有单独的控制参数。
+
+只有get_logger 设置了log_filename，那么该logger才会写到这个文件，日志文件夹的路径是 nb_log_config.py 的 LOG_PATH 配置的。
+
+```python
+from nb_log import get_logger
+logger = get_logger('logger_namespace',
+                    log_filename='namespace_file.log',
+                    error_log_filename='f4b_error.log')
+logger.debug('这条日志会写到文件中')
+```
+
+### 1.1.a2 nb_log 写入日志文件,并将错误日志同时写到另外的错误日志文件中
+
+get_logger 传参了 error_log_filename 后，error级别以上的日志会单独写入到错误文件中。
+或者 在nb_log_config.py 配置文件中 配置 AUTO_WRITE_ERROR_LEVEL_TO_SEPARATE_FILE = True # 自动把错误error级别以上日志写到单独的文件，根据log_filename名字自动生成错误文件日志名字。
+
+```python
+from nb_log import get_logger
+logger = get_logger('logger_namespace',
+                    log_filename='namespace_file.log',
+                    error_log_filename='namespace_file_error.log')
+logger.debug('这条日志会写到普通文件中')
+logger.error('这条日志会写到普通文件中，同时会单独写入到错误文件中')
+```
 
 ### 1.1.b nb_log 的最核心函数 get_logger入参说明
 
@@ -77,6 +92,7 @@ print('导入nb_log之后的print是强化版的可点击跳转的')
    :param log_path: 设置存放日志的文件夹路径,如果不设置，则取nb_log_config.LOG_PATH，如果配置中也没指定则自动在代码所在磁盘的根目录创建/pythonlogs文件夹，
           非windwos下要注意账号权限问题(如果python没权限在根目录建/pythonlogs，则需要手动先创建好)
    :param log_filename: 日志的名字，仅当log_path和log_filename都不为None时候才会写入到日志文件。用户不指定 log_filename 默认当作用户不希望把日志写入到文件中。
+   :param error_log_filename :错误日志文件名字，如果文件名不为None，那么error级别以上日志自动写入到这个错误文件。
    :param log_file_size :日志大小，单位M，默认100M
    :param log_file_handler_type :这个值可以设置为 1 2 3 4 5 五种值，1为使用多进程安全按日志文件大小切割的文件日志，
           2为多进程安全按天自动切割的文件日志，同一个文件，每天生成一个日志
@@ -552,101 +568,6 @@ print('logger1 id: ',id(logger1),'logger2 id: ',id(logger2),'logger3 id: ',id(lo
 你只是要屏蔽某些debug日志，
 </pre>
 
-### 1.9.2 看大神和小白是怎么记录flask的请求记录和报错记录的,为什么知道日志 logger 的name 很重要?
-
-#### 1.9.2.a  小白记录flask日志,不知道日志命名空间,脱裤子放屁手写记录日志做无用功
-```python
-"""
-1) 在接口中自己去手写记录请求入参和url,脱裤子放屁
-2) 在接口中手写记录flask接口函数报错信息
-
-就算你在框架层面去加日志或者接口加装饰器记录日志,来解决每个接口重复写怎么记录日志,那也是很low,
-
-不懂日志命名空间就重复做无用功,这些记录人家框架早就帮你记录了,只是没加日志 handler,等待用户来加而已
-"""
-import traceback
-from flask import Flask, request
-from loguru import logger
-
-app = Flask(__name__)
-
-logger.add('mylog.log')
-
-
-@app.route('/')
-def hello():
-    logger.info('Received request: %s %s %s', request.method, request.path, request.remote_addr) # 写这行拖了裤子放屁
-    return 'Hello World!'
-
-
-@app.route('/api2')
-def api2():
-    logger.info('Received request: %s %s %s', request.method, request.path, request.remote_addr)
-    try:
-        1 / 0  # 故意1/0 报错
-        return '2222'
-    except Exception as e:
-        logger.error(f'e {traceback.format_exc()}')  # 写这行拖了裤子放屁
-
-
-if __name__ == '__main__':
-    app.run()
-
-```
-
-#### 1.9.2.b  知道日志命名空间的大神记录flask日志,完全不需要手写记录日志
-```python
-"""
-这个代码里面没有手写任何怎么记录flask的请求和flask异常到日志,但是可以自动记录.
-这就是大神玩日志,懂命名空间.
-
-这才是正解, werkzeug 命名空间加上各种handler,
-只要请求接口,就可以记录日志到控制台和文件werkzeug.log了,
-
-这里的flask的app的name写的是myapp ,flask框架生成的日志命名空间复用app.name,
-所以给myapp加上handler,那么flask接口函数报错,就可以自动记录堆栈报错到 myapp.log 和控制台了.
-
-"""
-
-from flask import Flask, request
-import nb_log
-
-app = Flask('myapp')
-
-nb_log.get_logger('werkzeug', log_filename='werkzeug.log')
-
-nb_log.get_logger('myapp', log_filename='myapp.log')
-
-
-@app.route('/')
-def hello():
-    # 接口中无需写日志记录请求了什么url和入参
-    return 'Hello World!'
-
-
-@app.route('/api2')
-def api2():
-    # 接口中无需写日志记录报什么错了
-    1 / 0
-    return '2222'
-
-
-if __name__ == '__main__':
-    app.run(port=5002)
-```
-
-```
-从上面的对比可以看出,不懂日志命名空间有多么low,天天做无用功记录日志
-```
-
-有人问我是怎么知道要记录 werkzeug 和 myapp 这两个日志命名空间的日志?
-
-```
-这个不是我耍赖先百度了,然后才知道要记录 werkzeug,完全不需要耍赖
-
-nb_log.get_logger(name=None) 可以记录任意三方包模块的一切日志命名空间的日志,
-先让name=None,由于控制台的模板加了name字段,所以可以看到是什么命名空间打印的日志,然后就知道要记录哪些命名空间的日志了.
-```
 
 ## 1.10 nb_log比logurur有10胜
 
