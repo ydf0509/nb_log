@@ -29,6 +29,9 @@ from nb_log.compatible_logger import CompatibleLogger
 from nb_log.handlers import *
 import deprecated
 
+def _get_hanlder_type(handlerx: logging.Handler):
+    return getattr(handlerx, 'manual_hanlder_type', None) or type(handlerx)
+
 
 # noinspection DuplicatedCode
 def revision_call_handlers(self, record):  # 对logging标准模块打猴子补丁。主要是使父命名空间的handler不重复记录当前命名空间日志已有种类的handler。
@@ -69,7 +72,7 @@ def revision_call_handlers(self, record):  # 对logging标准模块打猴子补�
 
     while c:
         for hdlr in c.handlers:
-            hdlr_type = type(hdlr)
+            hdlr_type = _get_hanlder_type(hdlr)
             if hdlr_type == logging.StreamHandler:  # REMIND 因为很多handler都是继承自StreamHandler，包括filehandler，直接判断会逻辑出错。
                 hdlr_type = ColorHandler
             found = found + 1
@@ -93,6 +96,9 @@ def revision_call_handlers(self, record):  # 对logging标准模块打猴子补�
             self.manager.emittedNoHandlerWarning = True
 
 
+
+
+
 # noinspection PyProtectedMember
 def revision_add_handler(self, hdlr):  # 从添加源头阻止同一个logger添加同类型的handler。
     """
@@ -107,12 +113,12 @@ def revision_add_handler(self, hdlr):  # 从添加源头阻止同一个logger添
         """
         hdlrx_type_set = set()
         for hdlrx in self.handlers:
-            hdlrx_type = type(hdlrx)
+            hdlrx_type = _get_hanlder_type(hdlrx)
             if hdlrx_type == logging.StreamHandler:  # REMIND 因为很多handler都是继承自StreamHandler，包括filehandler，直接判断会逻辑出错。
                 hdlrx_type = ColorHandler
             hdlrx_type_set.add(hdlrx_type)
 
-        hdlr_type = type(hdlr)
+        hdlr_type = _get_hanlder_type(hdlr)
         if hdlr_type == logging.StreamHandler:
             hdlr_type = ColorHandler
         if hdlr_type not in hdlrx_type_set:
@@ -251,6 +257,7 @@ class LogManager(object):
                                     do_not_use_color_handler=None, log_path=None,
                                     log_filename=None, log_file_size: int = None,
                                     log_file_handler_type: int = None,
+                                    error_log_filename=None,
                                     mongo_url=None, is_add_elastic_handler=False, is_add_kafka_handler=False,
                                     ding_talk_token=None, ding_talk_time_interval=60,
                                     mail_handler_config: MailHandlerConfig = MailHandlerConfig(),
@@ -262,7 +269,8 @@ class LogManager(object):
        :param do_not_use_color_handler :是否禁止使用color彩色日志
        :param log_path: 设置存放日志的文件夹路径,如果不设置，则取nb_log_config.LOG_PATH，如果配置中也没指定则自动在代码所在磁盘的根目录创建/pythonlogs文件夹，
               非windwos下要注意账号权限问题(如果python没权限在根目录建/pythonlogs，则需要手动先创建好)
-       :param log_filename: 日志的名字，仅当log_path和log_filename都不为None时候才写入到日志文件。
+       :param log_filename: 日志文件名字，仅当log_path和log_filename都不为None时候才写入到日志文件。
+       :param error_log_filename :错误日志文件名字，如果文件名不为None，那么error级别以上日志自动写入到这个错误文件。
        :param log_file_size :日志大小，单位M，默认100M
        :param log_file_handler_type :这个值可以设置为1 2 3 4 5 6，1为使用多进程安全按日志文件大小切割的文件日志
               2为多进程安全按天自动切割的文件日志，同一个文件，每天生成一个日志
@@ -312,6 +320,7 @@ class LogManager(object):
         self._do_not_use_color_handler = do_not_use_color_handler
         self._log_path = log_path
         self._log_filename = log_filename
+        self._error_log_filename = error_log_filename
         self._log_file_size = log_file_size
         if log_file_handler_type not in (None, 1, 2, 3, 4, 5, 6):
             raise ValueError("log_file_handler_type的值必须设置为 1 2 3 4 5 6 这几个数字")
@@ -375,6 +384,54 @@ class LogManager(object):
             if isinstance(hr, handler_type):
                 return True
 
+    def __add_file_hanlder(self, log_filename, is_error_level_file_handler):
+        # REMIND 添加多进程安全切片的文件日志
+        if all([self._log_path, log_filename]):
+            if not os.path.exists(self._log_path):
+                os.makedirs(self._log_path, exist_ok=True)
+            log_file = os.path.join(self._log_path, log_filename)
+            file_handler = None
+            if self._log_file_handler_type == 1:
+                if os_name == 'nt':
+                    # 在win下使用这个ConcurrentRotatingFileHandler可以解决多进程安全切片，但性能损失惨重。
+                    # 10进程各自写入10万条记录到同一个文件消耗15分钟。比不切片写入速度降低100倍。
+                    file_handler = ConcurrentRotatingFileHandlerWithBufferInitiativeWindwos(log_file,
+                                                                                            maxBytes=self._log_file_size * 1024 * 1024,
+                                                                                            backupCount=nb_log_config_default.LOG_FILE_BACKUP_COUNT,
+                                                                                            encoding="utf-8")
+
+
+                elif os_name == 'posix':
+                    # linux下可以使用ConcurrentRotatingFileHandler，进程安全的日志方式。
+                    # 10进程各自写入10万条记录到同一个文件消耗100秒，还是比不切片写入速度降低10倍。因为每次检查切片大小和文件锁的原因。
+                    file_handler = ConcurrentRotatingFileHandlerWithBufferInitiativeLinux(log_file,
+                                                                                          maxBytes=self._log_file_size * 1024 * 1024,
+                                                                                          backupCount=nb_log_config_default.LOG_FILE_BACKUP_COUNT,
+                                                                                          encoding="utf-8")
+
+            elif self._log_file_handler_type == 4:
+                file_handler = WatchedFileHandler(log_file)
+
+            elif self._log_file_handler_type == 2:
+                file_handler = ConcurrentDayRotatingFileHandler(log_filename, self._log_path, back_count=nb_log_config_default.LOG_FILE_BACKUP_COUNT)
+            elif self._log_file_handler_type == 3:
+                file_handler = FileHandler(log_file, mode='a', encoding='utf-8')
+            elif self._log_file_handler_type == 5:
+                file_handler = ConcurrentRotatingFileHandler(log_file,
+                                                             maxBytes=self._log_file_size * 1024 * 1024,
+                                                             backupCount=nb_log_config_default.LOG_FILE_BACKUP_COUNT,
+                                                             encoding="utf-8")
+            elif self._log_file_handler_type == 6:
+                file_handler = BothDayAndSizeRotatingFileHandler(file_name=log_filename, log_path=self._log_path,
+                                                                 back_count=nb_log_config_default.LOG_FILE_BACKUP_COUNT, max_bytes=self._log_file_size * 1024 * 1024)
+            if is_error_level_file_handler:
+                setattr(file_handler, 'manual_hanlder_type', 'error_file_hanlder_type')
+                file_handler.setLevel(logging.ERROR)
+            else:
+                file_handler.setLevel(logging.DEBUG)
+            file_handler.setFormatter(self._formatter)
+            self.logger.addHandler(file_handler)
+
     def __add_handlers(self):
         pass
 
@@ -386,51 +443,8 @@ class LogManager(object):
             handler.setLevel(self._logger_level)
             self.__add_a_hanlder(handler)
 
-        # REMIND 添加多进程安全切片的文件日志
-        if not (self._judge_logger_has_handler_type(ConcurrentRotatingFileHandler) or
-                self._judge_logger_has_handler_type(ConcurrentRotatingFileHandlerWithBufferInitiativeWindwos) or
-                self._judge_logger_has_handler_type(ConcurrentRotatingFileHandlerWithBufferInitiativeLinux) or
-                self._judge_logger_has_handler_type(ConcurrentDayRotatingFileHandler) or
-                self._judge_logger_has_handler_type(FileHandler) or
-                self._judge_logger_has_handler_type(ConcurrentRotatingFileHandler) or
-                self._judge_logger_has_handler_type(BothDayAndSizeRotatingFileHandler)
-        ) and all([self._log_path, self._log_filename]):
-            if not os.path.exists(self._log_path):
-                os.makedirs(self._log_path, exist_ok=True)
-            log_file = os.path.join(self._log_path, self._log_filename)
-            file_handler = None
-            if self._log_file_handler_type == 1:
-                if os_name == 'nt':
-                    # 在win下使用这个ConcurrentRotatingFileHandler可以解决多进程安全切片，但性能损失惨重。
-                    # 10进程各自写入10万条记录到同一个文件消耗15分钟。比不切片写入速度降低100倍。
-                    file_handler = ConcurrentRotatingFileHandlerWithBufferInitiativeWindwos(log_file,
-                                                                                            maxBytes=self._log_file_size * 1024 * 1024,
-                                                                                            backupCount=nb_log_config_default.LOG_FILE_BACKUP_COUNT,
-                                                                                            encoding="utf-8")
-                elif os_name == 'posix':
-                    # linux下可以使用ConcurrentRotatingFileHandler，进程安全的日志方式。
-                    # 10进程各自写入10万条记录到同一个文件消耗100秒，还是比不切片写入速度降低10倍。因为每次检查切片大小和文件锁的原因。
-                    file_handler = ConcurrentRotatingFileHandlerWithBufferInitiativeLinux(log_file,
-                                                                                          maxBytes=self._log_file_size * 1024 * 1024,
-                                                                                          backupCount=nb_log_config_default.LOG_FILE_BACKUP_COUNT,
-                                                                                          encoding="utf-8")
-
-            elif self._log_file_handler_type == 4:
-                file_handler = WatchedFileHandler(log_file)
-            elif self._log_file_handler_type == 2:
-                file_handler = ConcurrentDayRotatingFileHandler(self._log_filename, self._log_path, back_count=nb_log_config_default.LOG_FILE_BACKUP_COUNT)
-            elif self._log_file_handler_type == 3:
-                file_handler = FileHandler(log_file, mode='a', encoding='utf-8')
-            elif self._log_file_handler_type == 5:
-                file_handler = ConcurrentRotatingFileHandler(log_file,
-                                                             maxBytes=self._log_file_size * 1024 * 1024,
-                                                             backupCount=nb_log_config_default.LOG_FILE_BACKUP_COUNT,
-                                                             encoding="utf-8")
-            elif self._log_file_handler_type == 6:
-                file_handler = BothDayAndSizeRotatingFileHandler(file_name=self._log_filename, log_path=self._log_path,
-                                                                 back_count=nb_log_config_default.LOG_FILE_BACKUP_COUNT, max_bytes=self._log_file_size * 1024 * 1024)
-            file_handler.setLevel(self._logger_level)
-            self.__add_a_hanlder(file_handler)
+        self.__add_file_hanlder(self._log_filename, is_error_level_file_handler=False)
+        self.__add_file_hanlder(self._error_log_filename, is_error_level_file_handler=True)
 
         # REMIND 添加mongo日志。
         # if not self._judge_logger_has_handler_type(MongoHandler) and self._mongo_url:
@@ -475,7 +489,9 @@ class LogManager(object):
 @lru_cache()  # LogManager 本身也支持无限实例化
 def get_logger(name: typing.Union[str, None], *, log_level_int: int = None, is_add_stream_handler=True,
                do_not_use_color_handler=None, log_path=None,
-               log_filename=None, log_file_size: int = None,
+               log_filename=None,
+               error_log_filename=None,
+               log_file_size: int = None,
                log_file_handler_type: int = None,
                mongo_url=None, is_add_elastic_handler=False, is_add_kafka_handler=False,
                ding_talk_token=None, ding_talk_time_interval=60,
@@ -495,6 +511,7 @@ def get_logger(name: typing.Union[str, None], *, log_level_int: int = None, is_a
        :param log_path: 设置存放日志的文件夹路径,如果不设置，则取nb_log_config.LOG_PATH，如果配置中也没指定则自动在代码所在磁盘的根目录创建/pythonlogs文件夹，
               非windwos下要注意账号权限问题(如果python没权限在根目录建/pythonlogs，则需要手动先创建好)
        :param log_filename: 日志的名字，仅当log_path和log_filename都不为None时候才写入到日志文件。
+       :param error_log_filename :错误日志文件名字，如果文件名不为None，那么error级别以上日志自动写入到这个错误文件。
        :param log_file_size :日志大小，单位M，默认100M
        :param log_file_handler_type :这个值可以设置为1 2 3 4 5 6 ，1为使用多进程安全按日志文件大小切割的文件日志，
               2为多进程安全按天自动切割的文件日志，同一个文件，每天生成一个日志
@@ -534,6 +551,7 @@ def get_logger_with_filehanlder(name: str) -> logging.Logger:
     """
     return LogManager(name).get_logger_and_add_handlers(log_filename=name + '.log')
 
+
 class LoggerLevelSetterMixin:
     # noinspection PyUnresolvedReferences
     def set_log_level(self, log_level=10):
@@ -543,6 +561,7 @@ class LoggerLevelSetterMixin:
             very_nb_print(e)
 
         return self
+
 
 class LoggerMixin(LoggerLevelSetterMixin):
     """
@@ -594,8 +613,8 @@ class LoggerMixinDefaultWithFileHandler(LoggerMixin):
         else:
             return self.subclass_logger_dict[logger_name_key]
 
-FileLoggerMixin = LoggerMixinDefaultWithFileHandler
 
+FileLoggerMixin = LoggerMixinDefaultWithFileHandler
 
 
 class MetaTypeLogger(type):
@@ -607,6 +626,4 @@ class MetaTypeLogger(type):
 class MetaTypeFileLogger(type):
     def __init__(cls, name, bases, attrs):
         super().__init__(name, bases, attrs)
-        cls.logger = get_logger(name,log_filename=f'{name}.log')
-
-
+        cls.logger = get_logger(name, log_filename=f'{name}.log')
