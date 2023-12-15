@@ -15,7 +15,21 @@
 
 很多pythoner到现在都不知道python的 logging.getLogger() 第一个入参的意义和作用，造成nb_log也不知道怎么使用多命名空间。
 
+## tips: 要想更简单简化使用日志,请安装kuai_log
 
+pip install kuai_log
+
+```
+kuai_log 是没有基于logging封装,但kuai_log是100%兼容logging包的方法名和入参.
+kuai_log的KuaiLogger方法和入参在logging的Logger一定存在且相同, 但是logging包有的小众方法,kuai_log不存在
+
+kuai_log比logging和loguru快30倍,比nb_log快4倍.
+
+kuai_log 不需要配置文件,全部用入参
+
+kuai_log 没有依赖任何三方包,nb_log依赖某些三方包
+
+```
 
 ## 1.0 nb_log 安装
 
@@ -568,6 +582,101 @@ print('logger1 id: ',id(logger1),'logger2 id: ',id(logger2),'logger3 id: ',id(lo
 你只是要屏蔽某些debug日志，
 </pre>
 
+### 1.9.2 看大神和小白是怎么记录flask的请求记录和报错记录的,为什么知道日志 logger 的name 很重要?
+
+#### 1.9.2.a  小白记录flask日志,不知道日志命名空间,脱裤子放屁手写记录日志做无用功
+```python
+"""
+1) 在接口中自己去手写记录请求入参和url,脱裤子放屁
+2) 在接口中手写记录flask接口函数报错信息
+
+就算你在框架层面去加日志或者接口加装饰器记录日志,来解决每个接口重复写怎么记录日志,那也是很low,
+
+不懂日志命名空间就重复做无用功,这些记录人家框架早就帮你记录了,只是没加日志 handler,等待用户来加而已
+"""
+import traceback
+from flask import Flask, request
+from loguru import logger
+
+app = Flask(__name__)
+
+logger.add('mylog.log')
+
+
+@app.route('/')
+def hello():
+    logger.info('Received request: %s %s %s', request.method, request.path, request.remote_addr) # 写这行拖了裤子放屁
+    return 'Hello World!'
+
+
+@app.route('/api2')
+def api2():
+    logger.info('Received request: %s %s %s', request.method, request.path, request.remote_addr)
+    try:
+        1 / 0  # 故意1/0 报错
+        return '2222'
+    except Exception as e:
+        logger.error(f'e {traceback.format_exc()}')  # 写这行拖了裤子放屁
+
+
+if __name__ == '__main__':
+    app.run()
+
+```
+
+#### 1.9.2.b  知道日志命名空间的大神记录flask日志,完全不需要手写记录日志
+```python
+"""
+这个代码里面没有手写任何怎么记录flask的请求和flask异常到日志,但是可以自动记录.
+这就是大神玩日志,懂命名空间.
+
+这才是正解, werkzeug 命名空间加上各种handler,
+只要请求接口,就可以记录日志到控制台和文件werkzeug.log了,
+
+这里的flask的app的name写的是myapp ,flask框架生成的日志命名空间复用app.name,
+所以给myapp加上handler,那么flask接口函数报错,就可以自动记录堆栈报错到 myapp.log 和控制台了.
+
+"""
+
+from flask import Flask, request
+import nb_log
+
+app = Flask('myapp')
+
+nb_log.get_logger('werkzeug', log_filename='werkzeug.log')
+
+nb_log.get_logger('myapp', log_filename='myapp.log')
+
+
+@app.route('/')
+def hello():
+    # 接口中无需写日志记录请求了什么url和入参
+    return 'Hello World!'
+
+
+@app.route('/api2')
+def api2():
+    # 接口中无需写日志记录报什么错了
+    1 / 0
+    return '2222'
+
+
+if __name__ == '__main__':
+    app.run(port=5002)
+```
+
+```
+从上面的对比可以看出,不懂日志命名空间有多么low,天天做无用功记录日志
+```
+
+有人问我是怎么知道要记录 werkzeug 和 myapp 这两个日志命名空间的日志?
+
+```
+这个不是我耍赖先百度了,然后才知道要记录 werkzeug,完全不需要耍赖
+
+nb_log.get_logger(name=None) 可以记录任意三方包模块的一切日志命名空间的日志,
+先让name=None,由于控制台的模板加了name字段,所以可以看到是什么命名空间打印的日志,然后就知道要记录哪些命名空间的日志了.
+```
 
 ## 1.10 nb_log比logurur有10胜
 
