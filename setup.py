@@ -10,7 +10,7 @@ import os
 filepath = 'README.md'
 print(filepath)
 
-extra_requires = {'all': ['pymongo==4.3.3', 'elasticsearch', 'kafka-python==2.0.2', ], }
+extra_requires = {'all': ['pymongo==4.3.3', 'elasticsearch', 'kafka-python==2.0.2','loguru' ], }
 
 install_requires = [
 
