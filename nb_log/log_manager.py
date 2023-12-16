@@ -29,6 +29,7 @@ from nb_log.compatible_logger import CompatibleLogger
 from nb_log.handlers import *
 import deprecated
 
+
 def _get_hanlder_type(handlerx: logging.Handler):
     return getattr(handlerx, 'manual_hanlder_type', None) or type(handlerx)
 
@@ -94,9 +95,6 @@ def revision_call_handlers(self, record):  # 对logging标准模块打猴子补�
                              " \"%s\"\n" % self.name)
             sys.stderr.flush()
             self.manager.emittedNoHandlerWarning = True
-
-
-
 
 
 # noinspection PyProtectedMember
@@ -224,8 +222,6 @@ class LogManager(object):
     logger_list = []
     preset_name__level_map = dict()
 
-
-
     @staticmethod
     def get_all_logging_name():
         return get_all_logging_name()
@@ -244,7 +240,7 @@ class LogManager(object):
             self.logger = logger_cls(logger_name)
 
     @staticmethod
-    def generate_error_file_name(log_filename:str):
+    def generate_error_file_name(log_filename: str):
         if log_filename is None:
             return None
         arr = log_filename.split('.')
@@ -265,6 +261,7 @@ class LogManager(object):
     # 加*是为了强制在调用此方法时候使用关键字传参，如果以位置传参强制报错，因为此方法后面的参数中间可能以后随时会增加更多参数，造成之前的使用位置传参的代码参数意义不匹配。
     # noinspection PyAttributeOutsideInit
     def get_logger_and_add_handlers(self, log_level_int: int = None, *, is_add_stream_handler=True,
+                                    is_use_loguru_stream_handler=False,
                                     do_not_use_color_handler=None, log_path=None,
                                     log_filename=None, log_file_size: int = None,
                                     log_file_handler_type: int = None,
@@ -277,6 +274,7 @@ class LogManager(object):
         """
        :param log_level_int: 日志输出级别，设置为 1 2 3 4 5，分别对应原生logging.DEBUG(10)，logging.INFO(20)，logging.WARNING(30)，logging.ERROR(40),logging.CRITICAL(50)级别，现在可以直接用10 20 30 40 50了，兼容了。
        :param is_add_stream_handler: 是否打印日志到控制台
+       :param is_use_loguru_stream_handler = False : 是否使用 loguru的控制台打印效果
        :param do_not_use_color_handler :是否禁止使用color彩色日志
        :param log_path: 设置存放日志的文件夹路径,如果不设置，则取nb_log_config.LOG_PATH，如果配置中也没指定则自动在代码所在磁盘的根目录创建/pythonlogs文件夹，
               非windwos下要注意账号权限问题(如果python没权限在根目录建/pythonlogs，则需要手动先创建好)
@@ -343,6 +341,7 @@ class LogManager(object):
         self._ding_talk_time_interval = ding_talk_time_interval
         self._mail_handler_config = mail_handler_config
         self._is_add_mail_handler = is_add_mail_handler
+        self._is_use_loguru_stream_handler = is_use_loguru_stream_handler
 
         if isinstance(formatter_template, int):
             self._formatter = nb_log_config_default.FORMATTER_DICT[formatter_template]
@@ -450,6 +449,9 @@ class LogManager(object):
         if not (self._judge_logger_has_handler_type(ColorHandler) or self._judge_logger_has_handler_type(
             logging.StreamHandler)) and self._is_add_stream_handler:
             handler = ColorHandler() if not self._do_not_use_color_handler else logging.StreamHandler()  # 不使用streamhandler，使用自定义的彩色日志
+            if self._is_use_loguru_stream_handler:
+                from nb_log.handlers_loguru import LoguruStreamHandler
+                handler = LoguruStreamHandler(self._logger_name)
             # handler = logging.StreamHandler()
             handler.setLevel(self._logger_level)
             self.__add_a_hanlder(handler)
@@ -460,7 +462,7 @@ class LogManager(object):
         # REMIND 添加mongo日志。
         # if not self._judge_logger_has_handler_type(MongoHandler) and self._mongo_url:
         if self._mongo_url:
-            from nb_log.more_handlers import MongoHandler
+            from nb_log.handlers_more import MongoHandler
             if not self._judge_logger_has_handler_type(MongoHandler):
                 handler = MongoHandler(self._mongo_url)
                 handler.setLevel(self._logger_level)
@@ -470,7 +472,7 @@ class LogManager(object):
             """
             生产环境使用阿里云 oss日志，不使用这个。
             """
-            from nb_log.more_handlers import ElasticHandler
+            from nb_log.handlers_more import ElasticHandler
             if not self._judge_logger_has_handler_type(ElasticHandler):
                 handler = ElasticHandler([nb_log_config_default.ELASTIC_HOST], nb_log_config_default.ELASTIC_PORT)
                 handler.setLevel(self._logger_level)
@@ -479,7 +481,7 @@ class LogManager(object):
         # REMIND 添加kafka日志。
         # if self._is_add_kafka_handler:
         if nb_log_config_default.RUN_ENV == 'test' and nb_log_config_default.ALWAYS_ADD_KAFKA_HANDLER_IN_TEST_ENVIRONENT:
-            from nb_log.more_handlers import KafkaHandler
+            from nb_log.handlers_more import KafkaHandler
             if not self._judge_logger_has_handler_type(KafkaHandler):
                 handler = KafkaHandler(nb_log_config_default.KAFKA_BOOTSTRAP_SERVERS, )
                 handler.setLevel(self._logger_level)
@@ -499,6 +501,7 @@ class LogManager(object):
 
 @lru_cache()  # LogManager 本身也支持无限实例化
 def get_logger(name: typing.Union[str, None], *, log_level_int: int = None, is_add_stream_handler=True,
+               is_use_loguru_stream_handler=False,
                do_not_use_color_handler=None, log_path=None,
                log_filename=None,
                error_log_filename=None,
