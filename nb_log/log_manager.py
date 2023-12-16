@@ -266,7 +266,7 @@ class LogManager(object):
     # 加*是为了强制在调用此方法时候使用关键字传参，如果以位置传参强制报错，因为此方法后面的参数中间可能以后随时会增加更多参数，造成之前的使用位置传参的代码参数意义不匹配。
     # noinspection PyAttributeOutsideInit
     def get_logger_and_add_handlers(self, log_level_int: int = None, *, is_add_stream_handler=True,
-                                    is_use_loguru_stream_handler=False,
+                                    is_use_loguru_stream_handler:bool=None,
                                     do_not_use_color_handler=None, log_path=None,
                                     log_filename=None, log_file_size: int = None,
                                     log_file_handler_type: int = None,
@@ -279,19 +279,21 @@ class LogManager(object):
         """
        :param log_level_int: 日志输出级别，设置为 1 2 3 4 5，分别对应原生logging.DEBUG(10)，logging.INFO(20)，logging.WARNING(30)，logging.ERROR(40),logging.CRITICAL(50)级别，现在可以直接用10 20 30 40 50了，兼容了。
        :param is_add_stream_handler: 是否打印日志到控制台
-       :param is_use_loguru_stream_handler = False : 是否使用 loguru的控制台打印效果
+       :param is_use_loguru_stream_handler  是否使用 loguru的控制台打印，如果为None，使用 nb_log_config.py的DEFAULUT_IS_USE_LOGURU_STREAM_HANDLER 值。
        :param do_not_use_color_handler :是否禁止使用color彩色日志
        :param log_path: 设置存放日志的文件夹路径,如果不设置，则取nb_log_config.LOG_PATH，如果配置中也没指定则自动在代码所在磁盘的根目录创建/pythonlogs文件夹，
               非windwos下要注意账号权限问题(如果python没权限在根目录建/pythonlogs，则需要手动先创建好)
        :param log_filename: 日志文件名字，仅当log_path和log_filename都不为None时候才写入到日志文件。
        :param error_log_filename :错误日志文件名字，如果文件名不为None，那么error级别以上日志自动写入到这个错误文件。
        :param log_file_size :日志大小，单位M，默认100M
-       :param log_file_handler_type :这个值可以设置为1 2 3 4 5 6，1为使用多进程安全按日志文件大小切割的文件日志
+       :param log_file_handler_type :这个值可以设置为1 2 3 4 5 6 7，1为使用多进程安全按日志文件大小切割的文件日志
               2为多进程安全按天自动切割的文件日志，同一个文件，每天生成一个日志
               3为不自动切割的单个文件的日志(不切割文件就不会出现所谓进程安不安全的问题)
               4为 WatchedFileHandler，这个是需要在linux下才能使用，需要借助lograte外力进行日志文件的切割，多进程安全。
               5 为第三方的concurrent_log_handler.ConcurrentRotatingFileHandler按日志文件大小切割的文件日志，
                 这个是采用了文件锁，多进程安全切割，文件锁在linux上使用fcntl性能还行，win上使用win32con性能非常惨。按大小切割建议不要选第5个个filehandler而是选择第1个。
+              6 为作者发明的高性能多进程安全，同时按大小和时间切割的文件日志handler
+              7 为 loguru的 文件日志记录器
        :param mongo_url : mongodb的连接，为None时候不添加mongohandler
        :param is_add_elastic_handler: 是否记录到es中。
        :param is_add_kafka_handler: 日志是否发布到kafka。
@@ -348,7 +350,9 @@ class LogManager(object):
         self._ding_talk_time_interval = ding_talk_time_interval
         self._mail_handler_config = mail_handler_config
         self._is_add_mail_handler = is_add_mail_handler
-        self._is_use_loguru_stream_handler = is_use_loguru_stream_handler
+        self._is_use_loguru_stream_handler = nb_log_config_default.DEFAULUT_IS_USE_LOGURU_STREAM_HANDLER  if is_use_loguru_stream_handler is None\
+            else is_use_loguru_stream_handler
+
 
         if isinstance(formatter_template, int):
             self._formatter = nb_log_config_default.FORMATTER_DICT[formatter_template]
@@ -522,7 +526,7 @@ class LogManager(object):
 
 @lru_cache()  # LogManager 本身也支持无限实例化
 def get_logger(name: typing.Union[str, None], *, log_level_int: int = None, is_add_stream_handler=True,
-               is_use_loguru_stream_handler=False,
+               is_use_loguru_stream_handler:bool=None,
                do_not_use_color_handler=None, log_path=None,
                log_filename=None,
                error_log_filename=None,
@@ -537,23 +541,26 @@ def get_logger(name: typing.Union[str, None], *, log_level_int: int = None, is_a
     如果太喜欢函数调用了，可以使用这种.
     get_logger_and_add_handlers是LogManager类最常用的公有方法，其他方法使用场景的频率比较低，
     但如果要使用那些低频率功能，还是要亲自调用LogManger类，而不是仅仅只了解此函数的用法。
-       :param name: 日志命名空间，重要。
-       :param log_level_int: 日志输出级别，设置为 1 2 3 4 5，分别对应原生logging.DEBUG(10)，logging.INFO(20)，
-       logging.WARNING(30)，logging.ERROR(40),logging.CRITICAL(50)级别，现在可以直接用10 20 30 40 50了，兼容了。
-
+        :param name 日志命名空间，这个是最重要最难理解的一个入参，很多pythoner到现在还不知道name是什么作用。日志命名空间，意义非常非常非常重要，有些人到现在还不知道 logging.getLogger() 第一个入参的作用，太low了。不同的name的logger可以表现出不同的行为。
+                例如让 aa命名空间的日志打印控制台并且写入到文件，并且只记录info级别以上，让 bb 命名空间的日志仅仅打印控制台，并且打印debug以上级别，
+                这种就可以通过不同的日志命名空间做到。
+        :param log_level_int: 日志输出级别，设置为 1 2 3 4 5，分别对应原生logging.DEBUG(10)，logging.INFO(20)，logging.WARNING(30)，logging.ERROR(40),logging.CRITICAL(50)级别，现在可以直接用10 20 30 40 50了，兼容了。
        :param is_add_stream_handler: 是否打印日志到控制台
+       :param is_use_loguru_stream_handler  是否使用 loguru的控制台打印，如果为None，使用 nb_log_config.py的DEFAULUT_IS_USE_LOGURU_STREAM_HANDLER 值。
        :param do_not_use_color_handler :是否禁止使用color彩色日志
        :param log_path: 设置存放日志的文件夹路径,如果不设置，则取nb_log_config.LOG_PATH，如果配置中也没指定则自动在代码所在磁盘的根目录创建/pythonlogs文件夹，
               非windwos下要注意账号权限问题(如果python没权限在根目录建/pythonlogs，则需要手动先创建好)
-       :param log_filename: 日志的名字，仅当log_path和log_filename都不为None时候才写入到日志文件。
+       :param log_filename: 日志文件名字，仅当log_path和log_filename都不为None时候才写入到日志文件。
        :param error_log_filename :错误日志文件名字，如果文件名不为None，那么error级别以上日志自动写入到这个错误文件。
        :param log_file_size :日志大小，单位M，默认100M
-       :param log_file_handler_type :这个值可以设置为1 2 3 4 5 6 ，1为使用多进程安全按日志文件大小切割的文件日志，
+       :param log_file_handler_type :这个值可以设置为1 2 3 4 5 6 7，1为使用多进程安全按日志文件大小切割的文件日志
               2为多进程安全按天自动切割的文件日志，同一个文件，每天生成一个日志
               3为不自动切割的单个文件的日志(不切割文件就不会出现所谓进程安不安全的问题)
               4为 WatchedFileHandler，这个是需要在linux下才能使用，需要借助lograte外力进行日志文件的切割，多进程安全。
               5 为第三方的concurrent_log_handler.ConcurrentRotatingFileHandler按日志文件大小切割的文件日志，
                 这个是采用了文件锁，多进程安全切割，文件锁在linux上使用fcntl性能还行，win上使用win32con性能非常惨。按大小切割建议不要选第5个个filehandler而是选择第1个。
+              6 为作者发明的高性能多进程安全，同时按大小和时间切割的文件日志handler
+              7 为 loguru的 文件日志记录器
        :param mongo_url : mongodb的连接，为None时候不添加mongohandler
        :param is_add_elastic_handler: 是否记录到es中。
        :param is_add_kafka_handler: 日志是否发布到kafka。
@@ -561,7 +568,7 @@ def get_logger(name: typing.Union[str, None], *, log_level_int: int = None, is_a
        :param ding_talk_time_interval : 时间间隔，少于这个时间不发送钉钉消息
        :param mail_handler_config : 邮件配置
        :param is_add_mail_handler :是否发邮件
-        :param formatter_template :日志模板，如果为数字，则为nb_log_config.py字典formatter_dict的键对应的模板，
+       :param formatter_template :日志模板，如果为数字，则为nb_log_config.py字典formatter_dict的键对应的模板，
                                 1为formatter_dict的详细模板，2为简要模板,5为最好模板。
                                 如果为logging.Formatter对象，则直接使用用户传入的模板。
        :type log_level_int :int

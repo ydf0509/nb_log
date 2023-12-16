@@ -43,6 +43,8 @@ pip install nb_log
 (见1.1.d配置文件说明的 SYS_STD_FILE_NAME 和 PRINT_WRTIE_FILE_NAME)。
 
 
+nb_log 新增支持loguru包来记录日志，原汁原味的loguru，见文档1.10.b
+
 ## 1.1 nb_log 简单使用例子
 
 控制台打印日志：
@@ -95,35 +97,42 @@ logger.error('这条日志会写到普通文件中，同时会单独写入到错
 ### 1.1.b nb_log 的最核心函数 get_logger入参说明
 
 ```doctest
-   :param name: 日志命名空间，意义非常非常非常重要，有些人到现在还不知道 logging.getLogger() 第一个入参的作用，太low了。不同的name的logger可以表现出不同的行为。
+   :param name 日志命名空间，这个是最重要最难理解的一个入参，很多pythoner到现在还不知道name是什么作用。日志命名空间，意义非常非常非常重要，有些人到现在还不知道 logging.getLogger() 第一个入参的作用，太low了。不同的name的logger可以表现出不同的行为。
                 例如让 aa命名空间的日志打印控制台并且写入到文件，并且只记录info级别以上，让 bb 命名空间的日志仅仅打印控制台，并且打印debug以上级别，
                 这种就可以通过不同的日志命名空间做到。
-   :param log_level_int: 日志输出级别，设置为 1 2 3 4 5，分别对应原生logging.DEBUG(10)，logging.INFO(20)，
-          logging.WARNING(30)，logging.ERROR(40),logging.CRITICAL(50)级别，现在可以直接用10 20 30 40 50了，兼容了。
-
-   :param is_add_stream_handler: 是否打印日志到控制台，默认会打印控制台。
-   :param do_not_use_color_handler :是否禁止使用color彩色日志
-   :param log_path: 设置存放日志的文件夹路径,如果不设置，则取nb_log_config.LOG_PATH，如果配置中也没指定则自动在代码所在磁盘的根目录创建/pythonlogs文件夹，
-          非windwos下要注意账号权限问题(如果python没权限在根目录建/pythonlogs，则需要手动先创建好)
-   :param log_filename: 日志的名字，仅当log_path和log_filename都不为None时候才会写入到日志文件。用户不指定 log_filename 默认当作用户不希望把日志写入到文件中。
-   :param error_log_filename :错误日志文件名字，如果文件名不为None，那么error级别以上日志自动写入到这个错误文件。
-   :param log_file_size :日志大小，单位M，默认100M
-   :param log_file_handler_type :这个值可以设置为 1 2 3 4 5 五种值，1为使用多进程安全按日志文件大小切割的文件日志，
-          2为多进程安全按天自动切割的文件日志，同一个文件，每天生成一个日志
-          3为不自动切割的单个文件的日志(不切割文件就不会出现所谓进程安不安全的问题)
-          4为 WatchedFileHandler，这个是需要在linux下才能使用，需要借助lograte外力进行日志文件的切割，多进程安全。
-          5 为第三方的concurrent_log_handler.ConcurrentRotatingFileHandler按日志文件大小切割的文件日志，
-            这个是采用了文件锁，多进程安全切割，文件锁在linux上使用fcntl性能还行，win上使用win32con性能非常惨。按大小切割建议不要选第5个个filehandler而是选择第1个。
-   :param mongo_url : mongodb的连接，为None时候不添加mongohandler
-   :param is_add_elastic_handler: 是否记录到es中。
-   :param is_add_kafka_handler: 日志是否发布到kafka。
-   :param ding_talk_token:钉钉机器人token
-   :param ding_talk_time_interval : 时间间隔，少于这个时间不发送钉钉消息
-   :param mail_handler_config : 邮件配置
-   :param is_add_mail_handler :是否发邮件
-   :param formatter_template :日志模板，如果为数字，则为nb_log_config.py字典formatter_dict的键对应的模板，
-                            1为formatter_dict的详细模板，2为简要模板,5为最好模板。
-                            如果值为logging.Formatter对象，则直接使用用户传入的模板，不从formatter_dict中选择模板。
+        :param log_level_int: 日志输出级别，设置为 1 2 3 4 5，分别对应原生logging.DEBUG(10)，logging.INFO(20)，logging.WARNING(30)，logging.ERROR(40),logging.CRITICAL(50)级别，现在可以直接用10 20 30 40 50了，兼容了。
+       :param is_add_stream_handler: 是否打印日志到控制台
+       :param is_use_loguru_stream_handler  是否使用 loguru的控制台打印，如果为None，使用 nb_log_config.py的DEFAULUT_IS_USE_LOGURU_STREAM_HANDLER 值。
+       :param do_not_use_color_handler :是否禁止使用color彩色日志
+       :param log_path: 设置存放日志的文件夹路径,如果不设置，则取nb_log_config.LOG_PATH，如果配置中也没指定则自动在代码所在磁盘的根目录创建/pythonlogs文件夹，
+              非windwos下要注意账号权限问题(如果python没权限在根目录建/pythonlogs，则需要手动先创建好)
+       :param log_filename: 日志文件名字，仅当log_path和log_filename都不为None时候才写入到日志文件。
+       :param error_log_filename :错误日志文件名字，如果文件名不为None，那么error级别以上日志自动写入到这个错误文件。
+       :param log_file_size :日志大小，单位M，默认100M
+       :param log_file_handler_type :这个值可以设置为1 2 3 4 5 6 7，1为使用多进程安全按日志文件大小切割的文件日志
+              2为多进程安全按天自动切割的文件日志，同一个文件，每天生成一个日志
+              3为不自动切割的单个文件的日志(不切割文件就不会出现所谓进程安不安全的问题)
+              4为 WatchedFileHandler，这个是需要在linux下才能使用，需要借助lograte外力进行日志文件的切割，多进程安全。
+              5 为第三方的concurrent_log_handler.ConcurrentRotatingFileHandler按日志文件大小切割的文件日志，
+                这个是采用了文件锁，多进程安全切割，文件锁在linux上使用fcntl性能还行，win上使用win32con性能非常惨。按大小切割建议不要选第5个个filehandler而是选择第1个。
+              6 为作者发明的高性能多进程安全，同时按大小和时间切割的文件日志handler
+              7 为 loguru的 文件日志记录器
+       :param mongo_url : mongodb的连接，为None时候不添加mongohandler
+       :param is_add_elastic_handler: 是否记录到es中。
+       :param is_add_kafka_handler: 日志是否发布到kafka。
+       :param ding_talk_token:钉钉机器人token
+       :param ding_talk_time_interval : 时间间隔，少于这个时间不发送钉钉消息
+       :param mail_handler_config : 邮件配置
+       :param is_add_mail_handler :是否发邮件
+       :param formatter_template :日志模板，如果为数字，则为nb_log_config.py字典formatter_dict的键对应的模板，
+                                1为formatter_dict的详细模板，2为简要模板,5为最好模板。
+                                如果为logging.Formatter对象，则直接使用用户传入的模板。
+       :type log_level_int :int
+       :type is_add_stream_handler :bool
+       :type log_path :str
+       :type log_filename :str
+       :type mongo_url :str
+       :type log_file_size :int
  
    
 ```
@@ -157,14 +166,20 @@ PRINT_WRTIE_FILE_NAME = Path(sys.path[1]).name + '.print'
 # 如果你设置了环境变量，export SYS_STD_FILE_NAME="my_proj.std"  (linux临时环境变量语法，windows语法自己百度这里不举例),那就优先使用环境变量中设置的文件名字，，而不是nb_log_config.py中设置的名字
 SYS_STD_FILE_NAME = Path(sys.path[1]).name + '.std'   
 
+USE_BULK_STDOUT_ON_WINDOWS = False # 在win上是否每隔0.1秒批量stdout,win的io太差了
+
 DEFAULUT_USE_COLOR_HANDLER = True  # 是否默认使用有彩的日志。
+DEFAULUT_IS_USE_LOGURU_STREAM_HANDLER = False # 是否默认使用 loguru的控制台日志，而非是nb_log的ColorHandler
 DISPLAY_BACKGROUD_COLOR_IN_CONSOLE = True  # 在控制台是否显示彩色块状的日志。为False则不使用大块的背景颜色。
 AUTO_PATCH_PRINT = True  # 是否自动打print的猴子补丁，如果打了猴子补丁，print自动变色和可点击跳转。
+
 SHOW_PYCHARM_COLOR_SETINGS = True  # 有的人很反感启动代码时候提示教你怎么优化pycahrm控制台颜色，可以把这里设置为False
+SHOW_NB_LOG_LOGO = True  # 有的人方案启动代码时候打印nb_log 的logo图形,可以设置为False
 
 DEFAULT_ADD_MULTIPROCESSING_SAFE_ROATING_FILE_HANDLER = False  # 是否默认同时将日志记录到记log文件记事本中，就是用户不指定 log_filename的值，会自动写入日志命名空间.log文件中。
-LOG_FILE_SIZE = 100  # 单位是M,每个文件的切片大小，超过多少后就自动切割
-LOG_FILE_BACKUP_COUNT = 14  # 对同一个日志文件，默认最多备份几个文件，超过就删除了。
+AUTO_WRITE_ERROR_LEVEL_TO_SEPARATE_FILE = False # 自动把错误error级别以上日志写到单独的文件，根据log_filename名字自动生成错误文件日志名字。
+LOG_FILE_SIZE = 1000  # 单位是M,每个文件的切片大小，超过多少后就自动切割
+LOG_FILE_BACKUP_COUNT = 10  # 对同一个日志文件，默认最多备份几个文件，超过就删除了。
 
 LOG_PATH = '/pythonlogs'  # 默认的日志文件夹,如果不写明磁盘名，则是项目代码所在磁盘的根目录下的/pythonlogs
 # LOG_PATH = Path(__file__).absolute().parent / Path("pythonlogs")   #这么配置就会自动在你项目的根目录下创建pythonlogs文件夹了并写入。
@@ -681,6 +696,60 @@ nb_log.get_logger(name=None) 可以记录任意三方包模块的一切日志命
 ## 1.10 nb_log比logurur有10胜
 
 [nb_log比logurur有10个优点方面](https://nb-log-doc.readthedocs.io/zh_CN/latest/articles/c6.html)
+
+
+## 1.10.b nb_log 新增支持loguru包来记录日志，原汁原味的loguru
+
+get_logger 传参 is_use_loguru_stream_handler=True 或者 nb_log_config.py 设置 DEFAULUT_IS_USE_LOGURU_STREAM_HANDLER = True，那么就是使用loguru来打印控制台。
+
+get_logger 传参 log_file_handler_type=7 或者 nb_log_config.py 设置 LOG_FILE_HANDLER_TYPE = 7，那么就使用loguru的文件日志handler来写文件。
+
+
+通过nb_log操作logurur很容易实现 a函数的功能写入a文件，b函数的功能写入b文件。
+
+代码如下：
+
+```python
+import time
+
+import nb_log
+
+logger = nb_log.get_logger('name1', is_use_loguru_stream_handler=True, log_filename='testloguru_file111.log',log_file_handler_type=7)
+logger2 = nb_log.get_logger('name2', is_use_loguru_stream_handler=True, log_filename='testloguru_file222.log',log_file_handler_type=7)
+
+for i in range(10000000000):
+    logger.debug(f'loguru debug 111111')
+    logger2.debug(f'loguru debug 222222')
+
+    logger.info('loguru info 111111')
+    logger2.info('loguru info 222222')
+
+    logger.warning('loguru warn 111111')
+    logger2.warning('loguru warn 22222 ')
+
+    logger.error('loguru err 1111111')
+    logger2.error('loguru err 2222222')
+
+    logger.critical('loguru critical 111111')
+    logger2.critical('loguru caritical 222222')
+
+    time.sleep(1)
+
+import requests
+
+nb_log.get_logger('', is_use_loguru_stream_handler=True)
+
+requests.get('http://www.baidu.com')
+
+
+time.sleep(100000)
+```
+
+之前有人还是质疑怀疑nb_log不如loguru，现在nb_log完全支持了 loguru，那还有什么要质疑的。
+
+就如同有人怀疑funboost框架，那么funboost就增加支持celery整体作为broker，完全使用celery的调度核心来执行函数，还比亲自操作celery简单很多。
+
+作者一直是包容三方框架的，说服不了你，就兼容第三方包。
 
 ## 1.11 关于nb_log日志级别设置，看文档9.5 章节。
 

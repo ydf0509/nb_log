@@ -1,15 +1,17 @@
 import logging
 import os
 import sys
+import typing
 import uuid
-from  nb_log import nb_log_config_default
+from nb_log import nb_log_config_default
+
 
 class LoguruStreamHandler(logging.Handler):
     """
     loguru 的 控制台效果
     """
 
-    def __init__(self, logger_name, sink=sys.stdout):
+    def __init__(self, logger_name, sink: typing.Any = sys.stdout):
         logging.Handler.__init__(self)
         self._logger_name = logger_name
         self._sink = sink

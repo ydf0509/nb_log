@@ -23,11 +23,11 @@ for i in range(10000000000):
 
     time.sleep(1)
 
-# import requests
-#
-# nb_log.get_logger('', is_use_loguru_stream_handler=True)
-#
-# requests.get('http://www.baidu.com')
+import requests
+
+nb_log.get_logger('', is_use_loguru_stream_handler=True)
+
+requests.get('http://www.baidu.com')
 
 
-# time.sleep(100000)
+time.sleep(100000)
