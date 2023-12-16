@@ -20,6 +20,6 @@ logger2.critical('loguru2 caritical ')
 
 import requests
 
-nb_log.get_logger('urllib3', is_use_loguru_stream_handler=True)
+nb_log.get_logger('', is_use_loguru_stream_handler=True)
 
 requests.get('http://www.baidu.com')
