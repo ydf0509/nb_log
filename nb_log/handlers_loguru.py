@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 import uuid
-
+from  nb_log import nb_log_config_default
 
 class LoguruStreamHandler(logging.Handler):
     """
@@ -80,4 +80,4 @@ class LoguruFileHandler(LoguruStreamHandler):
         logger.add(loguru_file,
                    # filter=lambda record: record["extra"]["bind_for"] == self._bind_for,
                    format=self.format,
-                   enqueue=True, rotation="00:00", retention='7 day')
+                   enqueue=True, rotation=f"{nb_log_config_default.LOG_FILE_SIZE} MB", retention=nb_log_config_default.LOG_FILE_BACKUP_COUNT)
