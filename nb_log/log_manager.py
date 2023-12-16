@@ -29,9 +29,14 @@ from nb_log.compatible_logger import CompatibleLogger
 from nb_log.handlers import *
 import deprecated
 
+MANUAL_HANLDER_TYPE = 'manual_hanlder_type'
+HANDLER_TYPE_FILE = 'HANDLER_TYPE_FILE'
+HANDLER_TYPE_ERROR_FILE = 'HANDLER_TYPE_ERROR_FILE'
+HANDLER_TYPE_STREAM = 'HANDLER_TYPE_STREAM'
+
 
 def _get_hanlder_type(handlerx: logging.Handler):
-    return getattr(handlerx, 'manual_hanlder_type', None) or type(handlerx)
+    return getattr(handlerx, MANUAL_HANLDER_TYPE, None) or type(handlerx)
 
 
 # noinspection DuplicatedCode
@@ -74,8 +79,8 @@ def revision_call_handlers(self, record):  # 对logging标准模块打猴子补�
     while c:
         for hdlr in c.handlers:
             hdlr_type = _get_hanlder_type(hdlr)
-            if hdlr_type == logging.StreamHandler:  # REMIND 因为很多handler都是继承自StreamHandler，包括filehandler，直接判断会逻辑出错。
-                hdlr_type = ColorHandler
+            # if hdlr_type == logging.StreamHandler:  # REMIND 因为很多handler都是继承自StreamHandler，包括filehandler，直接判断会逻辑出错。
+            #     hdlr_type = ColorHandler
             found = found + 1
             if record.levelno >= hdlr.level:
                 if hdlr_type not in hdlr_type_set:
@@ -112,13 +117,13 @@ def revision_add_handler(self, hdlr):  # 从添加源头阻止同一个logger添
         hdlrx_type_set = set()
         for hdlrx in self.handlers:
             hdlrx_type = _get_hanlder_type(hdlrx)
-            if hdlrx_type == logging.StreamHandler:  # REMIND 因为很多handler都是继承自StreamHandler，包括filehandler，直接判断会逻辑出错。
-                hdlrx_type = ColorHandler
+            # if hdlrx_type == logging.StreamHandler:  # REMIND 因为很多handler都是继承自StreamHandler，包括filehandler，直接判断会逻辑出错。
+            #     hdlrx_type = ColorHandler
             hdlrx_type_set.add(hdlrx_type)
 
         hdlr_type = _get_hanlder_type(hdlr)
-        if hdlr_type == logging.StreamHandler:
-            hdlr_type = ColorHandler
+        # if hdlr_type == logging.StreamHandler:
+        #     hdlr_type = ColorHandler
         if hdlr_type not in hdlrx_type_set:
             self.handlers.append(hdlr)
     finally:
@@ -329,10 +334,12 @@ class LogManager(object):
         self._do_not_use_color_handler = do_not_use_color_handler
         self._log_path = log_path
         self._log_filename = log_filename
-        self._error_log_filename = error_log_filename or self.generate_error_file_name(log_filename)
+        if error_log_filename is None and nb_log_config_default.AUTO_WRITE_ERROR_LEVEL_TO_SEPARATE_FILE:
+            error_log_filename = self.generate_error_file_name(log_filename)
+        self._error_log_filename = error_log_filename
         self._log_file_size = log_file_size
-        if log_file_handler_type not in (None, 1, 2, 3, 4, 5, 6):
-            raise ValueError("log_file_handler_type的值必须设置为 1 2 3 4 5 6 这几个数字")
+        if log_file_handler_type not in (None, 1, 2, 3, 4, 5, 6,7):
+            raise ValueError("log_file_handler_type的值必须设置为 1 2 3 4 5 6 7这几个数字")
         self._log_file_handler_type = log_file_handler_type or nb_log_config_default.LOG_FILE_HANDLER_TYPE
         self._mongo_url = mongo_url
         self._is_add_elastic_handler = is_add_elastic_handler
@@ -369,7 +376,7 @@ class LogManager(object):
         #     self.logger.removeHandler(hd)
         self.logger.handlers = []
 
-    def remove_handler_by_handler_class(self, handler_class: type):
+    def remove_handler_by_handler_class(self, handler_class: typing.Union[type,str]):
         """
         去掉指定类型的handler
         :param handler_class:logging.StreamHandler,ColorHandler,MongoHandler,ConcurrentRotatingFileHandler,MongoHandler,CompatibleSMTPSSLHandler的一种
@@ -381,7 +388,8 @@ class LogManager(object):
         #     raise TypeError('设置的handler类型不正确')
         all_handlers = copy.copy(self.logger.handlers)
         for handler in all_handlers:
-            if isinstance(handler, handler_class):
+            # if isinstance(handler, handler_class):
+            if _get_hanlder_type(handler) == handler_class:
                 self.logger.removeHandler(handler)  # noqa
 
     def __add_a_hanlder(self, handlerx: logging.Handler):
@@ -389,14 +397,21 @@ class LogManager(object):
         handlerx.setFormatter(self._formatter)
         self.logger.addHandler(handlerx)
 
-    def _judge_logger_has_handler_type(self, handler_type: type):
+    # def _judge_logger_has_handler_type(self, handler_type: typing.Union[type,str]):
+    #     for hr in self.logger.handlers:
+    #         if isinstance(hr, handler_type):
+    #             return True
+
+    def _judge_logger_has_not_handler_type(self, handler_type: typing.Union[type,str]):
         for hr in self.logger.handlers:
-            if isinstance(hr, handler_type):
-                return True
+            if _get_hanlder_type(hr)==handler_type:
+                return False
+        return True
 
     def __add_file_hanlder(self, log_filename, is_error_level_file_handler):
         # REMIND 添加多进程安全切片的文件日志
-        if all([self._log_path, log_filename]):
+        if all([self._log_path, log_filename]) and ((is_error_level_file_handler is False and self._judge_logger_has_not_handler_type(HANDLER_TYPE_FILE))
+            or (is_error_level_file_handler is True and self._judge_logger_has_not_handler_type(HANDLER_TYPE_ERROR_FILE)) ):
             if not os.path.exists(self._log_path):
                 os.makedirs(self._log_path, exist_ok=True)
             log_file = os.path.join(self._log_path, log_filename)
@@ -434,10 +449,16 @@ class LogManager(object):
             elif self._log_file_handler_type == 6:
                 file_handler = BothDayAndSizeRotatingFileHandler(file_name=log_filename, log_path=self._log_path,
                                                                  back_count=nb_log_config_default.LOG_FILE_BACKUP_COUNT, max_bytes=self._log_file_size * 1024 * 1024)
+            elif self._log_file_handler_type == 7:
+                from nb_log.handlers_loguru import LoguruFileHandler
+                logger_name_new = self._logger_name if not is_error_level_file_handler else f'{self._logger_name}_error'
+                file_handler = LoguruFileHandler(logger_name=self._logger_name,sink=log_file)
+
             if is_error_level_file_handler:
-                setattr(file_handler, 'manual_hanlder_type', 'error_file_hanlder_type')
+                setattr(file_handler, MANUAL_HANLDER_TYPE, HANDLER_TYPE_ERROR_FILE)
                 file_handler.setLevel(logging.ERROR)
             else:
+                setattr(file_handler, MANUAL_HANLDER_TYPE, HANDLER_TYPE_FILE)
                 file_handler.setLevel(logging.DEBUG)
             file_handler.setFormatter(self._formatter)
             self.logger.addHandler(file_handler)
@@ -446,14 +467,14 @@ class LogManager(object):
         pass
 
         # REMIND 添加控制台日志
-        if not (self._judge_logger_has_handler_type(ColorHandler) or self._judge_logger_has_handler_type(
-            logging.StreamHandler)) and self._is_add_stream_handler:
+        if self._judge_logger_has_not_handler_type(HANDLER_TYPE_STREAM) and self._is_add_stream_handler:
             handler = ColorHandler() if not self._do_not_use_color_handler else logging.StreamHandler()  # 不使用streamhandler，使用自定义的彩色日志
             if self._is_use_loguru_stream_handler:
                 from nb_log.handlers_loguru import LoguruStreamHandler
-                handler = LoguruStreamHandler(self._logger_name)
+                handler = LoguruStreamHandler(self._logger_name,sink=sys.stdout)
             # handler = logging.StreamHandler()
             handler.setLevel(self._logger_level)
+            setattr(handler,MANUAL_HANLDER_TYPE,HANDLER_TYPE_STREAM)
             self.__add_a_hanlder(handler)
 
         self.__add_file_hanlder(self._log_filename, is_error_level_file_handler=False)
@@ -461,9 +482,9 @@ class LogManager(object):
 
         # REMIND 添加mongo日志。
         # if not self._judge_logger_has_handler_type(MongoHandler) and self._mongo_url:
-        if self._mongo_url:
+        if self._mongo_url :
             from nb_log.handlers_more import MongoHandler
-            if not self._judge_logger_has_handler_type(MongoHandler):
+            if  self._judge_logger_has_not_handler_type(MongoHandler):
                 handler = MongoHandler(self._mongo_url)
                 handler.setLevel(self._logger_level)
                 self.__add_a_hanlder(handler)
@@ -473,7 +494,7 @@ class LogManager(object):
             生产环境使用阿里云 oss日志，不使用这个。
             """
             from nb_log.handlers_more import ElasticHandler
-            if not self._judge_logger_has_handler_type(ElasticHandler):
+            if  self._judge_logger_has_not_handler_type(ElasticHandler):
                 handler = ElasticHandler([nb_log_config_default.ELASTIC_HOST], nb_log_config_default.ELASTIC_PORT)
                 handler.setLevel(self._logger_level)
                 self.__add_a_hanlder(handler)
@@ -482,18 +503,18 @@ class LogManager(object):
         # if self._is_add_kafka_handler:
         if nb_log_config_default.RUN_ENV == 'test' and nb_log_config_default.ALWAYS_ADD_KAFKA_HANDLER_IN_TEST_ENVIRONENT:
             from nb_log.handlers_more import KafkaHandler
-            if not self._judge_logger_has_handler_type(KafkaHandler):
+            if  self._judge_logger_has_not_handler_type(KafkaHandler):
                 handler = KafkaHandler(nb_log_config_default.KAFKA_BOOTSTRAP_SERVERS, )
                 handler.setLevel(self._logger_level)
                 self.__add_a_hanlder(handler)
 
         # REMIND 添加钉钉日志。
-        if not self._judge_logger_has_handler_type(DingTalkHandler) and self._ding_talk_token:
+        if  self._judge_logger_has_not_handler_type(DingTalkHandler) and self._ding_talk_token:
             handler = DingTalkHandler(self._ding_talk_token, self._ding_talk_time_interval)
             handler.setLevel(self._logger_level)
             self.__add_a_hanlder(handler)
 
-        if not self._judge_logger_has_handler_type(CompatibleSMTPSSLHandler) and self._is_add_mail_handler:
+        if  self._judge_logger_has_not_handler_type(CompatibleSMTPSSLHandler) and self._is_add_mail_handler:
             handler = CompatibleSMTPSSLHandler(**self._mail_handler_config.get_dict())
             handler.setLevel(self._logger_level)
             self.__add_a_hanlder(handler)
