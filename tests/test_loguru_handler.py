@@ -21,7 +21,7 @@ for i in range(10000000000):
     logger.critical('loguru critical 111111')
     logger2.critical('loguru caritical 222222')
 
-    time.sleep(1)
+    time.sleep(0.0001)
 
 import requests
 

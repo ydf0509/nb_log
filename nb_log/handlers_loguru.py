@@ -11,6 +11,10 @@ class LoguruStreamHandler(logging.Handler):
     loguru 的 控制台效果
     """
 
+    format = ("<green>{time:YYYY-MMDD HH:mm:ss.SSS}</green> | {extra[namespace]} | "
+              "<level>{level: <8}</level> | "
+              "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>")
+
     def __init__(self, logger_name, sink: typing.Any = sys.stdout):
         logging.Handler.__init__(self)
         self._logger_name = logger_name
@@ -35,9 +39,7 @@ class LoguruStreamHandler(logging.Handler):
             patchers=[],
             extra={},
         )
-        self.format = ("<green>{time:YYYY-MMDD HH:mm:ss.SSS}</green> | {extra[namespace]} | "
-                       "<level>{level: <8}</level> | "
-                       "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>")
+
         self._bind_for = uuid.uuid4()
         self._add_handler(logger, )
         # print(logger._core.handlers)
@@ -56,6 +58,7 @@ class LoguruStreamHandler(logging.Handler):
         # logger.add(self._log_to, filter=lambda record: record["extra"]["namespace"] == self._logger_name, format=self.format)
 
     def emit(self, record):
+        # noinspection PyUnresolvedReferences
         level_str = logging._levelToName[record.levelno]
         # self.logurux.log(level_str, self.format(record))
         self.logurux.log(level_str, record.getMessage())
@@ -79,7 +82,15 @@ class LoguruFileHandler(LoguruStreamHandler):
         part2 = arr[-1]
         loguru_file = f'{part1}.{{time:YYYYMMDD}}.loguru.{part2}'
 
+        # rotation_size = 1024 * 1024  # 1MB
+        rotation_size = f"{nb_log_config_default.LOG_FILE_SIZE} MB"
+        rotation_time = "00:00"  # 每天的 00:00
+
         logger.add(loguru_file,
                    # filter=lambda record: record["extra"]["bind_for"] == self._bind_for,
                    format=self.format,
-                   enqueue=True, rotation=f"{nb_log_config_default.LOG_FILE_SIZE} MB", retention=nb_log_config_default.LOG_FILE_BACKUP_COUNT)
+                   enqueue=True,
+                   # rotation=f"{nb_log_config_default.LOG_FILE_SIZE} MB",
+                   rotation=rotation_time,
+                   retention=nb_log_config_default.LOG_FILE_BACKUP_COUNT
+                   )
