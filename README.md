@@ -43,7 +43,9 @@ pip install nb_log
 (见1.1.d配置文件说明的 SYS_STD_FILE_NAME 和 PRINT_WRTIE_FILE_NAME)。
 
 
-nb_log 新增支持loguru包来记录日志，原汁原味的loguru，见文档1.10.b
+## 1.0.2 nb_log 新增支持loguru包模式来记录日志，原汁原味的loguru来打印控制台和写入日志文件，见文档1.10.b
+
+有了这，还有什么理由还说nb_log不如loguru，loguru只是nb_log的一个子集。
 
 ## 1.1 nb_log 简单使用例子
 
