@@ -15,7 +15,7 @@ if nb_log_config_default.AUTO_PATCH_PRINT:
 
 
 
-
+from nb_log.helpers import generate_error_file_name
 from nb_log import handlers
 from nb_log.log_manager import (LogManager, LoggerLevelSetterMixin, LoggerMixin, LoggerMixinDefaultWithFileHandler,FileLoggerMixin,
                                 MetaTypeLogger,MetaTypeFileLogger,

@@ -29,6 +29,8 @@ from nb_log.compatible_logger import CompatibleLogger
 from nb_log.handlers import *
 import deprecated
 
+from nb_log.helpers import generate_error_file_name
+
 MANUAL_HANLDER_TYPE = 'manual_hanlder_type'
 HANDLER_TYPE_FILE = 'HANDLER_TYPE_FILE'
 HANDLER_TYPE_ERROR_FILE = 'HANDLER_TYPE_ERROR_FILE'
@@ -244,14 +246,7 @@ class LogManager(object):
         else:
             self.logger = logger_cls(logger_name)
 
-    @staticmethod
-    def generate_error_file_name(log_filename: str):
-        if log_filename is None:
-            return None
-        arr = log_filename.split('.')
-        part1 = '.'.join(arr[:-1])
-        part2 = arr[-1]
-        return f'{part1}_error.{part2}'
+
 
     def preset_log_level(self, log_level_int=20):
         """
@@ -337,7 +332,7 @@ class LogManager(object):
         self._log_path = log_path
         self._log_filename = log_filename
         if error_log_filename is None and nb_log_config_default.AUTO_WRITE_ERROR_LEVEL_TO_SEPARATE_FILE:
-            error_log_filename = self.generate_error_file_name(log_filename)
+            error_log_filename = generate_error_file_name(log_filename)
         self._error_log_filename = error_log_filename
         self._log_file_size = log_file_size
         if log_file_handler_type not in (None, 1, 2, 3, 4, 5, 6,7):
