@@ -2,8 +2,8 @@ import time
 
 import nb_log
 
-logger = nb_log.get_logger('name1', is_use_loguru_stream_handler=True, log_level_int=10,log_filename='testloguru_file.log',log_file_handler_type=7)
-logger2 = nb_log.get_logger('name2', is_use_loguru_stream_handler=True, log_level_int=10,log_filename='testloguru_file2.log',log_file_handler_type=7)
+logger = nb_log.get_logger('name1', is_use_loguru_stream_handler=True, log_filename='testloguru_file.log',log_file_handler_type=7)
+logger2 = nb_log.get_logger('name2', is_use_loguru_stream_handler=True, log_filename='testloguru_file2.log',log_file_handler_type=7)
 
 for i in range(10000000000):
     logger.debug(f'loguru debug 111111')
@@ -21,7 +21,7 @@ for i in range(10000000000):
     logger.critical('loguru critical 111111')
     logger2.critical('loguru caritical 222222')
 
-    time.sleep(0.0001)
+    time.sleep(1)
 
 import requests
 
