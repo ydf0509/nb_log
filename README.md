@@ -5,7 +5,8 @@
 
 [nb_log 源码链接](https://github.com/ydf0509/nb_log)
 
-[![image.png](https://i.postimg.cc/ydqgWDRW/image.png)](https://postimg.cc/HJ2shsBC)
+[//]: # ([![image.png]&#40;https://i.postimg.cc/ydqgWDRW/image.png&#41;]&#40;https://postimg.cc/HJ2shsBC&#41;)
+![](https://i.niupic.com/images/2023/12/18/dV9a.png)
 
 
 
@@ -46,6 +47,9 @@ pip install nb_log
 ## 1.0.2 nb_log 新增支持loguru包模式来记录日志，原汁原味的loguru来打印控制台和写入日志文件，见文档1.10.b
 
 有了这，还有什么理由还说nb_log不如loguru，loguru只是nb_log的一个子集。
+
+loguru控制台打印模式截图:
+![](https://i.niupic.com/images/2023/12/18/dVa8.png)
 
 ## 1.1 nb_log 简单使用例子
 
@@ -307,7 +311,7 @@ python在控制台可以同时显示7种颜色，但是同时显示不出来6553
 
 ### 1.2.2c nb_log 五彩日志的效果截图
 
-[![image.png](https://i.postimg.cc/ydqgWDRW/image.png)](https://postimg.cc/HJ2shsBC)
+![](https://i.niupic.com/images/2023/12/18/dV9a.png)
 
 
 ## 1.3 nb_log 支持pycharm控制台点击日志精确跳转到打印日志的文件和行号
