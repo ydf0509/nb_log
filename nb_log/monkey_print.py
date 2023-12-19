@@ -19,13 +19,17 @@ WORD_COLOR = 37
 
 
 def stdout_write(msg: str):
-    sys.stdout.write(msg)
-    sys.stdout.flush()
+    if sys.stdout:
+        sys.stdout.write(msg)
+        sys.stdout.flush()
 
 
 def stderr_write(msg: str):
-    sys.stderr.write(msg)
-    sys.stderr.flush()
+    if sys.stderr:
+        sys.stderr.write(msg)
+        sys.stderr.flush()
+    else:
+        stdout_write(msg)
 
 
 print_wrtie_file_name = os.environ.get('PRINT_WRTIE_FILE_NAME', None) or nb_log_config_default.PRINT_WRTIE_FILE_NAME
