@@ -743,9 +743,11 @@ for i in range(10000000000):
 
 import requests
 
-nb_log.get_logger('', is_use_loguru_stream_handler=True)
+# 通过这样,给相应命名空间加上loguru的handler,使loguru能自动记录django flask requests urllib3的logging日志,
+# 直接使用loguru来记录三方库的日志很难,但使用nb_log的loguru模式来实现记录第三方库的logging日志,却非常简单.
+nb_log.get_logger('urllib3', is_use_loguru_stream_handler=True)
 
-requests.get('http://www.baidu.com')
+requests.get('http://www.baidu.com')  
 
 
 time.sleep(100000)

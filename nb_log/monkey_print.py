@@ -25,6 +25,7 @@ def stdout_write(msg: str):
 
 
 def stderr_write(msg: str):
+    '''打包exe运行或者做成windwos services 这些情况下情况下,sys.stderr是None,None.write会报错'''
     if sys.stderr:
         sys.stderr.write(msg)
         sys.stderr.flush()
