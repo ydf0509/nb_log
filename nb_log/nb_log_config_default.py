@@ -83,8 +83,10 @@ DEFAULUT_IS_USE_LOGURU_STREAM_HANDLER = False # 是否默认使用 loguru的控�
 DISPLAY_BACKGROUD_COLOR_IN_CONSOLE = True  # 在控制台是否显示彩色块状的日志。为False则不使用大块的背景颜色。
 AUTO_PATCH_PRINT = True  # 是否自动打print的猴子补丁，如果打了猴子补丁，print自动变色和可点击跳转。
 
+
 SHOW_PYCHARM_COLOR_SETINGS = True  # 有的人很反感启动代码时候提示教你怎么优化pycahrm控制台颜色，可以把这里设置为False
 SHOW_NB_LOG_LOGO = True  # 有的人方案启动代码时候打印nb_log 的logo图形,可以设置为False
+WHITE_COLOR_CODE = 37  #  不同pycharm版本和主题,有的对白颜色生效的代号是97,有的是37, 这里可以设置 37和97, 如2023 pycahrm的console color,白颜色捕获的是97,如果这里写37,调节pycharm颜色没法调.
 
 DEFAULT_ADD_MULTIPROCESSING_SAFE_ROATING_FILE_HANDLER = False  # 是否默认同时将日志记录到记log文件记事本中，就是用户不指定 log_filename的值，会自动写入日志命名空间.log文件中。
 AUTO_WRITE_ERROR_LEVEL_TO_SEPARATE_FILE = False # 自动把错误error级别以上日志写到单独的文件，根据log_filename名字自动生成错误文件日志名字。

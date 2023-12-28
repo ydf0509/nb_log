@@ -15,7 +15,7 @@ from nb_log import nb_log_config_default
 from nb_log.rotate_file_writter import OsFileWritter
 
 print_raw = print
-WORD_COLOR = 37
+WORD_COLOR = nb_log_config_default.WHITE_COLOR_CODE
 
 
 def stdout_write(msg: str):
@@ -58,8 +58,7 @@ def _print_with_file_line(*args, sep=' ', end='\n', file=None, flush=True, sys_g
         # sys.stdout.write(f'"{__file__}:{sys._getframe().f_lineno}"    {x}\n')
         if nb_log_config_default.DEFAULUT_USE_COLOR_HANDLER:
             if nb_log_config_default.DISPLAY_BACKGROUD_COLOR_IN_CONSOLE:
-                stdout_write(
-                    f'\033[0;34m{now_str}  "{file_name}:{line}" -{fun}-[print]-  \033[0;{WORD_COLOR};44m{args_str[:-1]}\033[0m \033[0m\n')  # 36  93 96 94
+                stdout_write(f'\033[0;34m{now_str}  "{file_name}:{line}" -{fun}-[print]-  \033[0;{WORD_COLOR};44m{args_str[:-1]}\033[0m \033[0m\n')  # 36  93 96 94
             else:
                 stdout_write(
                     f'\033[0;{WORD_COLOR};34m{now_str}  "{file_name}:{line}" -{fun}-[print]-  {args_str[:-1]}  \033[0m\n')  # 36  93 96 94

@@ -13,12 +13,9 @@ print(filepath)
 extra_requires = {'all': ['pymongo==4.3.3', 'elasticsearch', 'kafka-python==2.0.2','loguru' ], }
 
 install_requires = [
-
     'tomorrow3==1.1.0',
     'concurrent-log-handler==0.9.23',
-
     'requests',
-    'flask',
     'python-json-logger==0.1.10',
     'nb_filelock',
     'service-identity',
@@ -32,7 +29,7 @@ install_requires = [
 print(f'nb_log install_requires:{install_requires}')
 setup(
     name='nb_log',  #
-    version="11.6",
+    version="11.7",
     description=(
         'very sharp color display,monkey patch bulitin print  and high-performance multiprocess safe roating file handler,other handlers includeing dintalk ,email,kafka,elastic and so on '
     ),

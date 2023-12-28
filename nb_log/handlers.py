@@ -159,6 +159,7 @@ class ColorHandler(logging.Handler):
         # print(repr(msg_color))
         return msg_color
 
+
     def __build_color_msg_with_backgroud_color3333(self, record_level, record_copy: logging.LogRecord, ):
         background_color = ''
         complete_color = ''
