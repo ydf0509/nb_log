@@ -58,10 +58,7 @@ class LoguruStreamHandler(logging.Handler):
         # logger.add(self._log_to, filter=lambda record: record["extra"]["namespace"] == self._logger_name, format=self.format)
 
     def emit(self, record):
-        # noinspection PyUnresolvedReferences
-        level_str = logging._levelToName[record.levelno]
-        # self.logurux.log(level_str, self.format(record))
-        self.logurux.log(level_str, record.getMessage())
+        self.logurux.opt(depth=6, exception=record.exc_info).log(record.levelname, record.getMessage())
 
 
 class LoguruFileHandler(LoguruStreamHandler):
