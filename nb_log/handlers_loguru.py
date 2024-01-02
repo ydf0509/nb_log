@@ -21,12 +21,6 @@ class LoguruStreamHandler(logging.Handler):
         self._sink = sink
         from loguru._logger import Logger, Core
 
-        # print(logger._core.handlers)
-        # try:
-        #     logger.remove(0)
-        # except ValueError as e:
-        #     pass
-        # print(e)
         logger = Logger(
             core=Core(),
             exception=None,
@@ -46,16 +40,13 @@ class LoguruStreamHandler(logging.Handler):
         self.logurux = logger.bind(namespace=logger_name,
                                    # bind_for = self._bind_for
                                    )
-        # options_list = list(self.logurux._options)
-        # options_list[1] = 6  # 转化是为了显示实际的日志发生处，而不是封装loguru的emit方法处。
-        # self.logurux._options = tuple(options_list)
-        # print(logger_name, self.logurux._core.handlers)
+
 
     def _add_handler(self, logger, ):
         logger.add(self._sink,
                    # filter=lambda record: record["extra"]["bind_for"] == self._bind_for,
                    format=self.format)
-        # logger.add(self._log_to, filter=lambda record: record["extra"]["namespace"] == self._logger_name, format=self.format)
+
 
     def emit(self, record):
         self.logurux.opt(depth=6, exception=record.exc_info).log(record.levelname, record.getMessage())
