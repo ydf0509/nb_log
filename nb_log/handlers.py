@@ -436,7 +436,8 @@ class CompatibleSMTPSSLHandler(handlers.SMTPHandler):
                 self._current_time = time.time()
                 Thread(target=self.__emit, args=(record,)).start()
             else:
-                very_nb_print(f' 邮件发送太频繁间隔不足60分钟，此次不发送这个邮件内容： {record.msg}     ')
+                # very_nb_print(f' 邮件发送太频繁间隔不足60分钟，此次不发送这个邮件内容： {record.msg}     ')
+                very_nb_print(f' 邮件发送太频繁间隔不足 {self._time_interval}  秒 ，此次不发送这个邮件内容： {record.msg}     ')
 
     # noinspection PyUnresolvedReferences
     def __emit(self, record):
