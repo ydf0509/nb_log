@@ -661,3 +661,18 @@ class MetaTypeFileLogger(type):
     def __init__(cls, name, bases, attrs):
         super().__init__(name, bases, attrs)
         cls.logger = get_logger(name, log_filename=f'{name}.log')
+
+
+def logger_catch(logger: logging.Logger,reraise: bool = True,show_trace_back=True):
+    def _inner(f):
+        def __inner(*args, **kwargs):
+            try:
+                res =  f(*args, **kwargs)
+            except Exception as e:
+                logger.error(f'{f} , {args} ,{kwargs} , {e}',exc_info=show_trace_back)
+                if reraise:
+                    raise e
+            else:
+                return res
+        return __inner
+    return _inner

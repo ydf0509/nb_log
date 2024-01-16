@@ -1,3 +1,4 @@
+import logging
 
 
 def generate_error_file_name(log_filename: str):
@@ -12,3 +13,6 @@ def generate_error_file_name(log_filename: str):
     part1 = '.'.join(arr[:-1])
     part2 = arr[-1]
     return f'{part1}.error.{part2}'
+
+
+

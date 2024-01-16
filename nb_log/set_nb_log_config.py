@@ -12,7 +12,15 @@ from nb_log import nb_log_config_default
 from nb_log.simple_print import sprint
 from shutil import copyfile
 
-sprint(f'当前项目的根目录是：\n {sys.path[1]}')  # 如果获取的项目根目录不正确，请不要在python代码硬编码操作sys.path。pycahrm自动给项目根目录加了PYTHONPATh，如果是shell命令行运行python命令前脚本前先在会话中设置临时环境变量 export PYTHONPATH=项目根目录
+def _get_show_import_nb_log_config_path():
+    try:
+        import nb_log_config
+        return nb_log_config.SHOW_IMPORT_NB_LOG_CONFIG_PATH
+    except Exception as e:
+        return True
+
+if _get_show_import_nb_log_config_path():
+    sprint(f'当前项目的根目录是：\n {sys.path[1]}',only_print_on_main_process=True)  # 如果获取的项目根目录不正确，请不要在python代码硬编码操作sys.path。pycahrm自动给项目根目录加了PYTHONPATh，如果是shell命令行运行python命令前脚本前先在会话中设置临时环境变量 export PYTHONPATH=项目根目录
 
 
 def show_nb_log_config():
@@ -33,7 +41,8 @@ def use_config_form_nb_log_config_module():
         importlib.reload(m)  # 这行是防止用户在导入框架之前，写了 from nb_log_config import xx 这种，导致 m.__dict__.items() 不包括所有配置变量了。
         msg = f'nb_log包 读取到\n "{m.__file__}:1" 文件里面的变量作为优先配置了\n'
         # nb_print(msg)
-        sprint(msg, only_print_on_main_process=True)
+        if _get_show_import_nb_log_config_path():
+            sprint(msg, only_print_on_main_process=True)
         for var_namex, var_valuex in m.__dict__.items():
             if var_namex.isupper():
                 setattr(nb_log_config_default, var_namex, var_valuex)

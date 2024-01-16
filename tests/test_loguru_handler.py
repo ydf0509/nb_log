@@ -1,5 +1,5 @@
 import time
-
+from loguru import logger as lg
 import nb_log
 
 logger = nb_log.get_logger('name1', is_use_loguru_stream_handler=True, log_filename='testloguru_file1.log', log_file_handler_type=7)
@@ -36,8 +36,19 @@ nb_log.get_logger('urllib3', is_use_loguru_stream_handler=True)
 requests.get('http://www.baidu.com')
 
 
-try:
-    1/0
-except Exception as e:
-    logger.exception(e)
+def errorf(x,y):
+    try:
+        x/y
+    except Exception as e:
+        logger.exception(e)
+
+
+def error_req(url):
+    try:
+        requests.get(url)
+    except Exception as e:
+        lg.exception(e)
+
+errorf(2,0)
+error_req('http://www.baidu.com2')
 time.sleep(100000)
