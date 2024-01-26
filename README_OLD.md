@@ -202,7 +202,7 @@ from nb_log import LogManager, get_logger
 # 如果需要修改切割大小和文件数量，在当前python项目根目录自动生成的nb_log_config.py文件中指定。
 
 # logger = LogManager('ha').get_logger_and_add_handlers(is_add_stream_handler=True,
-# log_filename='ha.log')
+# _log_filename='ha.log')
 # get_logger这个和上面一句一样。但LogManager不只有get_logger_and_add_handlers一个公有方法。
 logger = get_logger(is_add_stream_handler=True, log_filename='ha.log')
 

@@ -1,7 +1,7 @@
 # import nb_log
 # import time
 #
-# logger = nb_log.get_logger('dsdsd',log_filename='dsdsd.log',is_add_stream_handler=False)
+# logger = nb_log.get_logger('dsdsd',_log_filename='dsdsd.log',is_add_stream_handler=False)
 #
 #
 # t1 = time.perf_counter()

@@ -18,7 +18,7 @@ from nb_log import get_logger
 
 class 废物日志类:
     def __init__(self,name):
-        self.logger = get_logger(name, log_filename='废物日志.log')
+        self.logger = get_logger(name, _log_filename='废物日志.log')
 
     def debug(self, msg):
         self.logger.debug(msg, extra={'sys_getframe_n': 3})  # 第 x1 行

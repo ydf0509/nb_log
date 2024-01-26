@@ -45,9 +45,9 @@
 # # from  nb_log import get_logger
 # #
 # #
-# # logger_foo = get_logger('foo',log_filename='foo.log')
+# # logger_foo = get_logger('foo',_log_filename='foo.log')
 # #
-# # logger_bar = get_logger('bar',log_filename='bar.log')
+# # logger_bar = get_logger('bar',_log_filename='bar.log')
 # #
 # #
 # # logger_foo.debug('这句话将会写入foo.log文件')

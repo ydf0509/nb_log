@@ -5,7 +5,7 @@
 建造者模式一键创建返回添加了各种好用的handler的原生官方Logger对象，兼容性扩展性极强。
 使用观察者模式按照里面的例子可以扩展各种有趣的handler。
 使用方式为  logger = LogManager('logger_name').get_and_add_handlers(log_level_int=1, is_add_stream_handler=True,
- log_path=None, log_filename=None, log_file_size=10,mongo_url=None,formatter_template=2)
+ log_path=None, _log_filename=None, log_file_size=10,mongo_url=None,formatter_template=2)
 
 
 concurrent_log_handler的ConcurrentRotatingFileHandler解决了logging模块自带的RotatingFileHandler多进程切片错误，
@@ -663,16 +663,71 @@ class MetaTypeFileLogger(type):
         cls.logger = get_logger(name, log_filename=f'{name}.log')
 
 
-def logger_catch(logger: logging.Logger,reraise: bool = True,show_trace_back=True):
+def logger_catch(logger: logging.Logger, reraise: bool = True, show_trace_back=True):
     def _inner(f):
         def __inner(*args, **kwargs):
             try:
-                res =  f(*args, **kwargs)
+                res = f(*args, **kwargs)
             except Exception as e:
-                logger.error(f'{f} , {args} ,{kwargs} , {e}',exc_info=show_trace_back)
+                logger.error(f'{f} , {args} ,{kwargs} , {e}', exc_info=show_trace_back)
                 if reraise:
                     raise e
             else:
                 return res
+
         return __inner
+
     return _inner
+
+
+@lru_cache()
+def build_exception_logger():
+    print('_build_exception_logger')
+    return get_logger('LoggedException', log_filename='exception.log', is_add_stream_handler=False)
+
+
+class LoggedException(Exception):
+    """
+    抛出异常的同时,自动记录日志到日志文件中,这样就不需要每次都raise,并写日志日路,分两行来写了.
+    try :
+        1/0
+    except Exception as e:
+        raise LoggedException(message='有问题',)
+    """
+
+    def __init__(self, message: str, logger_obj=None, exc_info=True):
+        """
+
+        :param message:
+        :param logger_obj: 传递logger对象,使用指定的logger来记录日志,那就log_filename不起作用
+        :param exc_info: 日志是否记录仪详细报错堆栈
+        """
+        super().__init__('\n\n' + message)
+        self._exc_info = exc_info
+        self._logger_obj = logger_obj
+        self._log_exception()
+
+    def _log_exception(self):
+        logger = self._logger_obj or build_exception_logger()
+        logger.error(self, exc_info=self._exc_info)
+
+
+def logged_raise(e: BaseException, logger_obj=None, exc_info=True):
+    """
+    try :
+        1/0
+    except Exception as e:
+        logged_raise(ZeroDivisionError('0不能是被除数'))
+
+    :param e:
+    :param logger_obj:
+    :param exc_info:
+    :return:
+    """
+    logger = logger_obj or build_exception_logger()
+    msg = str(e)
+    if exc_info:
+        traceback_list = traceback.format_tb(e.__traceback__)
+        msg += '\n'.join(traceback_list)
+    logger.error(f'\n\n {type(e)} {msg}', exc_info=exc_info)
+    raise e

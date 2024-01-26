@@ -8,7 +8,7 @@ logger = get_logger('abcdcd',
                     )
 
 # logger = get_logger('abcdcd',
-#                     log_filename='f4b.log',
+#                     _log_filename='f4b.log',
 #                     error_log_filename='f4b_error.log')
 
 logger.info('正常日志入普通文件和错误文件')

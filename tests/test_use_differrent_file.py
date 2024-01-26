@@ -26,8 +26,8 @@
 #
 #
 # # # nb_log 写入不同的文件是根据日志命名空间 name 来区分的。方便。
-# # logger_a = get_logger('a',log_filename='a.log',log_path='./log_files')
-# # logger_b = get_logger('b',log_filename='b.log',log_path='./log_files')
+# # logger_a = get_logger('a',_log_filename='a.log',log_path='./log_files')
+# # logger_b = get_logger('b',_log_filename='b.log',log_path='./log_files')
 # # logger_a.info("嘻嘻a")
 # # logger_b.info("嘻嘻b")
 # #
@@ -46,8 +46,8 @@
 
 # from nb_log import get_logger,LogManager
 #
-# # logger_a = get_logger('a',log_filename='ax.log',log_path='./log_files')
-# logger_a = LogManager('a').get_logger_and_add_handlers(log_filename='ax2.log',log_path='./log_files')
+# # logger_a = get_logger('a',_log_filename='ax.log',log_path='./log_files')
+# logger_a = LogManager('a').get_logger_and_add_handlers(_log_filename='ax2.log',log_path='./log_files')
 # logger_a.info("嘻嘻a")
 
 
