@@ -138,7 +138,7 @@ def revision_setLevel(self, level):
     """
     level2 = LogManager.preset_name__level_map.get(self.name, level)
     if level2 != level:
-        very_nb_print(f'日志命名空间 {self.name} 已经锁定了为了 {level2} 级别 ,后续不可以更改为 {level} 级别')
+        very_nb_print(f'日志命名空间 {self.name} 锁定了为了 {level2} 级别 ,后续不可以更改为 {level} 级别')
     self.level = _checkLevel(level2)
     if sys.version_info.minor >= 7:  # python3.6 没有 _clear_cache 方法
         self.manager._clear_cache()
@@ -255,6 +255,7 @@ class LogManager(object):
         """
         check_log_level(log_level_int)
         self.preset_name__level_map[self._logger_name] = log_level_int
+        self.logger.setLevel(log_level_int)
 
     # 加*是为了强制在调用此方法时候使用关键字传参，如果以位置传参强制报错，因为此方法后面的参数中间可能以后随时会增加更多参数，造成之前的使用位置传参的代码参数意义不匹配。
     # noinspection PyAttributeOutsideInit
