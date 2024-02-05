@@ -19,7 +19,7 @@ install_requires = [
     'python-json-logger==0.1.10',
     'nb_filelock',
     'service-identity',
-    'deprecated',
+    'deprecated==1.2.14',
     'chained_mode_time_tool',
 ]
 
@@ -29,7 +29,7 @@ install_requires = [
 print(f'nb_log install_requires:{install_requires}')
 setup(
     name='nb_log',  #
-    version="12.2",
+    version="12.3",
     description=(
         'very sharp color display,monkey patch bulitin print  and high-performance multiprocess safe roating file handler,other handlers includeing dintalk ,email,kafka,elastic and so on '
     ),
