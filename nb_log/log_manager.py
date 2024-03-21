@@ -212,6 +212,13 @@ def get_all_logging_name():
     return logger_names
 
 
+def get_all_handlers():
+    logger_names = get_all_logging_name()
+    for name in list(logger_names) + ['root', None]:
+        logx = logging.getLogger(name)
+        print(name, logx.level, logx.handlers)
+
+
 LOG_LEVEL_LIST = [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL]  # 就是 10 20 30 40 50
 
 
@@ -228,6 +235,7 @@ class LogManager(object):
     logger_name_list = []
     logger_list = []
     preset_name__level_map = dict()
+    logger_name__logger_cls_obj_map = {}
 
     @staticmethod
     def get_all_logging_name():
@@ -244,7 +252,11 @@ class LogManager(object):
         if logger_cls == logging.Logger:
             self.logger = logging.getLogger(logger_name)
         else:
-            self.logger = logger_cls(logger_name)
+            if logger_name not in self.logger_name__logger_cls_obj_map:
+                self.logger = logger_cls(logger_name)
+                self.logger_name__logger_cls_obj_map[logger_name] = self.logger
+            else:
+                self.logger = self.logger_name__logger_cls_obj_map[logger_name]
 
     def preset_log_level(self, log_level_int=20):
         """
@@ -254,8 +266,16 @@ class LogManager(object):
         :return:
         """
         check_log_level(log_level_int)
-        self.preset_name__level_map[self._logger_name] = log_level_int
+        self.preset_name__level_map[self._logger_name or 'root'] = log_level_int
         self.logger.setLevel(log_level_int)
+
+    def prevent_add_handlers(self):
+        """对命名空间设置阻止添加handlers"""
+
+        def _add_handler(handler: logging.Handler):
+            pass
+
+        self.logger.addHandler = _add_handler
 
     # 加*是为了强制在调用此方法时候使用关键字传参，如果以位置传参强制报错，因为此方法后面的参数中间可能以后随时会增加更多参数，造成之前的使用位置传参的代码参数意义不匹配。
     # noinspection PyAttributeOutsideInit

@@ -59,7 +59,7 @@ if not LOG_PATH:
         LOG_PATH = Path(home_path) / Path('pythonlogs')  # linux mac 权限很严格，非root权限不能在/pythonlogs写入，修改一下默认值。
 # print('LOG_PATH:',LOG_PATH)
 
-LOG_FILE_HANDLER_TYPE = 6  # 1 2 3 4 5 6 7
+LOG_FILE_HANDLER_TYPE = 6  # 1 2 3 4 5 6 7   # nb_log 的日志切割,全都追求多进程下切割正常.
 """
 LOG_FILE_HANDLER_TYPE 这个值可以设置为 1 2 3 4 5 四种值，
 1为使用多进程安全按日志文件大小切割的文件日志,这是本人实现的批量写入日志，减少操作文件锁次数，测试10进程快速写入文件，win上性能比第5种提高了100倍，linux提升5倍
