@@ -19,15 +19,10 @@ concurrent_log_handler的ConcurrentRotatingFileHandler解决了logging模块自�
 使极限多进程安全切片的文件日志写入性能在win下提高100倍，linux下提高10倍。
 
 """
-import logging
-import multiprocessing
-import typing
 from functools import lru_cache
 from logging import FileHandler, _checkLevel  # noqa
-from nb_log import nb_log_config_default, compatible_logger  # noqa
-from nb_log.compatible_logger import CompatibleLogger
+from nb_log import nb_log_config_default  # noqa
 from nb_log.handlers import *
-import deprecated
 
 from nb_log.helpers import generate_error_file_name
 
@@ -228,6 +223,7 @@ class LogManager(object):
     logger_name_list = []
     logger_list = []
     preset_name__level_map = dict()
+    logger_name__logger_cls_obj_map = {}
 
     @staticmethod
     def get_all_logging_name():
@@ -244,7 +240,12 @@ class LogManager(object):
         if logger_cls == logging.Logger:
             self.logger = logging.getLogger(logger_name)
         else:
-            self.logger = logger_cls(logger_name)
+            if logger_name not in self.logger_name__logger_cls_obj_map:
+                logger = logger_cls(logger_name)
+                self.logger_name__logger_cls_obj_map[logger_name] = logger
+            else:
+                logger = self.logger_name__logger_cls_obj_map[logger_name]
+            self.logger = logger
 
     def preset_log_level(self, log_level_int=20):
         """

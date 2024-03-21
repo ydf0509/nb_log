@@ -21,7 +21,7 @@ from nb_log.log_manager import (LogManager, LoggerLevelSetterMixin, LoggerMixin,
                                 MetaTypeLogger,MetaTypeFileLogger,
                                 get_logger, get_logger_with_filehanlder,
                                 )
-from nb_log.compatible_logger import CompatibleLogger
+from nb_log.loggers_imp.compatible_logger import CompatibleLogger
 
 simple_logger = get_logger('simple')
 defaul_logger = LogManager('defaul').get_logger_and_add_handlers(do_not_use_color_handler=True, formatter_template=7)
