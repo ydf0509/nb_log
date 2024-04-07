@@ -289,7 +289,7 @@ class LogManager(object):
                                     ding_talk_token=None, ding_talk_time_interval=60,
                                     mail_handler_config: MailHandlerConfig = MailHandlerConfig(),
                                     is_add_mail_handler=False,
-                                    formatter_template: typing.Union[int, logging.Formatter] = None):
+                                    formatter_template: typing.Union[int, logging.Formatter] = None) -> logging.Logger:
         """
        :param log_level_int: 日志输出级别，设置为 1 2 3 4 5，分别对应原生logging.DEBUG(10)，logging.INFO(20)，logging.WARNING(30)，logging.ERROR(40),logging.CRITICAL(50)级别，现在可以直接用10 20 30 40 50了，兼容了。
        :param is_add_stream_handler: 是否打印日志到控制台
