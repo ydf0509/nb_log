@@ -6,7 +6,8 @@
 [nb_log 源码链接](https://github.com/ydf0509/nb_log)
 
 [//]: # ([![image.png]&#40;https://i.postimg.cc/ydqgWDRW/image.png&#41;]&#40;https://postimg.cc/HJ2shsBC&#41;)
-![](https://i.niupic.com/images/2023/12/18/dV9a.png)
+
+[![pkFSfc8.png](https://s21.ax1x.com/2024/04/29/pkFSfc8.png)](https://imgse.com/i/pkFSfc8)
 
 
 
@@ -49,7 +50,7 @@ pip install nb_log
 有了这，还有什么理由还说nb_log不如loguru，loguru只是nb_log的一个子集。
 
 loguru控制台打印模式截图:
-![](https://i.niupic.com/images/2023/12/18/dVa8.png)
+[![pkFShjS.png](https://s21.ax1x.com/2024/04/29/pkFShjS.png)](https://imgse.com/i/pkFShjS)
 
 ## 1.1 nb_log 简单使用例子
 
@@ -61,7 +62,7 @@ print('导入nb_log之前的print是普通的')
 from nb_log import get_logger
 
 logger = get_logger('lalala',)   # get_logger 只有一个name是必传递的，其他的参数不是必传。
-# logger = get_logger('lalala',_log_filename='lalala.log',formatter_template=5,log_file_handler_type=2) # get_logger有很多其他入参可以自由定制logger。
+# logger = get_logger('lalala',log_filename='lalala.log',formatter_template=5,log_file_handler_type=2) # get_logger有很多其他入参可以自由定制logger。
 
 
 logger.debug(f'debug是绿色，说明是调试的，代码ok ')
@@ -311,7 +312,8 @@ python在控制台可以同时显示7种颜色，但是同时显示不出来6553
 
 ### 1.2.2c nb_log 五彩日志的效果截图
 
-![](https://i.niupic.com/images/2023/12/18/dV9a.png)
+
+[![pkFSO3V.png](https://s21.ax1x.com/2024/04/29/pkFSO3V.png)](https://imgse.com/i/pkFSO3V)
 
 
 ## 1.3 nb_log 支持pycharm控制台点击日志精确跳转到打印日志的文件和行号
@@ -362,6 +364,12 @@ logger_bb.warning('嘿嘿嘿')
 logger_cc.debug('嘻嘻')
 # logger_cc的日志会写在cc.log中，和logger_aa的日志是不同的文件。
 ```
+
+python命名空间非常重要,有的人太笨了,说设置了级别为logging.WARN,但是debug还是被记录,就是因为他牛头不对马嘴,忽视了是对什么命名空间设置的日志级别,debug日志又是什么命名空间的日志打印出来的
+
+搜索一下文档的"命名空间"4个字,文档里面谈了几百次这个概念了,有的人logging基础太差了,令人吐血,需要在nb_log文档来讲,这样导致nb_log文档很长.
+
+
 
 ## 1.7 对内置looging包打了猴子补丁，使日志永远不会使用同种handler重复记录 ，例如，原生的
 
