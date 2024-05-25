@@ -50,7 +50,7 @@ class CompatibleLogger(logging.Logger):
     说明我的思维和python官方人员想到一起去了，3.9以后的logging包debug ingo error等 支持修改查找调用堆栈的深度层级，防止用户封装了debug info warnring 等后，日志模板获取的 文件名 行号是错误深度层级的。。
 
     """
-    def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False):
+    def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False,**kwargs):
         """
         Low-level logging routine which creates a LogRecord and then calls
         all the handlers of this logger to handle the record.
