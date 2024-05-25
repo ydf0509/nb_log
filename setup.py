@@ -21,6 +21,7 @@ install_requires = [
     'service-identity',
     'deprecated==1.2.14',
     'chained_mode_time_tool',
+    'nb_libs'
 ]
 
 # if os.name == 'nt':
