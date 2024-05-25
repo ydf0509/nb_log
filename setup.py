@@ -30,7 +30,7 @@ install_requires = [
 print(f'nb_log install_requires:{install_requires}')
 setup(
     name='nb_log',  #
-    version="12.6",
+    version="12.7",
     description=(
         'very sharp color display,monkey patch bulitin print  and high-performance multiprocess safe roating file handler,other handlers includeing dintalk ,email,kafka,elastic and so on '
     ),

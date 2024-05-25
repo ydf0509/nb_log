@@ -290,7 +290,7 @@ class ElasticHandler000(logging.Handler):
             log_info_dict['msg'] = str(record.msg)
             self.__add_task_to_bulk({
                 "_index": f'{self._index_prefix}{record.name.lower()}',
-                "_type": f'{self._index_prefix}{record.name.lower()}',
+                # "_type": '_doc',  # elastic 7 服务端之后不要传递 type了.
                 "_source": log_info_dict
             })
 
@@ -388,7 +388,7 @@ class ElasticHandler(logging.Handler):
             log_info_dict['script'] = self.script_name
             self.__add_task_to_bulk({
                 "_index": f'{self._index_prefix}{record.name.lower()}',
-                "_type": f'{self._index_prefix}{record.name.lower()}',
+                # "_type": f'_doc',    # es7 服务端之后不支持_type设置
                 "_source": log_info_dict
             })
 
