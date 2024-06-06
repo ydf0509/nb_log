@@ -4,12 +4,12 @@ from  loguru import logger
 from concurrent.futures import ProcessPoolExecutor
 
 
-logger.remove(handler_id=None)
+# logger.remove(handler_id=None)
 
 logger.add("./log_files/loguru-test1.log",enqueue=True,rotation="10000 KB")
 
 def f():
-    for i in range(200000):
+    for i in range(2):
         logger.debug("测试多进程日志切割")
         logger.info("测试多进程日志切割")
         logger.warning("测试多进程日志切割")

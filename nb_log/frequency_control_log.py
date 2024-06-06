@@ -2,6 +2,7 @@ import copy
 import logging
 import sys
 import time
+import typing
 
 from nb_libs.sys_frame_uitils import EasyFrame
 
@@ -33,7 +34,7 @@ class FrequencyControlLog:
         return self._fq(self.logger.log)
 
     @property
-    def debug(self, ) -> logging.Logger.debug:
+    def debug(self, ) -> typing.Callable:
         return self._fq(self.logger.debug)
 
     @property
