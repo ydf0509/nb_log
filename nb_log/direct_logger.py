@@ -28,7 +28,7 @@ nb_log.debug(msg)
 nb_log比loguru少了 from import那不是更简洁了吗？满足这种只知道追求简单的笨瓜。
 '''
 
-direct_logger = nb_log.LogManager('direct', logger_cls=nb_log.CompatibleLogger).get_logger_and_add_handlers(log_filename='direct.log')
+direct_logger = nb_log.LogManager('nb_log_direct', logger_cls=nb_log.CompatibleLogger).get_logger_and_add_handlers(log_filename='nb_log_direct.log')
 
 
 def _convert_extra(kwargs: dict):

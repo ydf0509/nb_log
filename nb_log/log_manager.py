@@ -246,8 +246,9 @@ class LogManager(object):
         :param logger_name: 日志名称，当为None时候创建root命名空间的日志，一般情况下千万不要传None，除非你确定需要这么做和是在做什么.这个命名空间是双刃剑
         """
         if logger_name in (None, '',) and multiprocessing.process.current_process().name == 'MainProcess':
-            very_nb_print('logger_name 设置为None和空字符串都是一个意义，在操作根日志命名空间，任何其他日志的行为将会发生变化，'
-                          '一定要弄清楚原生logging包的日志name的意思。这个命名空间是双刃剑')
+            pass
+            # very_nb_print('logger_name 设置为None和空字符串都是一个意义，在操作根日志命名空间，任何其他日志的行为将会发生变化，'
+            #               '一定要弄清楚原生logging包的日志name的意思。这个命名空间是双刃剑')
         self._logger_name = logger_name
         self.logger: logging.Logger
         if logger_cls == logging.Logger:
