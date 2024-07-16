@@ -219,7 +219,7 @@ def get_all_handlers():
         print(name, logx.level, logx.handlers)
 
 
-LOG_LEVEL_LIST = [logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL]  # 就是 10 20 30 40 50
+LOG_LEVEL_LIST = [logging.NOTSET,logging.DEBUG, logging.INFO, logging.WARNING, logging.ERROR, logging.CRITICAL]  # 就是 10 20 30 40 50
 
 
 def check_log_level(log_level: int):
@@ -293,7 +293,7 @@ class LogManager(object):
                                     is_add_mail_handler=False,
                                     formatter_template: typing.Union[int, logging.Formatter] = None) -> logging.Logger:
         """
-       :param log_level_int: 日志输出级别，设置为 1 2 3 4 5，分别对应原生logging.DEBUG(10)，logging.INFO(20)，logging.WARNING(30)，logging.ERROR(40),logging.CRITICAL(50)级别，现在可以直接用10 20 30 40 50了，兼容了。
+       :param log_level_int: 日志输出级别，设置为 10 20 30 40 50，分别对应原生logging.DEBUG(10)，logging.INFO(20)，logging.WARNING(30)，logging.ERROR(40),logging.CRITICAL(50)级别，
        :param is_add_stream_handler: 是否打印日志到控制台
        :param is_use_loguru_stream_handler  是否使用 loguru的控制台打印，如果为None，使用 nb_log_config.py的DEFAULUT_IS_USE_LOGURU_STREAM_HANDLER 值。
        :param do_not_use_color_handler :是否禁止使用color彩色日志
@@ -559,7 +559,7 @@ def get_logger(name: typing.Union[str, None], *, log_level_int: int = None, is_a
         :param name 日志命名空间，这个是最重要最难理解的一个入参，很多pythoner到现在还不知道name是什么作用。日志命名空间，意义非常非常非常重要，有些人到现在还不知道 logging.getLogger() 第一个入参的作用，太low了。不同的name的logger可以表现出不同的行为。
                 例如让 aa命名空间的日志打印控制台并且写入到文件，并且只记录info级别以上，让 bb 命名空间的日志仅仅打印控制台，并且打印debug以上级别，
                 这种就可以通过不同的日志命名空间做到。
-        :param log_level_int: 日志输出级别，设置为 1 2 3 4 5，分别对应原生logging.DEBUG(10)，logging.INFO(20)，logging.WARNING(30)，logging.ERROR(40),logging.CRITICAL(50)级别，现在可以直接用10 20 30 40 50了，兼容了。
+        :param log_level_int: 日志输出级别，设置为 10 20 30 40 50，分别对应原生logging.DEBUG(10)，logging.INFO(20)，logging.WARNING(30)，logging.ERROR(40),logging.CRITICAL(50)级别，现在可以直接用10 20 30 40 50了，兼容了。
        :param is_add_stream_handler: 是否打印日志到控制台
        :param is_use_loguru_stream_handler  是否使用 loguru的控制台打印，如果为None，使用 nb_log_config.py的DEFAULUT_IS_USE_LOGURU_STREAM_HANDLER 值。
        :param do_not_use_color_handler :是否禁止使用color彩色日志

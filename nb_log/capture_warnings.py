@@ -32,9 +32,10 @@ def _frequency_control_showwarning(message, category, filename, lineno, file=Non
         key = (filename, lineno)
         last_show_log_ts = file_line__ts[key]
         if time.time() - last_show_log_ts > GlobalVars.interval:
+            file_line__ts[key] = time.time()
             s = warnings.formatwarning(message, category, filename, lineno, line)
             GlobalVars.logger.warning("%s", s)
-            file_line__ts[key] = time.time()
+
 
 
 def capture_warnings_with_frequency_control(capture: bool = True, interval=10):

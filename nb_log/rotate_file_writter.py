@@ -28,7 +28,8 @@ class FileWritter:
             if not Path(self.log_path).exists():
                 print(f'自动创建日志文件夹 {log_path}')
                 Path(self.log_path).mkdir(exist_ok=True)
-            self._open_file()
+            # self._open_file()
+            self._first_has_open_file = False
             self._last_write_ts = 0
             self._last_del_old_files_ts = 0
 
@@ -61,6 +62,10 @@ class FileWritter:
 
     def write_2_file(self, msg):
         if self.need_write_2_file:
+            if self._first_has_open_file is False:
+                self._first_has_open_file = True
+                self._open_file()
+
             with self._lock:
                 now_ts = time.time()
                 if now_ts - self._last_write_ts > 10:

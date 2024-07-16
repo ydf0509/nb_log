@@ -830,8 +830,13 @@ class BothDayAndSizeRotatingFileHandler(logging.Handler):
 
     def __init__(self, file_name: typing.Optional[str], log_path='/pythonlogs', max_bytes=1000 * 1000 * 1000, back_count=10):
         super().__init__()
+        self.baseFilename = Path(log_path).joinpath(file_name).as_posix()
         self.os_file_writter = OsFileWritter(file_name=file_name, log_path=log_path, max_bytes=max_bytes, back_count=back_count)
 
     def emit(self, record: logging.LogRecord) -> None:
         msg = self.format(record)
         self.os_file_writter.write_2_file(msg + '\n')
+
+    def __repr__(self):
+        level = logging.getLevelName(self.level)
+        return '<%s %s (%s)>' % (self.__class__.__name__, self.baseFilename, level)
