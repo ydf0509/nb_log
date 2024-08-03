@@ -34,7 +34,7 @@ setup(
     description=(
         'very sharp color display,monkey patch bulitin print  and high-performance multiprocess safe roating file handler,other handlers includeing dintalk ,email,kafka,elastic and so on '
     ),
-    keywords=["logging", "logger", "multiprocess file handler", "color handler"],
+    keywords=["logging", "logger", "multiprocess file handler", "color handler","loguru"],
     # long_description=open('README.md', 'r',encoding='utf8').read(),
     long_description_content_type="text/markdown",
     long_description=open(filepath, 'r', encoding='utf8').read(),

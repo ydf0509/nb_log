@@ -2,7 +2,8 @@ import json
 
 print('导入nb_log之前的print是普通的')
 from nb_log import get_logger
-logger = get_logger('lalala',log_filename='lalala.log',formatter_template=7,log_file_handler_type=2,is_use_loguru_stream_handler=False)
+get_logger('lalala3',log_filename='lalala3.log',formatter_template=7,log_file_handler_type=6,is_use_loguru_stream_handler=False)
+logger = get_logger('lalala',log_filename='lalala.log',formatter_template=7,log_file_handler_type=6,is_use_loguru_stream_handler=False)
 # logger = get_logger('hihihi',)
 
 logger.debug(f'debug是绿色，说明是调试的，代码ok ')
