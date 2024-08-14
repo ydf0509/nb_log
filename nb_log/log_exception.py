@@ -1,0 +1,37 @@
+import logging
+import nb_log
+from nb_log import CompatibleLogger
+
+loggerx = nb_log.LogManager('log_exc', logger_cls=CompatibleLogger).get_logger_and_add_handlers(
+        log_filename='log_exc.log')
+
+
+class LogException(Exception):
+    """
+    自动记录日志的异常，抛出异常不需要单独再写日志
+    """
+    logger = logging.Logger = None
+
+    def __init__(self, err_msg, logger: logging.Logger = None, ):  # real signature unknown
+        logger = logger or self.__class__.logger
+        self.err_msg = err_msg
+        if logger:
+            logger.error(self.err_msg, extra={'sys_getframe_n': 3})
+
+    def __str__(self):
+        return str(self.err_msg)
+
+
+
+if __name__ == '__main__':
+
+
+    try:
+        raise LogException(['cccc',222], logger=loggerx)
+    except Exception as e:
+        print(e)
+    try:
+        raise LogException('cccc', logger=loggerx)
+    except Exception as e:
+        loggerx.exception(e)
+    raise LogException(['cccc',222], logger=loggerx) #
