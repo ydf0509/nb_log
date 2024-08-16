@@ -5,13 +5,11 @@ import nb_log
 from nb_log import CompatibleLogger
 
 
-
-
 class LogException(Exception):
     """
     自动记录日志的异常，抛出异常不需要单独再写日志
     """
-    logger : logging.Logger = None
+    logger: logging.Logger = None
 
     def __init__(self, err_msg, logger: logging.Logger = None, ):  # real signature unknown
         logger = logger or self.__class__.logger
@@ -23,20 +21,18 @@ class LogException(Exception):
         return str(self.err_msg)
 
 
-
 if __name__ == '__main__':
-    loggerx = nb_log.LogManager('log_exc', logger_cls=CompatibleLogger).get_logger_and_add_handlers(
-        log_filename='log_exc.log')
+    loggerx = nb_log.LogManager('log_exc', logger_cls=CompatibleLogger).get_logger_and_add_handlers(log_filename='log_exc.log')
 
-    try:
-        raise LogException(['cccc',222], logger=loggerx)
-    except Exception as e:
-        print(e)
-    try:
-        raise LogException('cccc', logger=loggerx)
-    except Exception as e:
-        loggerx.exception(e)
+    # try:
+    #     raise LogException(['cccc', 222], logger=loggerx)
+    # except Exception as e:
+    #     print(e)
+    # try:
+    #     raise LogException('cccc', logger=loggerx)
+    # except Exception as e:
+    #     loggerx.exception(e)
 
-    print('aaaaaaaaaaaaaaaa')
-    time.sleep(1)
-    raise LogException(['cccc',222], logger=loggerx) #
+    # print('aaaaaaaaaaaaaaaa')
+    # time.sleep(1)
+    raise LogException(['cccc', 222], logger=loggerx)  #
