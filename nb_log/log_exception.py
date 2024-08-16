@@ -10,12 +10,13 @@ class LogException(Exception):
     自动记录日志的异常，抛出异常不需要单独再写日志
     """
     logger: logging.Logger = None
+    is_record_log: bool = True
 
-    def __init__(self, err_msg,*,logger: logging.Logger = None, is_record_log:bool=True):  # real signature unknown
+    def __init__(self, err_msg, *, logger: logging.Logger = None, is_record_log: bool = True):  # real signature unknown
         logger = logger or self.__class__.logger
         self.err_msg = err_msg
-        if logger and is_record_log:
-            logger.exception(self.err_msg, extra={'sys_getframe_n': 3})
+        if logger and (is_record_log or self.__class__.is_record_log):
+            logger.error(self.err_msg, extra={'sys_getframe_n': 3})
 
     def __str__(self):
         return str(self.err_msg)
