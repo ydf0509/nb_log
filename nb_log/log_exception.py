@@ -11,11 +11,11 @@ class LogException(Exception):
     """
     logger: logging.Logger = None
 
-    def __init__(self, err_msg, logger: logging.Logger = None, ):  # real signature unknown
+    def __init__(self, err_msg,*,logger: logging.Logger = None, is_record_log:bool=True):  # real signature unknown
         logger = logger or self.__class__.logger
         self.err_msg = err_msg
-        if logger:
-            logger.error(self.err_msg, extra={'sys_getframe_n': 3})
+        if logger and is_record_log:
+            logger.exception(self.err_msg, extra={'sys_getframe_n': 3})
 
     def __str__(self):
         return str(self.err_msg)
@@ -34,5 +34,7 @@ if __name__ == '__main__':
     #     loggerx.exception(e)
 
     # print('aaaaaaaaaaaaaaaa')
-    # time.sleep(1)
+    time.sleep(1)
     raise LogException(['cccc', 222], logger=loggerx)  #
+
+    print('ok')
