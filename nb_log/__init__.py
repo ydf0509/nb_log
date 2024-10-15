@@ -34,6 +34,9 @@ logger_dingtalk_common = LogManager('钉钉通用报警提示').get_logger_and_a
     ding_talk_token=nb_log_config_default.DING_TALK_TOKEN,
     log_filename='dingding_common.log')
 
+from nb_log import global_except_hook
+from nb_log.exception_auto_log import LogException
+
 # warnings.simplefilter('always')  # 避免维护 sys.__dict__['__warningregistry__'] 字典,由 warning.warn 引起的内存泄漏
 # logging.captureWarnings(True) # 将warning.warn的sys.stderr 转化成日志.
 # get_logger('',log_level_int=logging.WARNING,log_filename='root.log')  # py.warnings
