@@ -2,6 +2,8 @@
 
 
 import logging
+import time
+
 logging.basicConfig()
 
 import nb_log
@@ -16,4 +18,9 @@ logging.warning('cccc')
 
 logger.debug('hiuhihi')
 
+
+print(logging.getLogger().handlers)
 nb_log.logging_tree_helper.printout()
+
+
+time.sleep(100000)

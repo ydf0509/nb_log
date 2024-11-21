@@ -41,7 +41,8 @@ from nb_log.exception_auto_log import LogException
 # logging.captureWarnings(True) # 将warning.warn的sys.stderr 转化成日志.
 # get_logger('',log_level_int=logging.WARNING,log_filename='root.log')  # py.warnings
 
-get_logger(None,log_level_int=logging.WARNING,log_filename='root.log')
+from nb_log.root_logger import root_logger
+
 
 from nb_log.capture_warnings import capture_warnings_with_frequency_control
 
