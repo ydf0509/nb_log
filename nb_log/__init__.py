@@ -40,6 +40,9 @@ from nb_log.exception_auto_log import LogException
 # warnings.simplefilter('always')  # 避免维护 sys.__dict__['__warningregistry__'] 字典,由 warning.warn 引起的内存泄漏
 # logging.captureWarnings(True) # 将warning.warn的sys.stderr 转化成日志.
 # get_logger('',log_level_int=logging.WARNING,log_filename='root.log')  # py.warnings
+
+get_logger(None,log_level_int=logging.WARNING,log_filename='root.log')
+
 from nb_log.capture_warnings import capture_warnings_with_frequency_control
 
 from nb_log.direct_logger import debug,info,warning,error,exception,critical

@@ -21,7 +21,8 @@ install_requires = [
     'service-identity',
     'deprecated==1.2.14',
     'chained_mode_time_tool',
-    'nb_libs'
+    'nb_libs',
+    'logging_tree'
 ]
 
 # if os.name == 'nt':
@@ -30,7 +31,7 @@ install_requires = [
 print(f'nb_log install_requires:{install_requires}')
 setup(
     name='nb_log',  #
-    version="12.9",
+    version="13.0",
     description=(
         'very sharp color display,monkey patch bulitin print  and high-performance multiprocess safe roating file handler,other handlers includeing dintalk ,email,kafka,elastic and so on '
     ),

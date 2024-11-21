@@ -412,7 +412,7 @@ class LogManager(object):
                 self.logger.removeHandler(handler)  # noqa
 
     def __add_a_hanlder(self, handlerx: logging.Handler):
-        handlerx.setLevel(10)
+        handlerx.setLevel(self._logger_level)
         handlerx.setFormatter(self._formatter)
         self.logger.addHandler(handlerx)
 
@@ -478,7 +478,7 @@ class LogManager(object):
                 file_handler.setLevel(logging.ERROR)
             else:
                 setattr(file_handler, MANUAL_HANLDER_TYPE, HANDLER_TYPE_FILE)
-                file_handler.setLevel(logging.DEBUG)
+                file_handler.setLevel(self._logger_level)
             file_handler.setFormatter(self._formatter)
             self.logger.addHandler(file_handler)
 
