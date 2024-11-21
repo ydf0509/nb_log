@@ -1,6 +1,7 @@
 import logging
 
 import nb_log
+from nb_log import nb_log_config_default
 
 _root_logger = logging.getLogger()
 _root_handlers = _root_logger.handlers
@@ -24,4 +25,4 @@ for hdr in _root_handlers:
 
 _root_logger.handlers = new_hanlders
 
-root_logger = nb_log.get_logger(None, log_filename='root.log', log_level_int=logging.INFO)
+root_logger = nb_log.get_logger(None, log_filename='root.log', log_level_int=nb_log_config_default.ROOT_LOGGER_LEVEL)
