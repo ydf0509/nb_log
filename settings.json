@@ -1,0 +1,51 @@
+{
+    "terminal.integrated.env.windows": {
+        "PYTHONPATH": "${workspaceFolder}/nb_log"
+    },
+    "terminal.integrated.env.linux": {
+        "PYTHONPATH": "./"
+    },
+    "python.pythonPath": "D:\\ProgramData\\Miniconda3\\envs\\py39b\\python.exe",
+    "windsurf.language": "zh-CN",
+    "window.openFoldersInNewWindow": true,
+    // Python 相关设置
+    "python.analysis.typeCheckingMode": "basic", // 启用基本类型检查
+    "python.formatting.provider": "black", // 使用 black 作为格式化工具
+    "python.linting.enabled": true, // 启用代码检查
+    "python.linting.pylintEnabled": true, // 启用 pylint
+    "python.linting.flake8Enabled": true, // 启用 flake8
+    "python.testing.pytestEnabled": true, // 启用 pytest
+    "python.testing.unittestEnabled": false, // 禁用 unittest
+    // 编辑器设置
+    "editor.formatOnSave": true, // 保存时自动格式化
+    "editor.rulers": [
+        88
+    ], // 显示 88 字符宽度标尺（black 默认）
+    "editor.renderWhitespace": "all", // 显示空白字符
+    "editor.suggestSelection": "first", // 自动补全选择第一项
+    "editor.wordBasedSuggestions": "matchingDocuments", // 基于单词的建议
+    // 文件设置
+    "files.trimTrailingWhitespace": true, // 自动删除行尾空格
+    "files.insertFinalNewline": true, // 文件末尾插入新行
+    "files.trimFinalNewlines": true, // 保留文件末尾单个新行
+    // 自动保存
+    "files.autoSave": "afterDelay", // 自动保存
+    "files.autoSaveDelay": 1000, // 自动保存延迟（毫秒）
+    // 智能感知设置
+    "python.analysis.completeFunctionParens": true, // 函数补全时添加括号
+    "python.analysis.extraPaths": [
+        "./"
+    ], // 额外的 Python 路径
+    // 调试设置
+    "python.debugging.justMyCode": false, // 调试时可以进入第三方库代码
+    // 终端设置
+    "terminal.integrated.defaultProfile.windows": "Command Prompt", // 默认终端
+    "terminal.integrated.profiles.windows": {
+        "Python": {
+            "path": "${env:PYTHONPATH}",
+            "args": [
+                "-i"
+            ]
+        }
+    }
+}

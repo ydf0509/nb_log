@@ -1,2 +1,4 @@
 
+print('dddd')
 
+import funboost

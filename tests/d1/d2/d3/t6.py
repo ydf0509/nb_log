@@ -1,4 +1,6 @@
+import os
 
+print(os.getenv('va'))
 print('导入nb_log之前的print是普通的')
 
 import sys

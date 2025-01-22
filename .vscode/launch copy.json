@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Python: Run in Output",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${file}",
+        // "console": "internalConsole",
+
+        "justMyCode": true,
+        // 添加以下设置点击run按钮在单独的终端运行新python文件。
+        "internalConsoleOptions": "neverOpen",
+        "console": "integratedTerminal"
+      }
+    ]
+  }
+

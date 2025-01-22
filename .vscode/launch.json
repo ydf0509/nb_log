@@ -4,15 +4,34 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
             "name": "Python: 当前文件",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
             "env": {
-                "PYTHONPATH": "F:/coding2/nb_log;${env:PYTHONPATH}"
+                // "PYTHONPATH": "F:/coding2/nb_log;${env:PYTHONPATH}"
+                "PYTHONPATH": "${workspaceFolder};${env:PYTHONPATH}",
             }
-        }
+
+
+
+        },
+        {
+            "name": "Python: FastAPI",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": [
+                "main:app",
+                "--reload",
+                "--port",
+                "8000"
+            ],
+            "jinja": true,
+            "justMyCode": false
+        },
     ]
 }
