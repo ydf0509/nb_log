@@ -21,6 +21,7 @@ concurrent_log_handler的ConcurrentRotatingFileHandler解决了logging模块自�
 """
 import logging
 import multiprocessing
+import threading
 import typing
 from functools import lru_cache
 from logging import FileHandler, _checkLevel  # noqa
@@ -103,19 +104,18 @@ def revision_call_handlers(self, record):  # 对logging标准模块打猴子补�
             sys.stderr.flush()
             self.manager.emittedNoHandlerWarning = True
 
-
+_lock = threading.Lock()
 # noinspection PyProtectedMember
 def revision_add_handler(self, hdlr):  # 从添加源头阻止同一个logger添加同类型的handler。
     """
     Add the specified handler to this logger.
     """
-    logging._acquireLock()  # noqa
-
-    try:
-        """ 官方的
-        if not (hdlr in self.handlers):
-            self.handlers.append(hdlr)
-        """
+    # logging._acquireLock()  # noqa
+    """ 官方的
+    if not (hdlr in self.handlers):
+        self.handlers.append(hdlr)
+    """
+    with _lock:
         hdlrx_type_set = set()
         for hdlrx in self.handlers:
             hdlrx_type = _get_hanlder_type(hdlrx)
@@ -128,8 +128,7 @@ def revision_add_handler(self, hdlr):  # 从添加源头阻止同一个logger添
         #     hdlr_type = ColorHandler
         if hdlr_type not in hdlrx_type_set:
             self.handlers.append(hdlr)
-    finally:
-        logging._releaseLock()  # noqa
+
 
 
 def revision_setLevel(self, level):
