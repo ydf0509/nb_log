@@ -128,6 +128,9 @@ def patch_print():
 
     :return:
     """
+    if os.environ.get('has_patch_print'):
+        return
+    os.environ['has_patch_print'] = '1'
     try:
         __builtins__.print = nb_print
     except AttributeError:
