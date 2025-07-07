@@ -27,7 +27,7 @@ from nb_log.log_manager import (LogManager, LoggerLevelSetterMixin, LoggerMixin,
 from nb_log.loggers_imp.compatible_logger import CompatibleLogger
 
 simple_logger = get_logger('simple')
-defaul_logger = LogManager('defaul').get_logger_and_add_handlers(do_not_use_color_handler=True, formatter_template=7)
+default_logger = LogManager('default').get_logger_and_add_handlers(do_not_use_color_handler=True, )
 default_file_logger = LogManager('default_file_logger').get_logger_and_add_handlers(log_filename='default_file_logger.log')
 
 logger_dingtalk_common = LogManager('钉钉通用报警提示').get_logger_and_add_handlers(
