@@ -77,6 +77,8 @@ LOG_LEVEL_FILTER = logging.DEBUG  # nb_log.get_logger不指定日志级别时候
 # https://nb-log-doc.readthedocs.io/zh_CN/latest/articles/c9.html#id2  文档9.5里面讲了几百次 python logging的命名空间的作用了，有些人到现在还不知道日志的name作用。
 
 ROOT_LOGGER_LEVEL = logging.INFO # 根日志命名空间的日志级别，如果是INFO，没有添加handlers的其他命名空间的日志info及以上级别都会被记录，你可以亲自设置日志级别。
+ROOT_LOGGER_FILENAME ='root.log' # 根日志命名空间的日志文件名字，默认是root.log。可以设置为None,则不记录到文件中。
+ROOT_LOGGER_FILENAME_ERROR = 'root.error.log'  #  # 根日志命名空间的error级别以以上的日志单独文件名字。可以设置为None,则不另外生成一个error日志文件。
 
 # 屏蔽的字符串显示，用 if in {打印信息} 来判断实现的,如果打印的消息中包括 FILTER_WORDS_PRINT 数组中的任何一个字符串，那么消息就不执行打印。
 # 这个配置对 print 和 logger的控制台输出都生效。这个可以过滤某些啰嗦的print信息，也可以过滤同级别日志中的某些烦人的日志。可以用来过滤三方包中某些控制台打印。数组不要配置过多，否则有一丝丝影响性能会。

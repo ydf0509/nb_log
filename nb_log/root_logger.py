@@ -25,4 +25,8 @@ for hdr in _root_handlers:
 
 _root_logger.handlers = new_hanlders
 
-root_logger = nb_log.get_logger(None, log_filename='root.log', log_level_int=nb_log_config_default.ROOT_LOGGER_LEVEL)
+# 根日志
+root_logger = nb_log.get_logger(None,
+                                log_filename=nb_log_config_default.ROOT_LOGGER_FILENAME,
+                                error_log_filename=nb_log_config_default.ROOT_LOGGER_FILENAME_ERROR,
+                                log_level_int=nb_log_config_default.ROOT_LOGGER_LEVEL)
