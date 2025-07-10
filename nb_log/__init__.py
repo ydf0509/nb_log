@@ -28,6 +28,7 @@ from nb_log.loggers_imp.compatible_logger import CompatibleLogger
 
 simple_logger = get_logger('simple')
 default_logger = LogManager('default').get_logger_and_add_handlers(do_not_use_color_handler=True, )
+defaul_logger = default_logger # 兼容下defaul_logger错误的拼写，有的人把funboost版本固定死了，但nb_log版本却不固定，删除defaul_logger会导致funboost报错
 default_file_logger = LogManager('default_file_logger').get_logger_and_add_handlers(log_filename='default_file_logger.log')
 
 logger_dingtalk_common = LogManager('钉钉通用报警提示').get_logger_and_add_handlers(
