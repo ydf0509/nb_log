@@ -1,6 +1,6 @@
 import logging
 import warnings
-
+import nb_log.add_python_executable_dir_to_path_env
 from nb_log.set_nb_log_config import use_config_form_nb_log_config_module
 from nb_log import nb_log_config_default
 
