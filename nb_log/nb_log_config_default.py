@@ -22,13 +22,16 @@ from pathlib import Path  # noqa
 import socket
 from pythonjsonlogger.jsonlogger import JsonFormatter
 
+# PRINT_WRTIE_FILE_NAME 是 黑科技配置,远超一般日志包所需要管辖的范畴,是nb_log 独门绝技.
 # 项目中的print是否自动写入到文件中。值为None则不重定向print到文件中。 自动每天一个文件， 2023-06-30.my_proj.print,生成的文件位置在定义的LOG_PATH
 # 如果你设置了环境变量，export PRINT_WRTIE_FILE_NAME="my_proj.print" (linux临时环境变量语法，windows语法自己百度这里不举例),那就优先使用环境变量中设置的文件名字，而不是nb_log_config.py中设置的名字
 PRINT_WRTIE_FILE_NAME = os.environ.get("PRINT_WRTIE_FILE_NAME") or Path(sys.path[1]).name + '.print'
 
+# SYS_STD_FILE_NAME 是 黑科技配置,远超一般日志包所需要管辖的范畴,是nb_log 独门绝技.
 # 项目中的所有标准输出（不仅包括print，还包括了streamHandler日志）都写入到这个文件，为None将不把标准输出重定向到文件。自动每天一个文件， 2023-06-30.my_proj.std,生成的文件位置在定义的LOG_PATH
 # 如果你设置了环境变量，export SYS_STD_FILE_NAME="my_proj.std"  (linux临时环境变量语法，windows语法自己百度这里不举例),那就优先使用环境变量中设置的文件名字，，而不是nb_log_config.py中设置的名字
 # 这个相当于是 nohup 自动重定向所有屏幕输出流到一个nohup.out文件的功能了,这个是nb_log日志包的独有黑科技功能,logging 和loguru没这种功能.
+# 相对如不同命名空间的logger写入到十几个不同的日志文件,这个SYS_STD_FILE_NAME把项目的所有日志单独重新汇总在一个文件.
 SYS_STD_FILE_NAME = os.environ.get("SYS_STD_FILE_NAME") or Path(sys.path[1]).name + '.std'
 
 USE_BULK_STDOUT_ON_WINDOWS = False  # 在win上是否每隔0.1秒批量stdout,win的io太差了

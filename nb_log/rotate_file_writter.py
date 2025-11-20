@@ -103,24 +103,31 @@ class BulkFileWritter:
 
     _has_start_bulk_write = False
 
-    @classmethod
-    def _get_queue(cls, file_name):
-        if file_name not in cls.filename__queue_map:
-            cls.filename__queue_map[file_name] = queue.SimpleQueue()
-        return cls.filename__queue_map[file_name]
+    @staticmethod
+    def gen_file_key(log_path: str,file_name: str):
+        if not file_name:
+            return ''
+        return (Path(log_path) / Path(file_name)).absolute().as_posix()
 
     @classmethod
-    def _get_file_writter(cls, file_name):
-        if file_name not in cls.filename__file_writter_map:
-            fw = FileWritter(**cls.filename__options_map[file_name])
-            cls.filename__file_writter_map[file_name] = fw
-        return cls.filename__file_writter_map[file_name]
+    def _get_queue(cls, file_key):
+        if file_key not in cls.filename__queue_map:
+            cls.filename__queue_map[file_key] = queue.SimpleQueue()
+        return cls.filename__queue_map[file_key]
+
+    @classmethod
+    def _get_file_writter(cls, file_key):
+        if file_key not in cls.filename__file_writter_map:
+            fw = FileWritter(**cls.filename__options_map[file_key])
+            cls.filename__file_writter_map[file_key] = fw
+        return cls.filename__file_writter_map[file_key]
 
     def __init__(self, file_name: typing.Optional[str], log_path='/pythonlogs', max_bytes=1000 * 1000 * 1000, back_count=10):
         self.need_write_2_file = True if file_name else False
         self._file_name = file_name
+        self._file_key = self.gen_file_key(log_path,file_name)
         if file_name:
-            self.__class__.filename__options_map[file_name] = {
+            self.__class__.filename__options_map[self._file_key] = {
                 'file_name': file_name,
                 'log_path': log_path,
                 'max_bytes': max_bytes,
@@ -131,17 +138,17 @@ class BulkFileWritter:
     def write_2_file(self, msg):
         if self.need_write_2_file:
             with self._lock:
-                self._get_queue(self._file_name).put(msg)
+                self._get_queue(self._file_key).put(msg)
 
     @classmethod
     def _bulk_real_write(cls):
         with cls._lock:
-            for _file_name, queue in cls.filename__queue_map.items():
+            for file_key, queue in cls.filename__queue_map.items():
                 msg_str_all = ''
                 while not queue.empty():
                     msg_str_all += queue.get()
                 if msg_str_all:
-                    cls._get_file_writter(_file_name).write_2_file(msg_str_all)
+                    cls._get_file_writter(file_key).write_2_file(msg_str_all)
 
     @classmethod
     def _when_exit(cls):
