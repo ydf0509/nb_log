@@ -438,6 +438,7 @@ class LogManager(object):
                 if os_name == 'nt':
                     # 在win下使用这个ConcurrentRotatingFileHandler可以解决多进程安全切片，但性能损失惨重。
                     # 10进程各自写入10万条记录到同一个文件消耗15分钟。比不切片写入速度降低100倍。
+                    from nb_log.handlers_concurrent_rotating_file_handler import ConcurrentRotatingFileHandlerWithBufferInitiativeWindwos
                     file_handler = ConcurrentRotatingFileHandlerWithBufferInitiativeWindwos(log_file,
                                                                                             maxBytes=self._log_file_size * 1024 * 1024,
                                                                                             backupCount=nb_log_config_default.LOG_FILE_BACKUP_COUNT,
@@ -447,6 +448,7 @@ class LogManager(object):
                 elif os_name == 'posix':
                     # linux下可以使用ConcurrentRotatingFileHandler，进程安全的日志方式。
                     # 10进程各自写入10万条记录到同一个文件消耗100秒，还是比不切片写入速度降低10倍。因为每次检查切片大小和文件锁的原因。
+                    from nb_log.handlers_concurrent_rotating_file_handler import ConcurrentRotatingFileHandlerWithBufferInitiativeLinux
                     file_handler = ConcurrentRotatingFileHandlerWithBufferInitiativeLinux(log_file,
                                                                                           maxBytes=self._log_file_size * 1024 * 1024,
                                                                                           backupCount=nb_log_config_default.LOG_FILE_BACKUP_COUNT,
@@ -460,6 +462,7 @@ class LogManager(object):
             elif self._log_file_handler_type == 3:
                 file_handler = FileHandler(log_file, mode='a', encoding='utf-8')
             elif self._log_file_handler_type == 5:
+                from nb_log.handlers_concurrent_rotating_file_handler import ConcurrentRotatingFileHandler
                 file_handler = ConcurrentRotatingFileHandler(log_file,
                                                              maxBytes=self._log_file_size * 1024 * 1024,
                                                              backupCount=nb_log_config_default.LOG_FILE_BACKUP_COUNT,
