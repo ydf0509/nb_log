@@ -1,0 +1,6 @@
+{
+    "terminal.integrated.env.windows": {
+            "PYTHONPATH": "${workspaceFolder:nb_log}",
+            "va":"333"
+        }
+}

@@ -1,0 +1,25 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+      "label": "Run t1.py", // 任务标签，在 VS Code 中显示的名称
+      "type": "shell", // 任务类型，这里是 shell 命令
+      "command": "D:\\ProgramData\\Miniconda3\\envs\\py39b\\python.exe", // Python 解释器路径
+        "args": [
+        "tests/test_othres/test_try.py" // 要运行的 Python 脚本路径
+        ],
+      "group": "build", // 任务组，这里归类为构建任务
+      "problemMatcher": [], // 问题匹配器，用于识别输出中的错误，这里为空
+        "presentation": {
+        "echo": true, // 是否在输出面板中显示实际执行的命令
+        "reveal": "always", // 任务执行时总是显示输出
+        "focus": false, // 不将焦点切换到输出面板
+        "panel": "shared", // 在共享面板中显示输出
+        "showReuseMessage": true, // 显示面板重用消息
+        "clear": false // 每次运行任务时不清除之前的输出
+      }
+      }
+    ]
+  }
+
+

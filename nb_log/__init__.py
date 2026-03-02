@@ -1,10 +1,10 @@
 import logging
 import warnings
-
+import nb_log.add_python_executable_dir_to_path_env
 from nb_log.set_nb_log_config import use_config_form_nb_log_config_module
 from nb_log import nb_log_config_default
 
-from nb_log.monkey_sys_std import patch_sys_std
+from nb_log.monkey_sys_std import patch_sys_std,stderr_raw,stdout_raw
 if nb_log_config_default.SYS_STD_FILE_NAME:
     patch_sys_std()
 
@@ -27,7 +27,8 @@ from nb_log.log_manager import (LogManager, LoggerLevelSetterMixin, LoggerMixin,
 from nb_log.loggers_imp.compatible_logger import CompatibleLogger
 
 simple_logger = get_logger('simple')
-defaul_logger = LogManager('defaul').get_logger_and_add_handlers(do_not_use_color_handler=True, formatter_template=7)
+default_logger = LogManager('default').get_logger_and_add_handlers(do_not_use_color_handler=True, )
+defaul_logger = default_logger # 兼容下defaul_logger错误的拼写，有的人把funboost版本固定死了，但nb_log版本却不固定，删除defaul_logger会导致funboost报错
 default_file_logger = LogManager('default_file_logger').get_logger_and_add_handlers(log_filename='default_file_logger.log')
 
 logger_dingtalk_common = LogManager('钉钉通用报警提示').get_logger_and_add_handlers(
@@ -40,6 +41,10 @@ from nb_log.exception_auto_log import LogException
 # warnings.simplefilter('always')  # 避免维护 sys.__dict__['__warningregistry__'] 字典,由 warning.warn 引起的内存泄漏
 # logging.captureWarnings(True) # 将warning.warn的sys.stderr 转化成日志.
 # get_logger('',log_level_int=logging.WARNING,log_filename='root.log')  # py.warnings
+
+from nb_log.root_logger import root_logger
+
+
 from nb_log.capture_warnings import capture_warnings_with_frequency_control
 
 from nb_log.direct_logger import debug,info,warning,error,exception,critical
@@ -57,8 +62,7 @@ if nb_log_config_default.SHOW_NB_LOG_LOGO:
          """ + '\033[0m')
 
 if nb_log_config_default.SHOW_PYCHARM_COLOR_SETINGS:
-    only_print_on_main_process(
-        """\033[0m
+    cn_msg =   """\033[0m
         1)使用pycharm时候，强烈建议按下面的重新自定义设置pycharm的console里面的主题颜色，否则颜色显示瞎眼，代码里面规定的颜色只是大概的红黄蓝绿。在不同的ide软件和主题、字体下是不同的显示效果，需要用户自己设置。
         设置方式为 打开pycharm的 file -> settings -> Editor -> Color Scheme -> Console Colors 选择monokai，点击展开 ANSI colors，
         并重新修改自定义7个颜色，设置Blue为 0454F3 ，Cyan为 06F0F6 ，Green 为 13FC02 ，Magenta为 ff1cd5 ,red为 F80606 ，yellow为 EAFA04 ，gray 为 FFFFFF ，white 为 FFFFFF 。
@@ -75,10 +79,22 @@ if nb_log_config_default.SHOW_PYCHARM_COLOR_SETINGS:
         为什么要设置pycharm终端颜色，解释为什么\\033不能决定最终颜色 https://nb-log-doc.readthedocs.io/zh_CN/latest/articles/c1.html#c
         \033[0m
 
-        """)
+        """
+    en_msg = """\033[0m
+        1)When using PyCharm, it is strongly recommended to re-customize the theme colors in PyCharm's console as follows, otherwise the color display may be harsh on the eyes. The colors specified in the code are just approximate red, yellow, blue, and green. The display effect varies across different IDE software, themes, and fonts, so users need to set them up themselves.
+        The setup method is: Open PyCharm -> File -> Settings -> Editor -> Color Scheme -> Console Colors, select monokai, click to expand ANSI colors,
+        and re-modify 7 custom colors: set Blue to 0454F3, Cyan to 06F0F6, Green to 13FC02, Magenta to ff1cd5, red to F80606, yellow to EAFA04, gray to FFFFFF, and white to FFFFFF.
+        Different versions of PyCharm, themes, or IDEs can be set according to the actual console display.
 
+        2)When using tools like xshell or finashell to connect to Linux, you can also customize the theme colors, or use the default colors of the shell connection tool.
 
+        Color effect as shown at https://ibb.co/qRssXTr
 
+        You can modify the default logging behavior when the get_logger method is called without parameters in nb_log_config.py at the root directory of the current project.
 
+        nb_log documentation https://nb-log-doc.readthedocs.io/zh_CN/latest/
 
-
+        Why set PyCharm terminal colors, explaining why \033 cannot determine the final color https://nb-log-doc.readthedocs.io/zh_CN/latest/articles/c1.html#c
+        \033[0m
+        """
+    only_print_on_main_process(en_msg)

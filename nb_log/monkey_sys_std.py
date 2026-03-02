@@ -9,8 +9,8 @@ import time
 from nb_log.rotate_file_writter import OsFileWritter
 from nb_log import nb_log_config_default
 
-stdout_raw = sys.stdout.write
-stderr_raw = sys.stderr.write
+stdout_raw = getattr(sys.stdout,'write',None) # 打包時候,这个stdout是None,没有write方法
+stderr_raw =  getattr(sys.stderr,'write',None)
 
 dele_color_pattern = re.compile('\\033\[.+?m')
 
@@ -33,7 +33,7 @@ class BulkStdout:
             msg_str_all = ''
             while not cls.q.empty():
                 msg_str_all += str(cls.q.get())
-            if msg_str_all:
+            if msg_str_all and stdout_raw:
                 stdout_raw(msg_str_all)
 
     @classmethod
@@ -67,14 +67,22 @@ def monkey_sys_stdout(msg):
     if is_win and nb_log_config_default.USE_BULK_STDOUT_ON_WINDOWS:
         BulkStdout.stdout(msg)
     else:
-        stdout_raw(msg)
+        if stdout_raw:
+            try:
+                stdout_raw(msg)
+            except BrokenPipeError:
+                pass
     msg_delete_color = dele_color_pattern.sub('', msg)
     std_writter.write_2_file(msg_delete_color)
     # std_writter.write_2_file(msg)
 
 
 def monkey_sys_stderr(msg):
-    stderr_raw(msg)
+    if stderr_raw:
+        try:
+            stderr_raw(msg)
+        except BrokenPipeError:
+            pass
     msg_delete_color = dele_color_pattern.sub('', msg)
     std_writter.write_2_file(msg_delete_color)
 

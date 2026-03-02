@@ -22,13 +22,16 @@ from pathlib import Path  # noqa
 import socket
 from pythonjsonlogger.jsonlogger import JsonFormatter
 
+# PRINT_WRTIE_FILE_NAME 是 黑科技配置,远超一般日志包所需要管辖的范畴,是nb_log 独门绝技.
 # 项目中的print是否自动写入到文件中。值为None则不重定向print到文件中。 自动每天一个文件， 2023-06-30.my_proj.print,生成的文件位置在定义的LOG_PATH
 # 如果你设置了环境变量，export PRINT_WRTIE_FILE_NAME="my_proj.print" (linux临时环境变量语法，windows语法自己百度这里不举例),那就优先使用环境变量中设置的文件名字，而不是nb_log_config.py中设置的名字
 PRINT_WRTIE_FILE_NAME = os.environ.get("PRINT_WRTIE_FILE_NAME") or Path(sys.path[1]).name + '.print'
 
+# SYS_STD_FILE_NAME 是 黑科技配置,远超一般日志包所需要管辖的范畴,是nb_log 独门绝技.
 # 项目中的所有标准输出（不仅包括print，还包括了streamHandler日志）都写入到这个文件，为None将不把标准输出重定向到文件。自动每天一个文件， 2023-06-30.my_proj.std,生成的文件位置在定义的LOG_PATH
 # 如果你设置了环境变量，export SYS_STD_FILE_NAME="my_proj.std"  (linux临时环境变量语法，windows语法自己百度这里不举例),那就优先使用环境变量中设置的文件名字，，而不是nb_log_config.py中设置的名字
 # 这个相当于是 nohup 自动重定向所有屏幕输出流到一个nohup.out文件的功能了,这个是nb_log日志包的独有黑科技功能,logging 和loguru没这种功能.
+# 相对如不同命名空间的logger写入到十几个不同的日志文件,这个SYS_STD_FILE_NAME把项目的所有日志单独重新汇总在一个文件.
 SYS_STD_FILE_NAME = os.environ.get("SYS_STD_FILE_NAME") or Path(sys.path[1]).name + '.std'
 
 USE_BULK_STDOUT_ON_WINDOWS = False  # 在win上是否每隔0.1秒批量stdout,win的io太差了
@@ -72,9 +75,13 @@ LOG_FILE_HANDLER_TYPE 这个值可以设置为 1 2 3 4 5 四种值，
 7 LoguruFileHandler ,使用知名的 loguru 包的文件日志记录器来写文件。
 """
 
-LOG_LEVEL_FILTER = logging.DEBUG  # 默认日志级别，低于此级别的日志不记录了。例如设置为INFO，那么logger.debug的不会记录，只会记录logger.info以上级别的。
+LOG_LEVEL_FILTER = logging.DEBUG  # nb_log.get_logger不指定日志级别时候，默认日志级别，低于此级别的日志不记录了。例如设置为INFO，那么logger.debug的不会记录，只会记录logger.info以上级别的。
 # 强烈不建议调高这里的级别为INFO，日志是有命名空间的，单独提高打印啰嗦的日志命名空间的日志级别就可以了，不要全局提高日志级别。
 # https://nb-log-doc.readthedocs.io/zh_CN/latest/articles/c9.html#id2  文档9.5里面讲了几百次 python logging的命名空间的作用了，有些人到现在还不知道日志的name作用。
+
+ROOT_LOGGER_LEVEL = logging.INFO # 根日志命名空间的日志级别，如果是INFO，没有添加handlers的其他命名空间的日志info及以上级别都会被记录，你可以亲自设置日志级别。
+ROOT_LOGGER_FILENAME ='root.log' # 根日志命名空间的日志文件名字，默认是root.log。可以设置为None,则不记录到文件中。
+ROOT_LOGGER_FILENAME_ERROR = 'root.error.log'  #  # 根日志命名空间的error级别以以上的日志单独文件名字。可以设置为None,则不另外生成一个error日志文件。
 
 # 屏蔽的字符串显示，用 if in {打印信息} 来判断实现的,如果打印的消息中包括 FILTER_WORDS_PRINT 数组中的任何一个字符串，那么消息就不执行打印。
 # 这个配置对 print 和 logger的控制台输出都生效。这个可以过滤某些啰嗦的print信息，也可以过滤同级别日志中的某些烦人的日志。可以用来过滤三方包中某些控制台打印。数组不要配置过多，否则有一丝丝影响性能会。

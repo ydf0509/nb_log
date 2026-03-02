@@ -12,3 +12,6 @@ for i in range(20000):
     logger.error(f'testss {i}')
 print(time.time() -t1)
 print('over')
+
+
+import anyio
