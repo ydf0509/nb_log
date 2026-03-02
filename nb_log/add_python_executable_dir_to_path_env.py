@@ -26,8 +26,21 @@ ImportError: DLL load failed while importing win32file: 找不到指定的模块
     # python_dir = os.path.dirname(sys.executable)
     real_python_executable = os.path.realpath(sys.executable)
     python_dir = os.path.dirname(real_python_executable)
+    r"""
+    这些都要添加
+    D:\ProgramData\Miniconda3
+    D:\ProgramData\Miniconda3\Library\mingw-w64\bin
+    D:\ProgramData\Miniconda3\Library\usr\bin
+    D:\ProgramData\Miniconda3\Library\bin
+    D:\ProgramData\Miniconda3\bin
+    """
     if os.name == 'nt':
         os.environ['path'] = python_dir + os.pathsep + os.environ['PATH']
+        os.environ['path'] = fr'{python_dir}\Library\mingw-w64\bin' + os.pathsep + os.environ['PATH']
+        os.environ['path'] = fr'{python_dir}\Library\usr\bin' + os.pathsep + os.environ['PATH']
+        os.environ['path'] = fr'{python_dir}\Library\bin' + os.pathsep + os.environ['PATH']
+        os.environ['path'] = fr'{python_dir}\bin' + os.pathsep + os.environ['PATH']
+        
     # print(f'{__file__} curernt python executable dir: {python_dir}')
 
 add_sys_executable_dir_to_path_env()
