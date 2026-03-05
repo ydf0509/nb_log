@@ -27,4 +27,5 @@ distributed_frame_config.py
 /auto_run_on_remote_config.py
 build/
 .history/
+tests/output.txt
 
