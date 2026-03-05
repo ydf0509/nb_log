@@ -16,7 +16,7 @@ install_requires = [
     'tomorrow3==1.1.0',
     'concurrent-log-handler==0.9.23',
     'requests',
-    'python-json-logger==0.1.10',
+    'python-json-logger>=0.1.10',
     'nb_filelock',
     'service-identity',
     'deprecated==1.2.14',

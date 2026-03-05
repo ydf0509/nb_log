@@ -111,6 +111,8 @@ def print_exception(etype, value, tb, limit=None, file=None, chain=True):
 
 # print = nb_print
 
+_patched_pids = set()
+
 def patch_print():
     """
     Python有几个namespace，分别是
@@ -128,9 +130,10 @@ def patch_print():
 
     :return:
     """
-    if os.environ.get('has_patch_print'):
+    current_pid = os.getpid()
+    if current_pid in _patched_pids:
         return
-    os.environ['has_patch_print'] = '1'
+    _patched_pids.add(current_pid)
     try:
         __builtins__.print = nb_print
     except AttributeError:
