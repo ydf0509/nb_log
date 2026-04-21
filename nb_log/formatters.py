@@ -30,4 +30,4 @@ if __name__ == '__main__':
     logger.addHandler(sh)
     logger.setLevel(logging.DEBUG)
 
-    logger.info('哈哈哈哈')
+    logger.info('test message')

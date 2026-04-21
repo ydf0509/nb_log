@@ -3,7 +3,7 @@ import logging
 
 def generate_error_file_name(log_filename: str):
     """
-    根据正常日志文件名,自动生成错误日志文件名.
+    Auto-generate an error log filename based on the normal log filename.
     :param log_filename:
     :return:
     """

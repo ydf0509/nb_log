@@ -3,29 +3,19 @@ import logging
 import nb_log
 
 '''
+Convenience module for quick out-of-the-box logging without manually creating named loggers.
+For users who prefer the simplicity of direct function calls (similar to loguru's interface).
 
-有的笨瓜总是不能理解 logging.getLogger第一个入参name的作用和巨大好处，老是觉得需要实例化生成 logger 对象觉得麻烦，想开箱即用，那就满足这种人。
-用from loguru import logger 这种日志，先不同模块或功能的日志设置不同级别，不同的模块写入不同的文件，非常麻烦不优雅。
-但有的人完全不理解 日志命名空间的作用，只会抱怨nb_log的例子要他实例化不同name的logger麻烦，那就满足这种人，不用他手动实例化生成不同命名空间的logger。
-
+Usage:
 import nb_log
+nb_log.debug('debug message')
+nb_log.info('info message')
+nb_log.warning('warning message')
+nb_log.error('error message')
+nb_log.critical('critical message')
 
-nb_log.debug('笨瓜不想实例化多个不同name的logger,不理解logging.getLogger第一个入参name的作用和好处，想直接粗暴的调用debug函数，那就满足这种人')
-nb_log.info('笨瓜不想实例化多个不同name的logger,不理解logging.getLogger第一个入参name的作用和好处，想直接粗暴的调用info函数，那就满足这种人')
-nb_log.warning('笨瓜不想实例化多个不同name的logger,不理解logging.getLogger第一个入参name的作用和好处，想直接粗暴的调用warning函数，那就满足这种人')
-nb_log.error('笨瓜不想实例化多个不同name的logger,不理解logging.getLogger第一个入参name的作用和好处，想直接粗暴的调用error函数，那就满足这种人')
-nb_log.critical('笨瓜不想实例化多个不同name的logger,不理解logging.getLogger第一个入参name的作用和好处，想直接粗暴的调用critical函数，那就满足这种人')
-
-
-loguru的用法是：
-from loguru import logger
-logger.debug(msg)
-
-nb_log的用法是：
-import nb_log
-nb_log.debug(msg)
-
-nb_log比loguru少了 from import那不是更简洁了吗？满足这种只知道追求简单的笨瓜。
+Note: For production use, creating named loggers with get_logger() is strongly recommended
+as it enables per-namespace log level control and separate file outputs.
 '''
 
 direct_logger = nb_log.LogManager('nb_log_direct', logger_cls=nb_log.CompatibleLogger).get_logger_and_add_handlers(log_filename='nb_log_direct.log')
@@ -33,7 +23,8 @@ direct_logger = nb_log.LogManager('nb_log_direct', logger_cls=nb_log.CompatibleL
 
 def _convert_extra(kwargs: dict):
     """
-    因为封装了原生logging的 debug info等方法，要显示实际的打印日志的文件和行号，需要把查找调用层级加大一级
+    Adjusts the stack frame depth by one level to show the actual caller's file and line number
+    instead of this wrapper module's location.
     :param kwargs:
     :return:
     """

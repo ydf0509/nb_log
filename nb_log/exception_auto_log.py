@@ -7,7 +7,7 @@ from nb_log import CompatibleLogger
 
 class LogException(Exception):
     """
-    自动记录日志的异常，抛出异常不需要单独再写日志
+    An exception that automatically logs itself when raised - no separate logging statement needed.
     """
     logger: logging.Logger = None
     is_record_log: bool = True

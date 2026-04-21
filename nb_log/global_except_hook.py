@@ -7,19 +7,19 @@ import nb_log
 
 logger = nb_log.get_logger('global_except_hook',log_filename='global_except_hook.log')
 def global_except_hook(exctype, value, tracebackx):
-    # 输出异常信息到日志
+    # Log unhandled exceptions
     # print(exctype)
     # print(value)
     # print(traceback.format_tb(tracebackx))
     logger.error('Unhandled exception:', exc_info=(exctype, value, tracebackx))
 
-# 设置全局异常钩子
+# Set global exception hook
 sys.excepthook = global_except_hook
 
 
 
 if __name__ == '__main__':
-    # 测试异常
+    # Test exception
     def test_exception():
         try:
             raise ValueError('Test exception')
@@ -28,6 +28,6 @@ if __name__ == '__main__':
             raise OSError('aaaa32') from e
 
 
-    # 触发异常
+    # Trigger exception
     print(ValueError.__name__)
     test_exception()

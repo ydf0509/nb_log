@@ -8,7 +8,7 @@ from nb_log import nb_log_config_default
 
 class LoguruStreamHandler(logging.Handler):
     """
-    loguru 的 控制台效果
+    Console handler using loguru's output style.
     """
 
     format = ("<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | {extra[namespace]} | "
@@ -24,7 +24,7 @@ class LoguruStreamHandler(logging.Handler):
         logger = Logger(
             core=Core(),
             exception=None,
-            depth=6,  # 写6是为了显示实际的日志发生处，而不是封装loguru的emit方法处。
+            depth=6,  # Depth=6 to show the actual log call site, not the loguru emit wrapper.
             record=False,
             lazy=False,
             colors=False,
@@ -54,7 +54,7 @@ class LoguruStreamHandler(logging.Handler):
 
 class LoguruFileHandler(LoguruStreamHandler):
     """
-    loguru 的 文件日志写入
+    File handler using loguru's file writing capabilities.
     """
 
     def _add_handler(self, logger, ):
@@ -72,7 +72,7 @@ class LoguruFileHandler(LoguruStreamHandler):
 
         # rotation_size = 1024 * 1024  # 1MB
         rotation_size = f"{nb_log_config_default.LOG_FILE_SIZE} MB"
-        rotation_time = "00:00"  # 每天的 00:00
+        rotation_time = "00:00"  # Daily rotation at midnight
 
         logger.add(loguru_file,
                    # filter=lambda record: record["extra"]["bind_for"] == self._bind_for,

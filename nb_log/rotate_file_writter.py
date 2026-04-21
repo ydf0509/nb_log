@@ -8,7 +8,7 @@ import time
 import os
 
 
-# from nb_log.simple_print import sprint as print  # 在此模块中不能print，print会写入文件，文件中print又写入文件，无限懵逼死循环。
+# from nb_log.simple_print import sprint as print  # Cannot use print here - it would write to file, causing infinite recursion.
 
 
 def build_current_date_str():
@@ -26,7 +26,7 @@ class FileWritter:
             self._file_name = file_name
             self.log_path = log_path
             if not Path(self.log_path).exists():
-                print(f'自动创建日志文件夹 {log_path}')
+                print(f'Auto-creating log directory {log_path}')
                 Path(self.log_path).mkdir(exist_ok=True)
             # self._open_file()
             self._first_has_open_file = False
@@ -86,7 +86,7 @@ class FileWritter:
         f_list.sort(key=lambda f: f.name, reverse=True)
         for f in f_list[self._back_count:]:
             try:
-                # print(f'删除 {f} ') # 这里不能print， stdout写入文件，写入文件时候print，死循环
+                # print(f'Deleting {f}')  # Cannot print here - would cause infinite recursion with stdout->file->print
                 f.unlink()
             except (FileNotFoundError, PermissionError):
                 pass
@@ -152,7 +152,7 @@ class BulkFileWritter:
 
     @classmethod
     def _when_exit(cls):
-        # print('结束')
+        # print('exit')
         return cls._bulk_real_write()
 
     @classmethod

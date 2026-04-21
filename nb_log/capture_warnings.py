@@ -14,7 +14,7 @@ class GlobalVars:
 
 file_line__ts = defaultdict(float)
 
-FQ_CAPTURE_WARNINGS_LOGGER_NAME = 'fq_capture_warnings'  # 控频日志
+FQ_CAPTURE_WARNINGS_LOGGER_NAME = 'fq_capture_warnings'  # Frequency-controlled warning logger
 
 
 def _frequency_control_showwarning(message, category, filename, lineno, file=None, line=None):
@@ -40,9 +40,9 @@ def _frequency_control_showwarning(message, category, filename, lineno, file=Non
 
 def capture_warnings_with_frequency_control(capture: bool = True, interval=10):
     """
-    对相同文件代码行的警告,使用控频来记录警告
+    Rate-limit warnings from the same file/line to prevent log flooding.
     """
-    warnings.simplefilter('always', )  # 先设置成始终打印警告,防止python维护 __warningregistry__ 字典造成内存泄漏,然后使用上面的控频日志来记录.
+    warnings.simplefilter('always', )  # Always show warnings to prevent __warningregistry__ memory leaks, then use frequency-controlled logging.
     global _warnings_showwarning
     GlobalVars.logger = nb_log.get_logger(FQ_CAPTURE_WARNINGS_LOGGER_NAME, log_filename=f'{FQ_CAPTURE_WARNINGS_LOGGER_NAME}.log')
     if capture:

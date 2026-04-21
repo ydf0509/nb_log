@@ -9,10 +9,10 @@ from nb_log.simple_print import sprint
 
 def singleton(cls):
     """
-    单例模式装饰器,新加入线程锁，更牢固的单例模式，主要解决多线程如100线程同时实例化情况下可能会出现三例四例的情况,实测。
+    Thread-safe singleton decorator. Prevents multiple instantiation under high concurrency.
     """
     _instance = {}
-    singleton.__lock = threading.Lock()  # 这里直接演示了线程安全版单例模式
+    singleton.__lock = threading.Lock()  # Thread-safe singleton implementation
 
     @wraps(cls)
     def _singleton(*args, **kwargs):
@@ -34,7 +34,7 @@ class FileWritter:
             self._file_name = file_name
             self.log_path = log_path
             if not Path(self.log_path).exists():
-                sprint(f'自动创建日志文件夹 {log_path}')
+                sprint(f'Auto-creating log directory {log_path}')
                 Path(self.log_path).mkdir(exist_ok=True)
             self._open_file()
             self._last_write_ts = time.time()
@@ -84,6 +84,6 @@ if __name__ == '__main__':
     fw = FileWritter('test_file3', '/test_dir2')
     t1 = time.time()
     for i in range(10000):
-        fw.write_2_file(''' 11:18:13  "D:\codes\nb_log\tests\test_use_curretn_dir_config\test_s_print2.py:9"  <module>  2023-07-05 10:48:35 - lalala - "D:/codes/funboost/test_frame/test_nb_log/log_example.py:15" - <module> - ERROR - 粉红色说明代码有错误。 粉红色说明代码有错误。 粉红色说明代码有错误。 粉红色说明代码有错误。
-  ''')
+        fw.write_2_file(''' 11:18:13  "D:\codes\nb_log\tests\test_use_curretn_dir_config\test_s_print2.py:9"  <module>  2023-07-05 10:48:35 - lalala - "D:/codes/funboost/test_frame/test_nb_log/log_example.py:15" - <module> - ERROR - Magenta indicates an error. Magenta indicates an error. Magenta indicates an error. Magenta indicates an error.
+ ''')
     print(time.time()-t1)

@@ -15,7 +15,7 @@ from pathlib import Path
 from queue import Queue, Empty
 # noinspection PyPackageRequirements
 from kafka import KafkaProducer
-# from elasticsearch import Elasticsearch, helpers  # 性能导入时间消耗2秒,实例化时候再导入。
+# from elasticsearch import Elasticsearch, helpers  # Lazy import: takes ~2s to import, defer to instantiation time.
 from threading import Lock, Thread
 import pymongo
 
@@ -33,15 +33,15 @@ host_name = socket.gethostname()
 
 class MongoHandler(logging.Handler):
     """
-    一个mongodb的log handler,支持日志按loggername创建不同的集合写入mongodb中
+    A MongoDB log handler that creates separate collections per logger name.
     """
 
     # msg_pattern = re.compile('(\d+-\d+-\d+ \d+:\d+:\d+) - (\S*?) - (\S*?) - (\d+) - (\S*?) - ([\s\S]*)')
 
     def __init__(self, mongo_url, mongo_database='logs'):
         """
-        :param mongo_url:  mongo连接
-        :param mongo_database: 保存日志的数据库，默认使用logs数据库
+        :param mongo_url: MongoDB connection URL
+        :param mongo_database: Database name for storing logs, defaults to 'logs'
         """
         logging.Handler.__init__(self)
         mongo_client = pymongo.MongoClient(mongo_url)
@@ -50,7 +50,7 @@ class MongoHandler(logging.Handler):
     def emit(self, record):
         # noinspection PyBroadException, PyPep8
         try:
-            """以下使用解析日志模板的方式提取出字段"""
+            """Extract fields from the log record"""
             # msg = self.format(record)
             # logging.LogRecord
             # msg_match = self.msg_pattern.search(msg)
@@ -91,7 +91,7 @@ class MongoHandler(logging.Handler):
 
 class KafkaHandler(logging.Handler):
     """
-    日志批量写入kafka中。
+    Batch writes logs to Kafka.
     """
     ES_INTERVAL_SECONDS = 0.5
 
@@ -110,13 +110,12 @@ class KafkaHandler(logging.Handler):
 
     def __init__(self, bootstrap_servers, **configs):
         """
-        :param elastic_hosts:  es的ip地址，数组类型
-        :param elastic_port：  es端口
-        :param index_prefix: index名字前缀。
+        :param bootstrap_servers: Kafka bootstrap servers
+        :param configs: Additional Kafka producer configs
         """
         logging.Handler.__init__(self)
         if not self.__class__.kafka_producer:
-            very_nb_print('实例化kafka producer')
+            very_nb_print('Instantiating Kafka producer')
             self.__class__.kafka_producer = KafkaProducer(bootstrap_servers=bootstrap_servers, **configs)
 
         t = Thread(target=self._do_bulk_op)
@@ -135,7 +134,7 @@ class KafkaHandler(logging.Handler):
     @classmethod
     def _check_size_and_clear(cls):
         """
-        如果是外网传输日志到测试环境风险很大，测试环境网络经常打满，传输不了会造成日志队列堆积，会造成内存泄漏，所以需要清理。
+        Prevents log queue buildup and memory leaks when network is unreliable (e.g. cross-network log transmission to test environments).
         :return:
         """
         if cls.has_start_check_size_and_clear:
@@ -146,7 +145,7 @@ class KafkaHandler(logging.Handler):
             while 1:
                 size = cls.task_queue.qsize()
                 if size > 1000:
-                    very_nb_print(f'kafka防止意外日志积累太多了,达到 {size} 个，为防止内存泄漏，清除队列')
+                    very_nb_print(f'Kafka log queue size reached {size}, clearing to prevent memory leak')
                     cls.__clear_bulk_task()
                 time.sleep(0.1)
 
@@ -215,16 +214,16 @@ class KafkaHandler(logging.Handler):
 
 class ElasticHandler000(logging.Handler):
     """
-    日志批量写入es中。
+    Batch writes logs to Elasticsearch. (Legacy implementation)
     """
     ES_INTERVAL_SECONDS = 2
     host_name = host_name
 
     def __init__(self, elastic_hosts: list, elastic_port, index_prefix='pylog-'):
         """
-        :param elastic_hosts:  es的ip地址，数组类型
-        :param elastic_port：  es端口
-        :param index_prefix: index名字前缀。
+        :param elastic_hosts: Elasticsearch host addresses (list)
+        :param elastic_port: Elasticsearch port
+        :param index_prefix: Index name prefix.
         """
         from elasticsearch import Elasticsearch, helpers
         self._helpers = helpers
@@ -249,7 +248,7 @@ class ElasticHandler000(logging.Handler):
         while 1:
             try:
                 if self._task_queue.qsize() > 10000:
-                    very_nb_print('防止意外日志积累太多了，不插入es了。')
+                    very_nb_print('Log queue too large, skipping ES insertion to prevent memory leak.')
                     self.__clear_bulk_task()
                     return
                 # noinspection PyUnresolvedReferences
@@ -290,7 +289,7 @@ class ElasticHandler000(logging.Handler):
             log_info_dict['msg'] = str(record.msg)
             self.__add_task_to_bulk({
                 "_index": f'{self._index_prefix}{record.name.lower()}',
-                # "_type": '_doc',  # elastic 7 服务端之后不要传递 type了.
+                # "_type": '_doc',  # ES7+ no longer supports _type
                 "_source": log_info_dict
             })
 
@@ -303,7 +302,7 @@ class ElasticHandler000(logging.Handler):
 # noinspection PyUnresolvedReferences
 class ElasticHandler(logging.Handler):
     """
-    日志批量写入es中。
+    Batch writes logs to Elasticsearch.
     """
     ES_INTERVAL_SECONDS = 0.5
 
@@ -318,9 +317,9 @@ class ElasticHandler(logging.Handler):
 
     def __init__(self, elastic_hosts: list, elastic_port, index_prefix='pylog-'):
         """
-        :param elastic_hosts:  es的ip地址，数组类型
-        :param elastic_port：  es端口
-        :param index_prefix: index名字前缀。
+        :param elastic_hosts: Elasticsearch host addresses (list)
+        :param elastic_port: Elasticsearch port
+        :param index_prefix: Index name prefix.
         """
         logging.Handler.__init__(self)
         from elasticsearch import Elasticsearch, helpers
@@ -347,7 +346,7 @@ class ElasticHandler(logging.Handler):
         while 1:
             try:
                 if self.__class__.task_queue.qsize() > 10000:
-                    very_nb_print('防止意外日志积累太多了，不插入es了。')
+                    very_nb_print('Log queue too large, skipping ES insertion to prevent memory leak.')
                     self.__clear_bulk_task()
                     return
                 tasks = list(self.__class__.task_queue.queue)
@@ -388,7 +387,7 @@ class ElasticHandler(logging.Handler):
             log_info_dict['script'] = self.script_name
             self.__add_task_to_bulk({
                 "_index": f'{self._index_prefix}{record.name.lower()}',
-                # "_type": f'_doc',    # es7 服务端之后不支持_type设置
+                # "_type": f'_doc',    # ES7+ no longer supports _type
                 "_source": log_info_dict
             })
 

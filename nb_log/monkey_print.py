@@ -2,8 +2,7 @@
 # @Author  : ydf
 # @Time    : 2022/5/9 19:02
 """
-不直接给print打补丁，自己重新赋值。
-
+Custom print patching - reassigns the built-in print function.
 """
 import multiprocessing
 import os
@@ -25,7 +24,7 @@ def stdout_write(msg: str):
 
 
 def stderr_write(msg: str):
-    '''打包exe运行或者做成windwos services 这些情况下情况下,sys.stderr是None,None.write会报错'''
+    '''When packaged as exe or running as Windows service, sys.stderr may be None'''
     if sys.stderr:
         sys.stderr.write(msg)
         sys.stderr.flush()
@@ -40,14 +39,14 @@ print_file_writter = OsFileWritter(print_wrtie_file_name, log_path=nb_log_config
 
 
 def _print_with_file_line(*args, sep=' ', end='\n', file=None, flush=True, sys_getframe_n=2):
-    args = (str(arg) for arg in args)  # REMIND 防止是数字不能被join
+    args = (str(arg) for arg in args)  # REMIND Ensure all args are strings for join
     args_str = sep.join(args) + end
     # stdout_write(f'56:{file}')
     if file == sys.stderr:
-        stderr_write(args_str)  # 如 threading 模块第926行，打印线程错误，希望保持原始的红色错误方式，不希望转成蓝色。
+        stderr_write(args_str)  # Keep original red error output for stderr (e.g. threading module errors).
         print_file_writter.write_2_file(args_str)
     elif file in [sys.stdout, None]:
-        # 获取被调用函数在被调用时所处代码行数
+        # Get the caller's file and line number
         fra = sys._getframe(sys_getframe_n)
         line = fra.f_lineno
         file_name = fra.f_code.co_filename
@@ -67,7 +66,7 @@ def _print_with_file_line(*args, sep=' ', end='\n', file=None, flush=True, sys_g
             stdout_write(
                 f'{now_str}  "{file_name}:{line}"  -{fun}-[print]- {args_str} ')
         print_file_writter.write_2_file(f'{now_str}  "{file_name}:{line}" -[print]-{fun}- {args_str} ')  # 36  93 96 94
-    else:  # 例如traceback模块的print_exception函数 file的入参是   <_io.StringIO object at 0x00000264F2F065E8>，必须把内容重定向到这个对象里面，否则exception日志记录不了错误堆栈。
+    else:  # For file objects like StringIO (used by traceback.print_exception), redirect content to preserve exception stack traces.
         print_raw(args_str, sep=sep, end=end, file=file)
         print_file_writter.write_2_file(args_str)
 
@@ -75,7 +74,7 @@ def _print_with_file_line(*args, sep=' ', end='\n', file=None, flush=True, sys_g
 # noinspection PyProtectedMember,PyUnusedLocal,PyIncorrectDocstring,DuplicatedCode
 def nb_print(*args, sep=' ', end='\n', file=None, flush=True):
     """
-    超流弊的print补丁
+    Enhanced print with color, file/line info, and clickable navigation.
     :param x:
     :return:
     """
@@ -85,10 +84,8 @@ def nb_print(*args, sep=' ', end='\n', file=None, flush=True):
 # noinspection PyPep8,PyUnusedLocal
 def print_exception(etype, value, tb, limit=None, file=None, chain=True):
     """
-    避免每行有两个可跳转的，导致第二个可跳转的不被ide识别。
-    主要是针对print_exception，logging.exception里面会调用这个函数。
-
-    # traceback.print_exception = print_exception  # file类型为 <_io.StringIO object at 0x00000264F2F065E8> 单独判断sys.stderr sys.stdout 以外的情况了，解决了，不需要用到p rint_exception。
+    Prevents two clickable links per line which would cause the IDE to not recognize the second one.
+    Primarily for print_exception, which is called by logging.exception.
 
     :param etype:
     :param value:
@@ -115,18 +112,10 @@ _patched_pids = set()
 
 def patch_print():
     """
-    Python有几个namespace，分别是
+    Python has several namespaces: locals, globals, and builtins.
+    Variables declared inside functions belong to locals, while module-level definitions belong to globals.
 
-    locals
-
-    globals
-
-    builtin
-
-    其中定义在函数内声明的变量属于locals，而模块内定义的函数属于globals。
-
-
-    https://codeday.me/bug/20180929/266673.html   python – 为什么__builtins__既是模块又是dict
+    https://codeday.me/bug/20180929/266673.html
 
     :return:
     """
@@ -143,21 +132,21 @@ def patch_print():
         """
         # noinspection PyUnresolvedReferences
         __builtins__['print'] = nb_print
-    # traceback.print_exception = print_exception  # file类型为 <_io.StringIO object at 0x00000264F2F065E8> 单独判断，解决了，不要加这个。
+    # traceback.print_exception = print_exception  # Handled by separate file type check for StringIO, no need for this.
 
 
 def common_print(*args, sep=' ', end='\n', file=None):
     args = (str(arg) for arg in args)
-    args = (str(arg) for arg in args)  # REMIND 防止是数字不能被join
+    args = (str(arg) for arg in args)  # REMIND Ensure all args are strings for join
     if file == sys.stderr:
-        stderr_write(sep.join(args) + end)  # 如 threading 模块第926行，打印线程错误，希望保持原始的红色错误方式，不希望转成蓝色。
+        stderr_write(sep.join(args) + end)  # Keep original red error output for stderr.
     else:
         stdout_write(sep.join(args) + end)
 
 
 def reverse_patch_print():
     """
-    提供一个反猴子补丁，恢复print原状
+    Reverse the monkey-patch and restore the original print function.
     :return:
     """
     # try:
@@ -177,7 +166,7 @@ def is_main_process():
 
 # noinspection DuplicatedCode
 def only_print_on_main_process(*args, sep=' ', end='\n', file=None, flush=True):
-    # 获取被调用函数在被调用时所处代码行数
+    # Only print when called from the main process
     if is_main_process():
         _print_with_file_line(*args, sep=sep, end=end, file=file, flush=flush, sys_getframe_n=2)
 

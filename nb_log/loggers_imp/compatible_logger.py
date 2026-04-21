@@ -6,49 +6,45 @@ import logging
 from logging import _srcfile
 
 '''
-新增的 NbLogger 类，继承自内置 logging.Logger，
-主要作用是可以改变 sys._getframe 深度，  
-目的是 如果用户自己使用代码模式封装了日志类，在自己的类中又多此一举实现 debug info warning error critical 打印日志的方法， 
-用户在使用 用户自己类.debug() 时候 ，导致记录日志的行号是用户封装这几个方法的地方，而不是实际打印日志的地方，不方便定位日志是从哪里打印的。
+CompatibleLogger class, inherits from the built-in logging.Logger.
+Its main purpose is to allow customizing sys._getframe depth,
+so that when users wrap the logger class with their own debug/info/warning/error/critical methods,
+the logged file path and line number point to the actual call site, not the wrapper method.
 '''
 
 '''
 from nb_log import get_logger
 
 
-class 废物日志类:
-    def __init__(self,name):
-        self.logger = get_logger(name, _log_filename='废物日志.log')
+class MyLoggerWrapper:
+    def __init__(self, name):
+        self.logger = get_logger(name, _log_filename='my_logger.log')
 
     def debug(self, msg):
-        self.logger.debug(msg, extra={'sys_getframe_n': 3})  # 第 x1 行
+        self.logger.debug(msg, extra={'sys_getframe_n': 3})  # line x1
 
     def info(self, msg):
-        self.logger.info(msg, extra={'sys_getframe_n': 3})  # 第 x2 行
+        self.logger.info(msg, extra={'sys_getframe_n': 3})  # line x2
 
 
-废物日志类('命名空间1').info('啊啊啊啊')  # 第y行
+MyLoggerWrapper('namespace1').info('hello')  # line y
 '''
 
 '''
-有的人手痒，非要封装nb_log,那么封装时候调用原生日志的 info() 务必要传入  extra={'sys_getframe_n': 3}
-如果你不传递 extra={'sys_getframe_n': 3} ，那么 废物日志类().info('啊啊啊啊') ，显示是第 x2 行打印的日志，而不是第 y行打印的日志。
+When wrapping nb_log, always pass extra={'sys_getframe_n': 3} to debug/info/etc.
+Without it, the logged line number would show line x2 (the wrapper) instead of line y (the actual call site).
 '''
 
 
 class CompatibleLogger(logging.Logger):
 
     """
-    写 CompatibleLogger 是在python3.7测试的，python3.9以后官方已经加了stacklevel入参。
-    20230705 现在经过github cpython的源码核实，在python3.9版本中
-    def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False,
-             stacklevel=1):
+    CompatibleLogger was originally developed for Python 3.7. Since Python 3.9, the official logging module
+    added the `stacklevel` parameter to _log() and findCaller().
 
-    def findCaller(self, stack_info=False, stacklevel=1):
-
-    python3.9以上用户可以传递 stacklevel 了，本NbLogger是适配python3.6 3.7 3.8版本, Nblogger 的 sys_getframe_n 入参就是 stacklevel 的意义。
-    说明我的思维和python官方人员想到一起去了，3.9以后的logging包debug ingo error等 支持修改查找调用堆栈的深度层级，防止用户封装了debug info warnring 等后，日志模板获取的 文件名 行号是错误深度层级的。。
-
+    This class provides the same functionality for Python 3.6/3.7/3.8 via the `sys_getframe_n` extra parameter,
+    which serves the same purpose as `stacklevel` - adjusting the call stack depth to show
+    the correct file/line when users wrap the debug/info/warning/error methods.
     """
     def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False,**kwargs):
         """
@@ -66,7 +62,7 @@ class CompatibleLogger(logging.Logger):
             # exception on some versions of IronPython. We trap it here so that
             # IronPython can use logging.
             try:
-                fn, lno, func, sinfo = self.findCaller(stack_info,sys_getframe_n)  # 这个改了，加了个入参。
+                fn, lno, func, sinfo = self.findCaller(stack_info,sys_getframe_n)  # Modified: added sys_getframe_n parameter.
             except ValueError:  # pragma: no cover
                 fn, lno, func = "(unknown file)", 0, "(unknown function)"
         else:  # pragma: no cover
@@ -82,16 +78,16 @@ class CompatibleLogger(logging.Logger):
 
     def findCaller(self, stack_info=False,sys_getframe_n =2):
         """
-        主要是改了这个，使得文件和行号变成用户本身的打印日志地方，而不是封装日志的地方。
+        Modified to resolve file/line to the actual log call site rather than the wrapper method.
         :param stack_info:
-        :param sys_getframe_n: 新增的入参。
+        :param sys_getframe_n: Custom stack frame depth parameter.
         :return:
         """
         """
         Find the stack frame of the caller so that we can note the source
         file name, line number and function name.
         """
-        f = sys._getframe(sys_getframe_n)   # 这行改了。
+        f = sys._getframe(sys_getframe_n)   # Modified: uses custom frame depth.
         # f = sys._getframe(3)
         # On some versions of IronPython, currentframe() returns None if
         # IronPython isn't run with -X:Frames.

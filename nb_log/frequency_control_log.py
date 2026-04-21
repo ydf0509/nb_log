@@ -53,7 +53,7 @@ class FrequencyControlLog:
     def critical(self, ) -> logging.Logger.critical:
         return self._fq(self.logger.critical)
 
-    # stacklevel 只能支持python3.9 以上的logging
+    # stacklevel is only supported in Python 3.9+ logging
     # def log(self, level, msg, *args, stacklevel=2, interval: int = None, **kwargs):
     #     ef = EasyFrame(1)
     #     file_line = (ef.filename, ef.lineno)

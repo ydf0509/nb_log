@@ -9,7 +9,7 @@ import time
 from nb_log.rotate_file_writter import OsFileWritter
 from nb_log import nb_log_config_default
 
-stdout_raw = getattr(sys.stdout,'write',None) # 打包時候,这个stdout是None,没有write方法
+stdout_raw = getattr(sys.stdout,'write',None)  # May be None when packaged as exe
 stderr_raw =  getattr(sys.stderr,'write',None)
 
 dele_color_pattern = re.compile('\\033\[.+?m')
@@ -43,7 +43,7 @@ class BulkStdout:
 
     @classmethod
     def _when_exit(cls):
-        # stdout_raw('结束 stdout_raw')
+        # stdout_raw('exit stdout_raw')
         return cls._bulk_real_stdout()
 
     @classmethod

@@ -54,9 +54,8 @@ def formatMessage(self, record: logging.LogRecord):
 
 class ColorHandler(logging.Handler):
     """
-    根据日志严重级别，显示成五彩控制台日志。
-    强烈建议使用pycharm的 monokai主题颜色，这样日志的颜色符合常规的交通信号灯颜色指示，色彩也非常饱和鲜艳。
-    设置方式为 打开pycharm的settings -> Editor -> Color Scheme -> Console Font 选择monokai
+    Displays color-coded console logs based on log severity level.
+    For best results, use PyCharm's monokai theme: Settings -> Editor -> Color Scheme -> Console Font -> monokai.
     """
 
     terminator = '\r\n' if os_name == 'nt' else '\n'
@@ -71,7 +70,7 @@ class ColorHandler(logging.Handler):
         """
         logging.Handler.__init__(self)
         if stream is None:
-            stream = sys.stdout  # stderr无彩。
+            stream = sys.stdout  # stderr doesn't support colors
         self.stream = stream
         self._display_method = 7 if os_name == 'posix' else 0
 
@@ -89,20 +88,20 @@ class ColorHandler(logging.Handler):
     def __build_color_msg_with_backgroud_color000(self, record_level, assist_msg, effective_information_msg):
 
         if record_level == 10:
-            # msg_color = ('\033[0;32m%s\033[0m' % msg)  # 绿色
+            # msg_color = ('\033[0;32m%s\033[0m' % msg)  # green
             # print(msg1)
-            msg_color = f'\033[0;32m{assist_msg}\033[0m \033[0;37;42m{effective_information_msg}\033[0m'  # 绿色
+            msg_color = f'\033[0;32m{assist_msg}\033[0m \033[0;37;42m{effective_information_msg}\033[0m'  # green
         elif record_level == 20:
-            # msg_color = ('\033[%s;%sm%s\033[0m' % (self._display_method, self.bule, msg))  # 青蓝色 36    96
+            # msg_color = ('\033[%s;%sm%s\033[0m' % (self._display_method, self.bule, msg))  # cyan 36    96
             msg_color = f'\033[0;36m{assist_msg}\033[0m \033[0;37;46m{effective_information_msg}\033[0m'
         elif record_level == 30:
             # msg_color = ('\033[%s;%sm%s\033[0m' % (self._display_method, self.yellow, msg))
             msg_color = f'\033[0;33m{assist_msg}\033[0m \033[0;37;43m{effective_information_msg}\033[0m'
         elif record_level == 40:
-            # msg_color = ('\033[%s;35m%s\033[0m' % (self._display_method, msg))  # 紫红色
+            # msg_color = ('\033[%s;35m%s\033[0m' % (self._display_method, msg))  # magenta
             msg_color = f'\033[0;35m{assist_msg}\033[0m \033[0;37;45m{effective_information_msg}\033[0m'
         elif record_level == 50:
-            # msg_color = ('\033[%s;31m%s\033[0m' % (self._display_method, msg))  # 血红色
+            # msg_color = ('\033[%s;31m%s\033[0m' % (self._display_method, msg))  # red
             msg_color = f'\033[0;31m{assist_msg}\033[0m \033[0;37;41m{effective_information_msg}\033[0m'
         else:
             msg_color = f'{assist_msg}  {effective_information_msg}'
@@ -112,20 +111,20 @@ class ColorHandler(logging.Handler):
     def __build_color_msg_with_no_backgroud_color000(record_level, assist_msg, effective_information_msg):
 
         if record_level == 10:
-            # msg_color = ('\033[0;32m%s\033[0m' % msg)  # 绿色
+            # msg_color = ('\033[0;32m%s\033[0m' % msg)  # green
             # print(msg1)
-            msg_color = f'\033[0;32m{assist_msg} {effective_information_msg}\033[0m'  # 绿色
+            msg_color = f'\033[0;32m{assist_msg} {effective_information_msg}\033[0m'  # green
         elif record_level == 20:
-            # msg_color = ('\033[%s;%sm%s\033[0m' % (self._display_method, self.bule, msg))  # 青蓝色 36    96
+            # msg_color = ('\033[%s;%sm%s\033[0m' % (self._display_method, self.bule, msg))  # cyan 36    96
             msg_color = f'\033[0;36m{assist_msg} {effective_information_msg}\033[0m'
         elif record_level == 30:
             # msg_color = ('\033[%s;%sm%s\033[0m' % (self._display_method, self.yellow, msg))
             msg_color = f'\033[0;33m{assist_msg} {effective_information_msg}\033[0m'
         elif record_level == 40:
-            # msg_color = ('\033[%s;35m%s\033[0m' % (self._display_method, msg))  # 紫红色
+            # msg_color = ('\033[%s;35m%s\033[0m' % (self._display_method, msg))  # magenta
             msg_color = f'\033[0;35m{assist_msg} {effective_information_msg}\033[0m'
         elif record_level == 50:
-            # msg_color = ('\033[%s;31m%s\033[0m' % (self._display_method, msg))  # 血红色
+            # msg_color = ('\033[%s;31m%s\033[0m' % (self._display_method, msg))  # red
             msg_color = f'\033[0;31m{assist_msg} {effective_information_msg}\033[0m'
         else:
             msg_color = f'{assist_msg}  {effective_information_msg}'
@@ -152,7 +151,7 @@ class ColorHandler(logging.Handler):
         record_copy.msg = f'\033{background_color}{record_copy.msg}\033[0m'
         msg_color_without = self.format(record_copy)
         # print(repr(msg_color))
-        if isinstance(self.formatter, JsonFormatter) and background_color:  # json会把/033 转义成\u001b,导致颜色显示不出来。
+        if isinstance(self.formatter, JsonFormatter) and background_color:  # JSON escapes \033 to \u001b, breaking color display.
             msg_color_without = msg_color_without.replace(rf'\u001b{background_color}', f'\033{background_color}')
             msg_color_without = msg_color_without.replace(r'\u001b[0m', f'\033[0m\033{complete_color}')
         msg_color = f'\033{complete_color}{msg_color_without}\033[0m'
@@ -181,7 +180,7 @@ class ColorHandler(logging.Handler):
         record_copy.msg = f'\033{complete_color}{record_copy.msg}\033[0m'
         msg_color_without = self.format(record_copy)
         # print(repr(msg_color))
-        if isinstance(self.formatter, JsonFormatter) and background_color:  # json会把/033 转义成\u001b,导致颜色显示不出来。
+        if isinstance(self.formatter, JsonFormatter) and background_color:  # JSON escapes \033 to \u001b, breaking color display.
             msg_color_without = msg_color_without.replace(rf'\u001b{background_color}', f'\033{background_color}')
             msg_color_without = msg_color_without.replace(r'\u001b[0m', f'\033[0m\033{complete_color}')
         # msg_color = f'\033{complete_color}{msg_color_without}\033[0m'
@@ -192,20 +191,20 @@ class ColorHandler(logging.Handler):
     def __build_color_msg_with_no_backgroud_color(self, record_level, record_copy: logging.LogRecord, ):
         complete_msg = self.format(record_copy)
         if record_level == 10:
-            # msg_color = ('\033[0;32m%s\033[0m' % msg)  # 绿色
+            # msg_color = ('\033[0;32m%s\033[0m' % msg)  # green
             # print(msg1)
-            msg_color = f'\033[0;32m{complete_msg}\033[0m'  # 绿色
+            msg_color = f'\033[0;32m{complete_msg}\033[0m'  # green
         elif record_level == 20:
-            # msg_color = ('\033[%s;%sm%s\033[0m' % (self._display_method, self.bule, msg))  # 青蓝色 36    96
+            # msg_color = ('\033[%s;%sm%s\033[0m' % (self._display_method, self.bule, msg))  # cyan 36    96
             msg_color = f'\033[0;36m{complete_msg}\033[0m'
         elif record_level == 30:
             # msg_color = ('\033[%s;%sm%s\033[0m' % (self._display_method, self.yellow, msg))
             msg_color = f'\033[0;33m{complete_msg}\033[0m'
         elif record_level == 40:
-            # msg_color = ('\033[%s;35m%s\033[0m' % (self._display_method, msg))  # 紫红色
+            # msg_color = ('\033[%s;35m%s\033[0m' % (self._display_method, msg))  # magenta
             msg_color = f'\033[0;35m{complete_msg}\033[0m'
         elif record_level == 50:
-            # msg_color = ('\033[%s;31m%s\033[0m' % (self._display_method, msg))  # 血红色
+            # msg_color = ('\033[%s;31m%s\033[0m' % (self._display_method, msg))  # red
             msg_color = f'\033[0;31m{complete_msg}\033[0m'
         else:
             msg_color = f'{complete_msg}'
@@ -226,9 +225,9 @@ class ColorHandler(logging.Handler):
         try:
             # very_nb_print(record)
             # record.message = record.getMessage()
-            # effective_information_msg = record.getMessage()  # 不能用msg字段，例如有的包的日志格式化还有其他字段
-            # record_copy = copy.copy(record)  # copy是因为，不要因为要屏幕彩色日志而影响例如文件日志 叮叮日志等其他handler的格式。
-            # record_copy.for_segmentation_color = '彩色分段标志属性而已'
+            # effective_information_msg = record.getMessage()  # Can't use msg field directly - some packages add extra format fields
+            # record_copy = copy.copy(record)  # Copy to prevent color formatting from affecting other handlers (file, DingTalk, etc.)
+            # record_copy.for_segmentation_color = 'color_segmentation_marker'
             # del record_copy.msg
             # assist_msg = self.format(record_copy)
             # print(f'**  {assist_msg}  ** ')
@@ -252,7 +251,7 @@ class ColorHandler(logging.Handler):
 
     @staticmethod
     def __spilt_msg(log_level, msg: str):
-        split_text = '- 级别 -'
+        split_text = '- LEVEL -'
         if log_level == logging.DEBUG:
             split_text = '- DEBUG -'
         elif log_level == logging.INFO:
@@ -277,7 +276,7 @@ class ColorHandler(logging.Handler):
 
 class CompatibleSMTPSSLHandler(handlers.SMTPHandler):
     """
-    官方的SMTPHandler不支持SMTP_SSL的邮箱，这个可以两个都支持,并且支持邮件发送频率限制
+    An enhanced SMTPHandler that supports both SMTP and SMTP_SSL, with rate limiting for email sending.
     """
 
     def __init__(self, mailhost, fromaddr, toaddrs: tuple, subject,
@@ -292,7 +291,7 @@ class CompatibleSMTPSSLHandler(handlers.SMTPHandler):
         :param secure:
         :param timeout:
         :param is_use_ssl:
-        :param mail_time_interval: 发邮件的时间间隔，可以控制日志邮件的发送频率，为0不进行频率限制控制，如果为60，代表1分钟内最多发送一次邮件
+        :param mail_time_interval: Min interval between emails in seconds. 0 for no rate limit. 60 means at most one email per minute.
         """
         # noinspection PyCompatibility
         # very_nb_print(credentials)
@@ -301,23 +300,22 @@ class CompatibleSMTPSSLHandler(handlers.SMTPHandler):
                          credentials, secure, timeout)
         self._is_use_ssl = is_use_ssl
         self._current_time = 0
-        self._time_interval = 3600 if mail_time_interval < 3600 else mail_time_interval  # 60分钟发一次群发邮件，以后用钉钉代替邮件，邮件频率限制的太死了。
-        self._msg_map = dict()  # 是一个内容为键时间为值得映射
+        self._time_interval = 3600 if mail_time_interval < 3600 else mail_time_interval  # Min 60 min interval for bulk emails.
+        self._msg_map = dict()  # Maps message content to last send timestamp
         self._lock = Lock()
 
     def emit0(self, record: logging.LogRecord):
         """
-        不用这个判断内容
+        Deprecated: content-based deduplication approach.
         """
         from threading import Thread
         if sys.getsizeof(self._msg_map) > 10 * 1000 * 1000:
             self._msg_map.clear()
         if record.msg not in self._msg_map or time.time() - self._msg_map[record.msg] > self._time_interval:
             self._msg_map[record.msg] = time.time()
-            # print('发送邮件成功')
             Thread(target=self.__emit, args=(record,)).start()
         else:
-            very_nb_print(f' 邮件发送太频繁间隔不足60分钟，此次不发送这个邮件内容： {record.msg}    ')
+            very_nb_print(f' Email sending too frequent (interval < 60 min), skipping: {record.msg}    ')
 
     def emit(self, record: logging.LogRecord):
         """
@@ -331,8 +329,7 @@ class CompatibleSMTPSSLHandler(handlers.SMTPHandler):
                 self._current_time = time.time()
                 Thread(target=self.__emit, args=(record,)).start()
             else:
-                # very_nb_print(f' 邮件发送太频繁间隔不足60分钟，此次不发送这个邮件内容： {record.msg}     ')
-                very_nb_print(f' 邮件发送太频繁间隔不足 {self._time_interval}  秒 ，此次不发送这个邮件内容： {record.msg}     ')
+                very_nb_print(f' Email sending too frequent (interval < {self._time_interval}s), skipping: {record.msg}     ')
 
     # noinspection PyUnresolvedReferences
     def __emit(self, record):
@@ -363,12 +360,12 @@ class CompatibleSMTPSSLHandler(handlers.SMTPHandler):
             smtp.quit()
             # noinspection PyPep8
             very_nb_print(
-                f'发送邮件给 {self.toaddrs} 成功，'
-                f'用时{round(time.time() - t_start, 2)} ,发送的内容是--> {record.msg}                    \033[0;35m!!!请去邮箱检查，可能在垃圾邮件中\033[0m')
+                f'Email sent to {self.toaddrs} successfully, '
+                f'took {round(time.time() - t_start, 2)}s, content: {record.msg}                    \033[0;35m!!! Please check your inbox, it may be in spam\033[0m')
         except Exception as e:
             # self.handleError(record)
             very_nb_print(
-                f'[log_manager.py]   {time.strftime("%H:%M:%S", time.localtime())}  \033[0;31m !!!!!! 邮件发送失败,原因是： {e} \033[0m')
+                f'[log_manager.py]   {time.strftime("%H:%M:%S", time.localtime())}  \033[0;31m !!!!!! Email sending failed: {e} \033[0m')
 
 
 class DingTalkHandler(logging.Handler):
@@ -379,7 +376,7 @@ class DingTalkHandler(logging.Handler):
         self.ding_talk_token = ding_talk_token
         self._ding_talk_url = f'https://oapi.dingtalk.com/robot/send?access_token={ding_talk_token}'
         self._current_time = 0
-        self._time_interval = time_interval  # 最好别频繁发。
+        self._time_interval = time_interval  # Avoid sending too frequently.
         self._lock = Lock()
 
     def emit(self, record):
@@ -392,18 +389,18 @@ class DingTalkHandler(logging.Handler):
                 # Thread(target=self.__emit, args=(record,)).start()
 
             else:
-                very_nb_print(f' 此次离上次发送钉钉消息时间间隔不足 {self._time_interval} 秒，此次不发送这个钉钉内容： {record.msg}    ')
+                very_nb_print(f' DingTalk message rate limited (interval < {self._time_interval}s), skipping: {record.msg}    ')
 
     def __emit(self, record):
         message = self.format(record)
         very_nb_print(message)
-        data = {"msgtype": "text", "text": {"content": message, "title": '这里的标题能起作用吗？？'}}
+        data = {"msgtype": "text", "text": {"content": message, "title": 'Log Alert'}}
         try:
-            self._remove_urllib_hanlder()  # 因为钉钉发送也是使用requests实现的，如果requests调用的urllib3命名空间也加上了钉钉日志，将会造成循环，程序卡住。一般情况是在根日志加了钉钉handler。
+            self._remove_urllib_hanlder()  # Prevents circular logging when requests/urllib3 namespace also has a DingTalk handler attached.
             resp = requests.post(self._ding_talk_url, json=data, timeout=(5, 5))
-            very_nb_print(f'钉钉返回 ： {resp.text}')
+            very_nb_print(f'DingTalk response: {resp.text}')
         except requests.RequestException as e:
-            very_nb_print(f"发送消息给钉钉机器人失败 {e}")
+            very_nb_print(f"Failed to send DingTalk message: {e}")
 
     def __repr__(self):
         level = logging.getLevelName(self.level)
@@ -425,12 +422,11 @@ class DingTalkHandler(logging.Handler):
 # noinspection PyPep8Naming
 class ConcurrentDayRotatingFileHandlerWin(logging.Handler):
     """
-    这个多进程按时间切片安全的。
-    官方的 TimedRotatingFileHandler 在多进程下疯狂报错，
-    不信的话可以试试官方 TimedRotatingFileHandler 多进程写入文件日志，设置成每秒换一个新的文件写(主要是按天来切割要耽误很长的时间才能观察错误)
+    Multi-process safe time-based rotating file handler.
+    The built-in TimedRotatingFileHandler throws errors under multi-process scenarios.
     """
     file_handler_list = []
-    has_start_emit_all_file_handler_process_id_set = set()  # 这个linux和windwos都兼容，windwos是多进程每个进程的变量has_start_emit_all_file_handler是独立的。linux是共享的。
+    has_start_emit_all_file_handler_process_id_set = set()  # Compatible with both Linux and Windows. On Windows each process has independent state; on Linux it's shared.
     __lock_for_rotate = Lock()
 
     @classmethod
@@ -441,7 +437,7 @@ class ConcurrentDayRotatingFileHandlerWin(logging.Handler):
                 # very_nb_print(hr.buffer_msgs_queue.qsize())
                 # noinspection PyProtectedMember
                 hr._write_to_file()
-            time.sleep(1)  # 每隔一秒钟批量写入一次，性能好了很多。
+            time.sleep(1)  # Batch write every 1 second for much better performance.
 
     @classmethod
     def _start_emit_all_file_handler(cls):
@@ -459,7 +455,7 @@ class ConcurrentDayRotatingFileHandlerWin(logging.Handler):
         self._last_delete_time = 0
 
         self.buffer_msgs_queue = queue.Queue()
-        atexit.register(self._write_to_file)  # 如果程序属于立马就能结束的，需要在程序结束前执行这个钩子，防止不到最后一秒的日志没记录到。
+        atexit.register(self._write_to_file)  # Ensure buffered logs are flushed before program exit.
         self.file_handler_list.append(self)
         if os.getpid() not in self.has_start_emit_all_file_handler_process_id_set:
             self._start_emit_all_file_handler()
@@ -467,7 +463,7 @@ class ConcurrentDayRotatingFileHandlerWin(logging.Handler):
 
     def emit(self, record: logging.LogRecord):
         """
-        emit已经在logger的handle方法中加了锁，所以这里的重置上次写入时间和清除buffer_msgs不需要加锁了。
+        The emit is already locked by logger.handle(), so no additional lock is needed here.
         :param record:
         :return:
         """
@@ -478,7 +474,7 @@ class ConcurrentDayRotatingFileHandlerWin(logging.Handler):
         except Exception:
             self.handleError(record)
 
-    def _write_to_file(self):  # 也可以重写 close方法，来处理末尾。
+    def _write_to_file(self):  # Could also override close() for cleanup.
         buffer_msgs = ''
         while True:
             # print(self.buffer_msgs_queue.qsize())
@@ -494,7 +490,7 @@ class ConcurrentDayRotatingFileHandlerWin(logging.Handler):
             from nb_filelock import FileLock
             with FileLock(self.file_path / Path(f'_delete_{self.file_name}.lock')):
                 time_str = time.strftime('%Y-%m-%d')
-                # time_str = time.strftime('%H-%M-%S')  # 方便测试用的，方便观察。
+                # time_str = time.strftime('%H-%M-%S')  # For testing with second-level rotation.
                 new_file_name = self.file_name + '.' + time_str
                 path_obj = Path(self.file_path) / Path(new_file_name)
                 path_obj.touch(exist_ok=True)
@@ -507,8 +503,8 @@ class ConcurrentDayRotatingFileHandlerWin(logging.Handler):
 
     def _find_and_delete_files(self):
         """
-        这一段命名不规范是复制原来的官方旧代码。
         Determine the files to delete when rolling over.
+        Variable naming follows the original CPython logging source code convention.
 
         More specific than the earlier method, which just used glob.glob().
         """
@@ -546,7 +542,7 @@ class ConcurrentDayRotatingFileHandlerLinux(logging.Handler):
         self._last_delete_time = time.time()
 
         time_str = time.strftime('%Y-%m-%d')
-        # time_str = time.strftime('%H-%M-%S')  # 方便测试用的，方便观察。
+        # time_str = time.strftime('%H-%M-%S')  # For testing with second-level rotation.
         new_file_name = self.file_name + '.' + time_str
         path_obj = Path(self.file_path) / Path(new_file_name)
         path_obj.touch(exist_ok=True)
@@ -557,7 +553,7 @@ class ConcurrentDayRotatingFileHandlerLinux(logging.Handler):
     def _get_fp(self):
         with self._lock:
             time_str = time.strftime('%Y-%m-%d')
-            # time_str = time.strftime('%H-%M-%S')  # 方便测试用的，方便观察。
+            # time_str = time.strftime('%H-%M-%S')  # For testing with second-level rotation.
             if time_str != self.time_str:
                 try:
                     self.fp.close()
@@ -570,7 +566,7 @@ class ConcurrentDayRotatingFileHandlerLinux(logging.Handler):
 
     def emit(self, record: logging.LogRecord):
         """
-        emit已经在logger的handle方法中加了锁，所以这里的重置上次写入时间和清除buffer_msgs不需要加锁了。
+        The emit is already locked by logger.handle(), so no additional lock is needed here.
         :param record:
         :return:
         """
@@ -578,7 +574,7 @@ class ConcurrentDayRotatingFileHandlerLinux(logging.Handler):
         try:
             msg = self.format(record)
             self.fp.write(msg + '\n')
-            self.fp.flush()  # 需要flush才能及时写入。重写close可以写入程序结束前的缓冲。
+            self.fp.flush()  # Flush to ensure timely writes. Override close() for cleanup of remaining buffer.
         except Exception as e:
             print(e)
             self.handleError(record)
@@ -597,8 +593,8 @@ class ConcurrentDayRotatingFileHandlerLinux(logging.Handler):
 
     def _find_and_delete_files(self):
         """
-        这一段命名不规范是复制原来的官方旧代码。
         Determine the files to delete when rolling over.
+        Variable naming follows the original CPython logging source code convention.
 
         More specific than the earlier method, which just used glob.glob().
         """
@@ -626,7 +622,7 @@ class ConcurrentDayRotatingFileHandlerLinux(logging.Handler):
 
 # noinspection PyPep8Naming
 class _ConcurrentSecondRotatingFileHandlerLinux(logging.Handler):
-    """ 按秒切割的多进程安全文件日志，方便测试验证"""
+    """Multi-process safe second-level rotating file handler for testing purposes."""
 
     def __init__(self, file_name: str, file_path: str, back_count=None):
         super().__init__()
@@ -637,7 +633,7 @@ class _ConcurrentSecondRotatingFileHandlerLinux(logging.Handler):
         self.extMatch2 = re.compile(r"^\d{2}-\d{2}-\d{2}(\.\w+)?$", re.ASCII)
         self._last_delete_time = 0
 
-        time_str = time.strftime('%H-%M-%S')  # 方便测试用的，方便观察。
+        time_str = time.strftime('%H-%M-%S')  # Second-level rotation for testing.
         new_file_name = self.file_name + '.' + time_str
         path_obj = Path(self.file_path) / Path(new_file_name)
         path_obj.touch(exist_ok=True)
@@ -648,7 +644,7 @@ class _ConcurrentSecondRotatingFileHandlerLinux(logging.Handler):
     def _get_fp(self):
         with self._lock:
             time_str = time.strftime('%H-%M-%S')
-            # time_str = time.strftime('%H-%M-%S')  # 方便测试用的，方便观察。
+            # time_str = time.strftime('%H-%M-%S')  # For testing with second-level rotation.
             if time_str != self.time_str:
                 try:
                     pass
@@ -662,7 +658,7 @@ class _ConcurrentSecondRotatingFileHandlerLinux(logging.Handler):
 
     def emit(self, record: logging.LogRecord):
         """
-        emit已经在logger的handle方法中加了锁，所以这里的重置上次写入时间和清除buffer_msgs不需要加锁了。
+        The emit is already locked by logger.handle(), so no additional lock is needed here.
         :param record:
         :return:
         """
@@ -680,8 +676,8 @@ class _ConcurrentSecondRotatingFileHandlerLinux(logging.Handler):
 
     def _find_and_delete_files(self):
         """
-        这一段命名不规范是复制原来的官方旧代码。
         Determine the files to delete when rolling over.
+        Variable naming follows the original CPython logging source code convention.
 
         More specific than the earlier method, which just used glob.glob().
         """
@@ -706,7 +702,7 @@ class _ConcurrentSecondRotatingFileHandlerLinux(logging.Handler):
         for r in result:
             try:
                 Path(r).unlink()
-                print(f'删除成功 {r}')
+                print(f'Deleted {r}')
             except (PermissionError, FileNotFoundError) as e:
                 print(e)
 
@@ -721,7 +717,7 @@ ConcurrentDayRotatingFileHandler = ConcurrentDayRotatingFileHandlerWin if os_nam
 
 class BothDayAndSizeRotatingFileHandler(logging.Handler):
     """
-    自己从头开发的按照时间和大小切割
+    Custom implementation that rotates log files by both time and size.
     """
 
     def __init__(self, file_name: typing.Optional[str], log_path='/pythonlogs', max_bytes=1000 * 1000 * 1000, back_count=10):

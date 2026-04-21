@@ -1,4 +1,4 @@
-from concurrent_log_handler import ConcurrentRotatingFileHandler  # 需要安装。concurrent-log-handler==0.9.1
+from concurrent_log_handler import ConcurrentRotatingFileHandler  # requires: concurrent-log-handler
 import time
 from threading import Thread
 import atexit
@@ -7,13 +7,13 @@ from queue import Empty, SimpleQueue
 
 class ConcurrentRotatingFileHandlerWithBufferInitiativeWindwos(ConcurrentRotatingFileHandler):
     """
-    ConcurrentRotatingFileHandler 解决了多进程下文件切片问题，但频繁操作文件锁，带来程序性能巨大下降。
-    反复测试极限日志写入频次，在windows上比不切片的写入性能降低100倍。在linux上比不切片性能降低10倍。多进程切片文件锁在windows使用pywin32，在linux上还是要fcntl实现。
-    所以此类使用缓存1秒钟内的日志为一个长字符串再插入，大幅度地降低了文件加锁和解锁的次数，速度比不做多进程安全切片的文件写入速度更快。
-    主动触发写入文件。
+    ConcurrentRotatingFileHandler solves multi-process file rotation but frequent file locking causes significant performance degradation.
+    In stress tests: 100x slower on Windows and 10x slower on Linux compared to non-rotating writes.
+    This class buffers log messages within a 1-second window and writes them as a single batch,
+    drastically reducing lock/unlock operations for better-than-non-rotating performance.
     """
     file_handler_list = []
-    has_start_emit_all_file_handler = False  # 只能在windwos运行正常，windwos是多进程每个进程的变量has_start_emit_all_file_handler是独立的。linux是共享的。
+    has_start_emit_all_file_handler = False  # Only works correctly on Windows where each process has independent state. On Linux the variable is shared.
 
     @classmethod
     def _emit_all_file_handler(cls):
@@ -31,7 +31,7 @@ class ConcurrentRotatingFileHandlerWithBufferInitiativeWindwos(ConcurrentRotatin
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.buffer_msgs_queue = queue.SimpleQueue()
-        atexit.register(self._when_exit)  # 如果程序属于立马就能结束的，需要在程序结束前执行这个钩子，防止不到最后一秒的日志没记录到。
+        atexit.register(self._when_exit)  # Ensure buffered logs are flushed before program exit.
         self.file_handler_list.append(self)
         if not self.has_start_emit_all_file_handler:
             self.__class__.has_start_emit_all_file_handler = True
@@ -43,7 +43,7 @@ class ConcurrentRotatingFileHandlerWithBufferInitiativeWindwos(ConcurrentRotatin
 
     def emit(self, record):
         """
-        emit已经在logger的handle方法中加了锁，所以这里的重置上次写入时间和清除buffer_msgs不需要加锁了。
+        The emit is already locked by logger.handle(), so no additional lock is needed here.
         :param record:
         :return:
         """
