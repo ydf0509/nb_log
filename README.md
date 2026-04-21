@@ -1,6 +1,8 @@
 
 # 1.nb_log 简介
 
+**[English README / 英文文档](https://github.com/ydf0509/nb_log/blob/master/README_EN.md)**
+
 [nb_log readthedocs文档链接](https://nb-log-doc.readthedocs.io/zh_CN/latest)
 
 [nb_log 源码链接](https://github.com/ydf0509/nb_log)

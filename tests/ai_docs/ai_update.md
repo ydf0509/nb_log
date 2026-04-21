@@ -1,5 +1,20 @@
 # AI Update Log
 
+## 2026-04-21: Created README_EN.md - English Version of README
+
+**Scope:** New file `README_EN.md` in the project root.
+
+**Changes Made:**
+- Created a full English translation of the existing `README.md` (935 lines of Chinese documentation).
+- Translated all section titles, descriptions, explanations, and inline code comments to idiomatic English.
+- Preserved all code blocks, image links, external URLs, and markdown formatting.
+- Kept code examples' log messages translated to English for consistency with the i18n changes.
+- The original `README.md` (Chinese) remains unchanged.
+
+**Risk Assessment:** None — this is a new file addition, no existing code or documentation was modified.
+
+---
+
 ## 2026-04-21: Full Internationalization (i18n) - Chinese to English Translation
 
 **Scope:** All 25 Python files in the `nb_log/` package directory.
