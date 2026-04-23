@@ -24,17 +24,60 @@ from pathlib import Path  # noqa
 import socket
 from pythonjsonlogger.jsonlogger import JsonFormatter
 
+def judge_has_set_pythonpath() -> bool:
+    """
+    Judge whether PYTHONPATH is set.
+    :return:
+    """
+    try:
+        sys_path1_parent2 = Path(sys.path[1]).parents[2]
+        if sys_path1_parent2 == Path(sys.executable).parents[2]:
+            return False
+        else:
+            return True
+    except IndexError:
+        return True
+
+def aut_get_proj_name() -> str:
+    """
+    Automatically determine the project name from the sys.path[1] directory.
+    :return:
+    """
+    if judge_has_set_pythonpath() is False:
+        """
+         # For example /home/ydfwsl/miniconda3/lib/python37.zip, this usually happens because PYTHONPATH is not set to the project root directory.
+         1. PyCharm IDE automatically adds the opened project root directory to PYTHONPATH.
+
+         2. In VSCode, users should set the following in settings.json:
+              {
+                "python.analysis.extraPaths": ["${workspaceFolder}"],
+                "terminal.integrated.env.windows": { "PYTHONPATH": "${workspaceFolder};${env:PYTHONPATH}" },
+                "terminal.integrated.env.osx": { "PYTHONPATH": "${workspaceFolder}:${env:PYTHONPATH}" },
+                "terminal.integrated.env.linux": { "PYTHONPATH": "${workspaceFolder}:${env:PYTHONPATH}" }
+              }
+
+         3. If manually starting Python scripts in cmd, PowerShell, or Linux, you need to manually set PYTHONPATH to the project root directory.
+            Simply cd into the project root directory first, then execute the corresponding command:
+            CMD: set PYTHONPATH=%cd%
+            PowerShell: $env:PYTHONPATH = $PWD.Path
+            Linux/macOS: export PYTHONPATH=$PWD
+
+        """
+        return 'no_proj_name'
+    else:
+        return Path(sys.path[1]).name 
+
 # PRINT_WRTIE_FILE_NAME is an advanced feature unique to nb_log, beyond the scope of typical logging packages.
 # Controls whether print output is automatically written to a file. Set to None to disable. A new file is created daily (e.g. 2023-06-30.my_proj.print) in LOG_PATH.
 # If you set the environment variable PRINT_WRTIE_FILE_NAME (e.g. export PRINT_WRTIE_FILE_NAME="my_proj.print"), it takes priority over the value in nb_log_config.py.
-PRINT_WRTIE_FILE_NAME = os.environ.get("PRINT_WRTIE_FILE_NAME") or Path(sys.path[1]).name + '.print'
+PRINT_WRTIE_FILE_NAME = os.environ.get("PRINT_WRTIE_FILE_NAME") or aut_get_proj_name() + '.print'
 
 # SYS_STD_FILE_NAME is an advanced feature unique to nb_log, beyond the scope of typical logging packages.
 # All stdout output (including print and StreamHandler logs) is written to this file. Set to None to disable. A new file is created daily (e.g. 2023-06-30.my_proj.std) in LOG_PATH.
 # If you set the environment variable SYS_STD_FILE_NAME (e.g. export SYS_STD_FILE_NAME="my_proj.std"), it takes priority over the value in nb_log_config.py.
 # This is similar to nohup redirecting all screen output to a nohup.out file - a unique feature of nb_log that logging and loguru don't offer.
 # While different logger namespaces may write to dozens of separate log files, SYS_STD_FILE_NAME consolidates all project logs into a single file.
-SYS_STD_FILE_NAME = os.environ.get("SYS_STD_FILE_NAME") or Path(sys.path[1]).name + '.std'
+SYS_STD_FILE_NAME = os.environ.get("SYS_STD_FILE_NAME") or aut_get_proj_name() + '.std'
 
 USE_BULK_STDOUT_ON_WINDOWS = False  # Whether to batch stdout every 0.1s on Windows (Windows I/O performance is poor)
 

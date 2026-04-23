@@ -74,7 +74,7 @@ def auto_creat_config_file_to_project_root_path():
         
         ['', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\python36.zip', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\DLLs', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib', 'F:\\minicondadir\\Miniconda2\\envs\\py36', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\multiprocessing_log_manager-0.2.0-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\pyinstaller-3.4-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\pywin32_ctypes-0.2.0-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\altgraph-0.16.1-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\macholib-1.11-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\pefile-2019.4.18-py3.6.egg', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\win32', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\win32\\lib', 'F:\\minicondadir\\Miniconda2\\envs\\py36\\lib\\site-packages\\Pythonwin']
         """
-    if '/lib/python' in sys.path[1] or r'\lib\python' in sys.path[1] or '.zip' in sys.path[1]:
+    if  nb_log_config_default.judge_has_set_pythonpath() is False:  # Indicates PYTHONPATH is not set
         en_err_msg2 = f'''If you use PyCharm to start the project, PYTHONPATH is set automatically.
                                If you run python directly from cmd or shell and get this error,
                                you need to set the PYTHONPATH environment variable (use a temporary session variable, not a permanent one).
@@ -83,7 +83,9 @@ def auto_creat_config_file_to_project_root_path():
                                Understanding PYTHONPATH eliminates the need for manual sys.path.insert() hacks.
                                See: https://github.com/ydf0509/pythonpathdemo for more details.
                                '''
-        raise EnvironmentError(en_err_msg2)
+        # raise EnvironmentError(en_err_msg2) # Users should set PYTHONPATH
+        sprint(f'\033[91m{en_err_msg2}\033[0m', only_print_on_main_process=True)
+        return 
     # with (Path(sys.path[1]) / Path('nb_log_config.py')).open(mode='w', encoding='utf8') as f:
     #     f.write(config_file_content)
     copyfile(Path(__file__).parent / Path('nb_log_config_default.py'), Path(sys.path[1]) / Path('nb_log_config.py'))
